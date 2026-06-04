@@ -1,1 +1,6 @@
 .superpowers/
+
+# Godot
+.godot/
+*.import
+export_credentials.cfg
