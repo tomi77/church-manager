@@ -4,3 +4,4 @@
 .godot/
 *.import
 export_credentials.cfg
+addons/gut/**/*.uid
