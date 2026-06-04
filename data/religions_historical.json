@@ -1,0 +1,232 @@
+{
+  "religions": [
+    {
+      "id": "islam",
+      "display_name": "Islam",
+      "icon": "☪",
+      "axes": {"A": 70.0, "B": 65.0, "C": 30.0, "D": 75.0},
+      "prestige_start": 300,
+      "holy_sites": ["mekka", "jerozolima"],
+      "color": "#0d3a1a",
+      "accent_color": "#5aaa5a",
+      "trait_id": "umma",
+      "factions": [
+        {"id": "ulema", "display_name": "Ulema", "influence_start": 0.40, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "A", "direction": 1}, {"axis": "B", "direction": 1}]},
+        {"id": "sufici", "display_name": "Sufici", "influence_start": 0.30, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "A", "direction": -1}, {"axis": "D", "direction": 1}]},
+        {"id": "wojownicy_wiary", "display_name": "Wojownicy Wiary", "influence_start": 0.30, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "C", "direction": -1}, {"axis": "D", "direction": -1}]}
+      ]
+    },
+    {
+      "id": "chr_zachodnie",
+      "display_name": "Chrześcijaństwo Zachodnie",
+      "icon": "✝",
+      "axes": {"A": 65.0, "B": 80.0, "C": 35.0, "D": 55.0},
+      "prestige_start": 500,
+      "holy_sites": ["rzym", "jerozolima"],
+      "color": "#0a0a2a",
+      "accent_color": "#7a7aff",
+      "trait_id": "sukcesja_apostolska",
+      "factions": [
+        {"id": "papiestwo", "display_name": "Papiestwo", "influence_start": 0.40, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "B", "direction": 1}, {"axis": "A", "direction": 1}]},
+        {"id": "zakonnicy", "display_name": "Zakonnicy", "influence_start": 0.35, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "D", "direction": 1}, {"axis": "A", "direction": -1}]},
+        {"id": "reformatorzy", "display_name": "Reformatorzy", "influence_start": 0.25, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "B", "direction": -1}]}
+      ]
+    },
+    {
+      "id": "chr_wschodnie",
+      "display_name": "Chrześcijaństwo Wschodnie",
+      "icon": "✝",
+      "axes": {"A": 60.0, "B": 75.0, "C": 40.0, "D": 60.0},
+      "prestige_start": 450,
+      "holy_sites": ["konstantynopol", "jerozolima"],
+      "color": "#0a0a22",
+      "accent_color": "#6a6aee",
+      "trait_id": "cezaropapizm",
+      "factions": [
+        {"id": "patriarchowie", "display_name": "Patriarchowie", "influence_start": 0.45, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "B", "direction": 1}, {"axis": "A", "direction": 1}]},
+        {"id": "hezychazm", "display_name": "Hezychazm", "influence_start": 0.30, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "A", "direction": -1}, {"axis": "D", "direction": 1}]},
+        {"id": "cesarze_teologowie", "display_name": "Cesarze-Teologowie", "influence_start": 0.25, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "B", "direction": 1}, {"axis": "D", "direction": -1}]}
+      ]
+    },
+    {
+      "id": "judaizm",
+      "display_name": "Judaizm",
+      "icon": "✡",
+      "axes": {"A": 75.0, "B": 45.0, "C": 20.0, "D": 65.0},
+      "prestige_start": 250,
+      "holy_sites": ["jerozolima"],
+      "color": "#1a1600",
+      "accent_color": "#bbaa00",
+      "trait_id": "diaspora",
+      "factions": [
+        {"id": "rabini", "display_name": "Rabini", "influence_start": 0.50, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "A", "direction": 1}]},
+        {"id": "ortodoksi", "display_name": "Ortodoksi", "influence_start": 0.30, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "A", "direction": 1}, {"axis": "C", "direction": -1}]},
+        {"id": "zeloci", "display_name": "Zeloci", "influence_start": 0.20, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "D", "direction": -1}]}
+      ]
+    },
+    {
+      "id": "zoroastryzm",
+      "display_name": "Zoroastryzm",
+      "icon": "🔥",
+      "axes": {"A": 60.0, "B": 70.0, "C": 30.0, "D": 70.0},
+      "prestige_start": 350,
+      "holy_sites": ["persepolis"],
+      "color": "#1a0d00",
+      "accent_color": "#cc7a1a",
+      "trait_id": "zmartwychwstanie_saszanskie",
+      "factions": [
+        {"id": "magi_wielcy", "display_name": "Magi Wielcy", "influence_start": 0.45, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "B", "direction": 1}, {"axis": "A", "direction": 1}]},
+        {"id": "kaplani_ognia", "display_name": "Kapłani Ognia", "influence_start": 0.35, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "D", "direction": 1}, {"axis": "A", "direction": 1}]},
+        {"id": "zurwanizm", "display_name": "Zurwanizm", "influence_start": 0.20, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "A", "direction": -1}, {"axis": "C", "direction": 1}]}
+      ]
+    },
+    {
+      "id": "koptyjski",
+      "display_name": "Koptyjski Kościół",
+      "icon": "☥",
+      "axes": {"A": 55.0, "B": 50.0, "C": 35.0, "D": 70.0},
+      "prestige_start": 200,
+      "holy_sites": ["aleksandria"],
+      "color": "#0d1a10",
+      "accent_color": "#4aaa6a",
+      "trait_id": "pamiec_pustynna",
+      "factions": [
+        {"id": "papież_aleksandryjski", "display_name": "Papież Aleksandryjski", "influence_start": 0.40, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "B", "direction": 1}, {"axis": "A", "direction": 1}]},
+        {"id": "ojcowie_pustyni", "display_name": "Ojcowie Pustyni", "influence_start": 0.40, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "D", "direction": 1}, {"axis": "A", "direction": -1}]},
+        {"id": "wierni_egipscy", "display_name": "Wierni Egipscy", "influence_start": 0.20, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "B", "direction": -1}]}
+      ]
+    },
+    {
+      "id": "manicheizm",
+      "display_name": "Manicheizm",
+      "icon": "☯",
+      "axes": {"A": 40.0, "B": 35.0, "C": 85.0, "D": 80.0},
+      "prestige_start": 100,
+      "holy_sites": [],
+      "color": "#180818",
+      "accent_color": "#cc55cc",
+      "trait_id": "synkretyzm_radykalny",
+      "factions": [
+        {"id": "wybrani", "display_name": "Wybrani", "influence_start": 0.45, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "D", "direction": 1}, {"axis": "C", "direction": 1}]},
+        {"id": "sluchacze", "display_name": "Słuchacze", "influence_start": 0.40, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "C", "direction": 1}]},
+        {"id": "teolodzy_gnostyccy", "display_name": "Teologowie Gnostyccy", "influence_start": 0.15, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "A", "direction": -1}, {"axis": "C", "direction": 1}]}
+      ]
+    },
+    {
+      "id": "religie_arabskie",
+      "display_name": "Religie Arabskie",
+      "icon": "🌙",
+      "axes": {"A": 25.0, "B": 30.0, "C": 55.0, "D": 45.0},
+      "prestige_start": 150,
+      "holy_sites": ["mekka"],
+      "color": "#1a1000",
+      "accent_color": "#dd9922",
+      "trait_id": "pluralizm_plemienny",
+      "factions": [
+        {"id": "straznicy_kaaby", "display_name": "Strażnicy Kaaby", "influence_start": 0.40, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "C", "direction": 1}, {"axis": "B", "direction": -1}]},
+        {"id": "kaplani_plemienni", "display_name": "Kapłani Plemienni", "influence_start": 0.35, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "B", "direction": -1}]},
+        {"id": "kupcy_wedrowcy", "display_name": "Kupcy i Wędrowcy", "influence_start": 0.25, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "C", "direction": 1}]}
+      ]
+    },
+    {
+      "id": "hinduizm",
+      "display_name": "Hinduizm",
+      "icon": "🕉",
+      "axes": {"A": 50.0, "B": 70.0, "C": 45.0, "D": 65.0},
+      "prestige_start": 400,
+      "holy_sites": ["varanasi"],
+      "color": "#1a0808",
+      "accent_color": "#ee5533",
+      "trait_id": "dharma_i_varna",
+      "factions": [
+        {"id": "brahmani", "display_name": "Brahmani", "influence_start": 0.45, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "B", "direction": 1}, {"axis": "D", "direction": 1}]},
+        {"id": "kszatrijowie", "display_name": "Kszatrijowie", "influence_start": 0.35, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "D", "direction": -1}]},
+        {"id": "wisznuici", "display_name": "Wisznuici", "influence_start": 0.20, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "C", "direction": 1}, {"axis": "D", "direction": 1}]}
+      ]
+    },
+    {
+      "id": "buddyzm",
+      "display_name": "Buddyzm",
+      "icon": "☸",
+      "axes": {"A": 35.0, "B": 40.0, "C": 70.0, "D": 85.0},
+      "prestige_start": 350,
+      "holy_sites": ["bodh_gaja"],
+      "color": "#001518",
+      "accent_color": "#33bbcc",
+      "trait_id": "srodkowa_droga",
+      "factions": [
+        {"id": "sangha_monastyczna", "display_name": "Sangha Monastyczna", "influence_start": 0.50, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "D", "direction": 1}, {"axis": "B", "direction": -1}]},
+        {"id": "buddyzm_swiatowy", "display_name": "Buddyzm Światowy", "influence_start": 0.30, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "C", "direction": 1}]},
+        {"id": "mahayana", "display_name": "Mahajana", "influence_start": 0.20, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "C", "direction": 1}, {"axis": "D", "direction": 1}]}
+      ]
+    },
+    {
+      "id": "religie_germanskie",
+      "display_name": "Religie Germańskie",
+      "icon": "⚡",
+      "axes": {"A": 20.0, "B": 35.0, "C": 60.0, "D": 50.0},
+      "prestige_start": 150,
+      "holy_sites": ["uppsala"],
+      "color": "#0d1408",
+      "accent_color": "#88cc44",
+      "trait_id": "ragnarok",
+      "factions": [
+        {"id": "seidmeni", "display_name": "Seidmeni i Wróże", "influence_start": 0.40, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "A", "direction": -1}, {"axis": "D", "direction": 1}]},
+        {"id": "jarle", "display_name": "Jarlowie Wojownicy", "influence_start": 0.35, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "D", "direction": -1}, {"axis": "C", "direction": -1}]},
+        {"id": "wolni_wikingi", "display_name": "Wolni Wikingowie", "influence_start": 0.25, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "B", "direction": -1}]}
+      ]
+    },
+    {
+      "id": "religie_slowianski",
+      "display_name": "Religie Słowiańskie",
+      "icon": "🌿",
+      "axes": {"A": 20.0, "B": 25.0, "C": 65.0, "D": 55.0},
+      "prestige_start": 120,
+      "holy_sites": ["arkona"],
+      "color": "#0a1210",
+      "accent_color": "#55bb88",
+      "trait_id": "ziemia_i_krew",
+      "factions": [
+        {"id": "wolchwi", "display_name": "Wolchwi", "influence_start": 0.45, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "D", "direction": 1}, {"axis": "A", "direction": -1}]},
+        {"id": "plemienna_starszyzna", "display_name": "Plemienna Starszyzna", "influence_start": 0.35, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "B", "direction": -1}]},
+        {"id": "herosi_zemi", "display_name": "Herosi Ziemi", "influence_start": 0.20, "tension_start": 20.0,
+         "axis_preferences": [{"axis": "D", "direction": -1}, {"axis": "C", "direction": 1}]}
+      ]
+    }
+  ]
+}
