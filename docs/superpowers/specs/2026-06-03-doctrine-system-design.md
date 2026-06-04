@@ -18,8 +18,8 @@ Religia istnieje jako punkt w 4-wymiarowej przestrzeni osi:
 
 | Oś | Lewy biegun (0) | Prawy biegun (100) |
 |----|-----------------|---------------------|
-| **A** | Dogmatyzm | Mistycyzm |
-| **B** | Hierarchia | Równouprawnienie |
+| **A** | Mistycyzm | Dogmatyzm |
+| **B** | Równouprawnienie | Hierarchia |
 | **C** | Ekskluzywizm | Synkretyzm |
 | **D** | Doczesność | Transcendencja |
 
