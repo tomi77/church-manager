@@ -17,14 +17,14 @@ static func load_graph_from_file(path: String) -> ProvinceGraph:
 static func _build_graph(data: Dictionary) -> ProvinceGraph:
 	var graph := ProvinceGraph.new()
 	var province_list: Array = data.get("provinces", [])
-	for pd in province_list:
-		graph.add_province(_parse_province(pd as Dictionary))
-	for pd in province_list:
-		var id: String = (pd as Dictionary).get("id", "")
-		var neighbors_raw: Array = (pd as Dictionary).get("neighbors", [])
-		for neighbor in neighbors_raw:
-			if graph.get_province(neighbor as String) != null:
-				graph.add_edge(id, neighbor as String)
+	for pd: Dictionary in province_list:
+		graph.add_province(_parse_province(pd))
+	for pd: Dictionary in province_list:
+		var id: String = pd.get("id", "")
+		var neighbors_raw: Array = pd.get("neighbors", [])
+		for neighbor: String in neighbors_raw:
+			if graph.get_province(neighbor) != null:
+				graph.add_edge(id, neighbor)
 	return graph
 
 static func _parse_province(pd: Dictionary) -> Province:
