@@ -114,7 +114,20 @@ func test_process_turn_no_exodus_in_phase1() -> void:
     var rel: Religion = gs.get_religion("islam")
     rel.factions[0].tension = 50.0
     var province: Province = gs.province_graph.get_province("mekka")
+    assert_not_null(province)
     gs.province_graph.get_province("mekka").owner = "islam"
     var pop_before: int = province.population
     tm.process_turn(gs)
     assert_eq(gs.province_graph.get_province("mekka").population, pop_before)
+
+func test_process_turn_exodus_clamps_population_at_zero() -> void:
+    var tm := TurnManager.new()
+    var gs := _make_state()
+    var rel: Religion = gs.get_religion("islam")
+    rel.factions[0].tension = 70.0
+    var province: Province = gs.province_graph.get_province("mekka")
+    assert_not_null(province)
+    province.population = 3
+    province.owner = "islam"
+    tm.process_turn(gs)
+    assert_eq(province.population, 0)
