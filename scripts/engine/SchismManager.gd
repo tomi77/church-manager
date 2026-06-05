@@ -61,6 +61,7 @@ func trigger_schism(faction: Faction, religion: Religion, state: Node) -> Religi
 		var direction: int = pref.get("direction", 1)
 		if axis != "" and new_rel.axes.has(axis):
 			new_rel.axes[axis] = clampf(new_rel.get_axis(axis) + SCHISM_AXIS_OFFSET * direction, 0.0, 100.0)
+	new_rel.factions.append(faction)
 	religion.factions.erase(faction)
 	state._religions[new_rel.id] = new_rel
 	return new_rel
