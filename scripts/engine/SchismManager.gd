@@ -44,3 +44,23 @@ func respond_koncesja(faction: Faction, religion: Religion) -> bool:
 	religion.add_prestige(-KONCESJA_PRESTIGE_COST)
 	faction.tension = maxf(0.0, faction.tension - TENSION_REDUCE_KONCESJA)
 	return true
+
+func trigger_schism(faction: Faction, religion: Religion, state: Node) -> Religion:
+	if faction.influence < SCHISM_MIN_INFLUENCE:
+		return null
+	var new_rel := Religion.new()
+	new_rel.id = religion.id + "_" + faction.id + "_schizma"
+	new_rel.display_name = faction.display_name + " (Schizma)"
+	new_rel.prestige = SCHISM_INITIAL_PRESTIGE
+	new_rel.color = religion.color
+	new_rel.accent_color = religion.accent_color
+	for axis: String in religion.axes.keys():
+		new_rel.axes[axis] = religion.get_axis(axis)
+	for pref: Dictionary in faction.axis_preferences:
+		var axis: String = pref.get("axis", "")
+		var direction: int = pref.get("direction", 1)
+		if axis != "" and new_rel.axes.has(axis):
+			new_rel.axes[axis] = clampf(new_rel.get_axis(axis) + SCHISM_AXIS_OFFSET * direction, 0.0, 100.0)
+	religion.factions.erase(faction)
+	state._religions[new_rel.id] = new_rel
+	return new_rel

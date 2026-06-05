@@ -110,3 +110,62 @@ func test_dialog_handles_empty_axis_preferences() -> void:
 	faction.tension = 60.0
 	sm.respond_dialoguj(faction, rel)
 	assert_almost_eq(faction.tension, 60.0 - SchismManagerScript.TENSION_REDUCE_DIALOGUJ, 0.001)
+
+func test_trigger_schism_creates_new_religion() -> void:
+	var sm := SchismManagerScript.new()
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("islam")
+	var faction := rel.factions[0]
+	faction.tension = 90.0
+	faction.influence = 0.5
+	var count_before: int = gs.all_religions().size()
+	var new_rel := sm.trigger_schism(faction, rel, gs)
+	assert_not_null(new_rel)
+	assert_ne(new_rel.id, rel.id)
+	assert_eq(gs.all_religions().size(), count_before + 1)
+
+func test_trigger_schism_requires_min_influence() -> void:
+	var sm := SchismManagerScript.new()
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("islam")
+	var faction := rel.factions[0]
+	faction.tension = 90.0
+	faction.influence = 0.10
+	var new_rel := sm.trigger_schism(faction, rel, gs)
+	assert_null(new_rel)
+
+func test_trigger_schism_new_religion_has_offset_axes() -> void:
+	var sm := SchismManagerScript.new()
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("islam")
+	var faction := rel.factions[0]  # ulema: axis_preferences = [{axis: A, direction: 1}, {axis: B, direction: 1}]
+	assert_true(faction.axis_preferences.size() > 0, "Test wymaga frakcji z axis_preferences")
+	faction.tension = 90.0
+	faction.influence = 0.5
+	var parent_axis_A := rel.get_axis("A")
+	var new_rel := sm.trigger_schism(faction, rel, gs)
+	assert_not_null(new_rel)
+	# Oś A powinna być przesunięta (ulema: direction=1, więc +SCHISM_AXIS_OFFSET)
+	assert_ne(new_rel.get_axis("A"), parent_axis_A)
+
+func test_trigger_schism_new_religion_has_initial_prestige() -> void:
+	var sm := SchismManagerScript.new()
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("islam")
+	var faction := rel.factions[0]
+	faction.tension = 90.0
+	faction.influence = 0.5
+	var new_rel := sm.trigger_schism(faction, rel, gs)
+	assert_not_null(new_rel)
+	assert_eq(new_rel.prestige, SchismManagerScript.SCHISM_INITIAL_PRESTIGE)
+
+func test_trigger_schism_removes_faction_from_parent() -> void:
+	var sm := SchismManagerScript.new()
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("islam")
+	var faction := rel.factions[0]
+	var faction_id := faction.id
+	faction.tension = 90.0
+	faction.influence = 0.5
+	sm.trigger_schism(faction, rel, gs)
+	assert_null(rel.get_faction(faction_id))
