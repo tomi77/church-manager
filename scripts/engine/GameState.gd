@@ -7,8 +7,8 @@ var province_graph: ProvinceGraph = null
 var _religions: Dictionary = {}
 var pending_ideas: Array[Idea] = []
 var scholar_missions: Array = []  # Untyped: Array[Dictionary] not supported as typed array in GDScript 2.0
-var active_wars: Array = []            # promote do Array[War] w Task 2 Step 6
-var pending_defeat_events: Array = []  # promote do Array[DefeatEvent] w Task 2 Step 6
+var active_wars: Array[War] = []
+var pending_defeat_events: Array[DefeatEvent] = []
 
 func initialize(player_id: String, religions: Array[Religion], graph: ProvinceGraph) -> void:
     player_religion_id = player_id
