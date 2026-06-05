@@ -133,3 +133,27 @@ func compute_army_strength(religion: Religion, target_province: Province, war: W
         var terrain_bonus: float = TERRAIN_DEFENDER_MODIFIERS.get(target_province.terrain, 0.0)
         strength *= (1.0 + terrain_bonus)
     return strength
+
+func attack_province(war: War, province_id: String, state: Node) -> Dictionary:
+    if war.state != "BATTLING":
+        return {"victory": false, "atk_str": 0.0, "def_str": 0.0, "p_win": 0.0, "error": "not_battling"}
+    var attacker: Religion = state.get_religion(war.attacker_id)
+    var defender: Religion = state.get_religion(war.defender_id)
+    var target: Province = state.province_graph.get_province(province_id)
+    if attacker == null or defender == null or target == null:
+        return {"victory": false, "atk_str": 0.0, "def_str": 0.0, "p_win": 0.0, "error": "invalid_target"}
+    var atk_str := compute_army_strength(attacker, target, war, state)
+    var def_str := compute_army_strength(defender, target, war, state)
+    var total := atk_str + def_str
+    var p_win := 0.5 if total <= 0.0 else atk_str / total
+    var roll := randf()
+    var victory := roll < p_win
+    if victory:
+        war.battles_won += 1
+        if not war.contested_provinces.has(province_id):
+            war.contested_provinces.append(province_id)
+        war.state = "OCCUPYING"
+        war.turns_in_state = 0
+    else:
+        war.battles_lost += 1
+    return {"victory": victory, "atk_str": atk_str, "def_str": def_str, "p_win": p_win}

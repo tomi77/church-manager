@@ -305,3 +305,113 @@ func test_compute_strength_terrain_modifier_skipped_for_attacker() -> void:
     # Baza 640
     var strength := wm.compute_army_strength(rel, target, war, gs)
     assert_almost_eq(strength, 640.0, 0.5)
+
+func test_attack_province_fails_when_not_in_battling_state() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var att: Religion = gs.get_religion("islam")
+    _pin_axes(att, 50.0, 50.0, 20.0, 75.0)
+    att.prestige = 100
+    var war := wm.declare_war("islam", "chr_wschodnie", "dzihad", gs)
+    # war.state == "MOBILIZING"
+    var result := wm.attack_province(war, "anatolia", gs)
+    assert_eq(result.get("victory", true), false, "atak w MOBILIZING powinien zwracać victory=false")
+    assert_eq(war.battles_won, 0)
+    assert_eq(war.battles_lost, 0)
+
+func test_attack_province_victory_when_attacker_dominates() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var att: Religion = gs.get_religion("islam")
+    var def: Religion = gs.get_religion("chr_wschodnie")
+    _pin_axes(att, 50.0, 50.0, 50.0, 50.0)
+    _pin_axes(def, 50.0, 50.0, 50.0, 50.0)
+    att.prestige = 100000   # ogromna przewaga
+    def.prestige = 0
+    # przygotuj wojnę w stanie BATTLING (pomijamy declare_war + mobilizację)
+    var war := War.new()
+    war.attacker_id = "islam"
+    war.defender_id = "chr_wschodnie"
+    war.casus_belli = ""
+    war.state = "BATTLING"
+    gs.active_wars.append(war)
+    # 100 prób — przewaga sił atakującego jest tak duża, że ≥95 powinno być victory
+    var wins := 0
+    for i in range(100):
+        war.contested_provinces.clear()  # reset między próbami
+        war.battles_won = 0
+        war.battles_lost = 0
+        war.state = "BATTLING"
+        var result := wm.attack_province(war, "anatolia", gs)
+        if result["victory"]:
+            wins += 1
+    assert_gte(wins, 95, "przy przewadze atakującego 100000:0 powinno być ≥95%% zwycięstw, było %d" % wins)
+
+func test_attack_province_loss_when_defender_dominates() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var att: Religion = gs.get_religion("islam")
+    var def: Religion = gs.get_religion("chr_wschodnie")
+    _pin_axes(att, 50.0, 50.0, 50.0, 50.0)
+    _pin_axes(def, 50.0, 50.0, 50.0, 50.0)
+    att.prestige = 0
+    def.prestige = 100000
+    var war := War.new()
+    war.attacker_id = "islam"
+    war.defender_id = "chr_wschodnie"
+    war.casus_belli = ""
+    war.state = "BATTLING"
+    gs.active_wars.append(war)
+    var wins := 0
+    for i in range(100):
+        war.contested_provinces.clear()
+        war.battles_won = 0
+        war.battles_lost = 0
+        war.state = "BATTLING"
+        var result := wm.attack_province(war, "anatolia", gs)
+        if result["victory"]:
+            wins += 1
+    assert_lte(wins, 5, "przy przewadze broniącego 100000:0 powinno być ≤5%% zwycięstw, było %d" % wins)
+
+func test_attack_province_victory_changes_state_to_occupying_and_adds_contested() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var att: Religion = gs.get_religion("islam")
+    var def: Religion = gs.get_religion("chr_wschodnie")
+    _pin_axes(att, 50.0, 50.0, 50.0, 50.0)
+    _pin_axes(def, 50.0, 50.0, 50.0, 50.0)
+    att.prestige = 100000
+    def.prestige = 0
+    var war := War.new()
+    war.attacker_id = "islam"
+    war.defender_id = "chr_wschodnie"
+    war.casus_belli = ""
+    war.state = "BATTLING"
+    gs.active_wars.append(war)
+    var result := wm.attack_province(war, "anatolia", gs)
+    assert_true(result["victory"])
+    assert_eq(war.state, "OCCUPYING")
+    assert_eq(war.turns_in_state, 0)
+    assert_true(war.contested_provinces.has("anatolia"))
+    assert_eq(war.battles_won, 1)
+
+func test_attack_province_loss_keeps_state_battling_and_no_contested() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var att: Religion = gs.get_religion("islam")
+    var def: Religion = gs.get_religion("chr_wschodnie")
+    _pin_axes(att, 50.0, 50.0, 50.0, 50.0)
+    _pin_axes(def, 50.0, 50.0, 50.0, 50.0)
+    att.prestige = 0
+    def.prestige = 100000
+    var war := War.new()
+    war.attacker_id = "islam"
+    war.defender_id = "chr_wschodnie"
+    war.casus_belli = ""
+    war.state = "BATTLING"
+    gs.active_wars.append(war)
+    var result := wm.attack_province(war, "anatolia", gs)
+    assert_false(result["victory"])
+    assert_eq(war.state, "BATTLING")
+    assert_eq(war.contested_provinces.size(), 0)
+    assert_eq(war.battles_lost, 1)
