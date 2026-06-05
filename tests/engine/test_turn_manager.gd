@@ -52,3 +52,69 @@ func test_faction_tension_increases_when_axis_diverges() -> void:
     var initial_tension := sufici.tension
     _tm.process_turn(_state)
     assert_gt(sufici.tension, initial_tension)
+
+func _make_state() -> Node:
+    var gs: Node = GameStateScript.new()
+    var religions := ReligionLoader.load_from_file("res://data/religions_historical.json")
+    var graph := ProvinceLoader.load_graph_from_file("res://data/provinces_historical.json")
+    gs.initialize("islam", religions, graph)
+    return gs
+
+func test_process_turn_decrements_scholar_mission_turns() -> void:
+    var tm := TurnManager.new()
+    var gs := _make_state()
+    gs.scholar_missions.append({
+        "from_religion_id": "islam",
+        "to_religion_id": "chr_zachodnie",
+        "turns_remaining": 2,
+    })
+    tm.process_turn(gs)
+    assert_eq(gs.scholar_missions.size(), 1)
+    assert_eq(gs.scholar_missions[0]["turns_remaining"], 1)
+
+func test_process_turn_generates_idea_when_mission_completes() -> void:
+    var tm := TurnManager.new()
+    var gs := _make_state()
+    var islam: Religion = gs.get_religion("islam")
+    var chr: Religion = gs.get_religion("chr_zachodnie")
+    # Pinuj wszystkie osie żeby A miała największą różnicę
+    islam.axes["A"] = 20.0
+    islam.axes["B"] = 50.0
+    islam.axes["C"] = 50.0
+    islam.axes["D"] = 50.0
+    chr.axes["A"] = 80.0
+    chr.axes["B"] = 50.0
+    chr.axes["C"] = 50.0
+    chr.axes["D"] = 50.0
+    gs.scholar_missions.append({
+        "from_religion_id": "islam",
+        "to_religion_id": "chr_zachodnie",
+        "turns_remaining": 1,
+    })
+    tm.process_turn(gs)
+    assert_eq(gs.scholar_missions.size(), 0)
+    assert_eq(gs.pending_ideas.size(), 1)
+    assert_eq(gs.pending_ideas[0].axis, "A")
+
+func test_process_turn_applies_believer_exodus_in_phase2() -> void:
+    var tm := TurnManager.new()
+    var gs := _make_state()
+    var rel: Religion = gs.get_religion("islam")
+    rel.factions[0].tension = 70.0
+    var province: Province = gs.province_graph.get_province("mekka")
+    assert_not_null(province)
+    var pop_before: int = province.population
+    gs.province_graph.get_province("mekka").owner = "islam"
+    tm.process_turn(gs)
+    assert_lt(gs.province_graph.get_province("mekka").population, pop_before)
+
+func test_process_turn_no_exodus_in_phase1() -> void:
+    var tm := TurnManager.new()
+    var gs := _make_state()
+    var rel: Religion = gs.get_religion("islam")
+    rel.factions[0].tension = 50.0
+    var province: Province = gs.province_graph.get_province("mekka")
+    gs.province_graph.get_province("mekka").owner = "islam"
+    var pop_before: int = province.population
+    tm.process_turn(gs)
+    assert_eq(gs.province_graph.get_province("mekka").population, pop_before)

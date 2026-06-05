@@ -4,11 +4,14 @@ extends RefCounted
 const HOLY_SITE_PRESTIGE_PER_TURN := 3
 const FACTION_TENSION_PER_DIVERGED_AXIS := 2.0
 const AXIS_DIVERGENCE_THRESHOLD := 20.0
+const BELIEVER_EXODUS_PER_TURN := 5
 
 func process_turn(state: Node) -> void:
     _apply_passive_pressure(state.province_graph)
     _apply_holy_site_prestige(state)
     _update_faction_tensions(state)
+    _process_scholar_missions(state)
+    _apply_believer_exodus(state)
     state.advance_turn()
 
 func _apply_passive_pressure(graph: ProvinceGraph) -> void:
@@ -54,3 +57,29 @@ func _compute_faction_tension_delta(religion: Religion, faction: Faction) -> flo
         if diverged:
             delta += FACTION_TENSION_PER_DIVERGED_AXIS
     return delta
+
+func _process_scholar_missions(state: Node) -> void:
+    var dm := DoctrineManager.new()
+    var still_active: Array = []
+    for mission: Dictionary in state.scholar_missions:
+        mission["turns_remaining"] -= 1
+        if mission["turns_remaining"] <= 0:
+            var idea := dm.generate_idea(mission["from_religion_id"], mission["to_religion_id"], state)
+            if idea != null:
+                state.pending_ideas.append(idea)
+        else:
+            still_active.append(mission)
+    state.scholar_missions = still_active
+
+func _apply_believer_exodus(state: Node) -> void:
+    var sm := SchismManager.new()
+    for religion: Religion in state.all_religions():
+        var has_phase2 := false
+        for faction: Faction in religion.factions:
+            if sm.get_phase(faction) >= 2:
+                has_phase2 = true
+                break
+        if not has_phase2:
+            continue
+        for province: Province in state.province_graph.provinces_with_owner(religion.id):
+            province.population = maxi(0, province.population - BELIEVER_EXODUS_PER_TURN)
