@@ -1349,4 +1349,4 @@ Oczekiwany wynik: wszystkie testy z `tests/engine/` PASS, 0 FAIL.
 - Stan gry: `GameState` autoload
 - Pętla tury: `TurnManager` z presją, prestiżem i frakcjami
 
-**Następny plan:** `2026-06-04-mechaniki.md` — doktryny, dyplomacja, system wojen.
+**Następny plan:** `02-mechaniki-doktryna.md`, `03-mechaniki-wojna.md`.

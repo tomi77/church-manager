@@ -3,7 +3,7 @@
 **Data:** 2026-06-04
 **Projekt:** church-manager
 **Status:** Zatwierdzony
-**Powiązane:** [profile religii](2026-06-04-religion-profiles-design.md), [system dyplomacji](2026-06-04-diplomacy-system-design.md), [system doktryn](2026-06-03-doctrine-system-design.md), [system mapy](2026-06-04-map-province-system-design.md)
+**Powiązane:** [profile religii](05-religion-profiles-design.md), [system dyplomacji](03-diplomacy-system-design.md), [system doktryn](01-doctrine-system-design.md), [system mapy](04-map-province-system-design.md)
 
 ---
 

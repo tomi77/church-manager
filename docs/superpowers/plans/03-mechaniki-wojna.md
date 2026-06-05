@@ -13,7 +13,7 @@
 godot --headless --path . -s res://addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit
 ```
 
-**Spec referencyjny:** `docs/superpowers/specs/2026-06-04-war-system-design.md` (Sekcje 1-4 + Apendyks A z decyzjami implementacyjnymi)
+**Spec referencyjny:** `docs/superpowers/specs/02-war-system-design.md` (Sekcje 1-4 + Apendyks A z decyzjami implementacyjnymi)
 
 ## Uwagi kontekstowe
 

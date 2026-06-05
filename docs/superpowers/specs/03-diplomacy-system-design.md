@@ -3,7 +3,7 @@
 **Data:** 2026-06-04
 **Projekt:** church-manager
 **Status:** Zatwierdzony
-**Powiązane:** [system doktryn](2026-06-03-doctrine-system-design.md), [system wojen](2026-06-04-war-system-design.md)
+**Powiązane:** [system doktryn](01-doctrine-system-design.md), [system wojen](02-war-system-design.md)
 
 ---
 
