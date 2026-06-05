@@ -539,3 +539,59 @@ func test_offer_peace_forced_council_without_annexation_still_works() -> void:
     }, gs)
     assert_almost_eq(def.get_axis("D"), 65.0, 0.001)
     assert_eq(war.state, "ENDED")
+
+func test_offer_peace_clergy_extermination_removes_faction() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var def: Religion = gs.get_religion("chr_wschodnie")
+    # chr_wschodnie ma 3 frakcje: patriarchowie, hezychazm, cesarze_teologowie
+    assert_eq(def.factions.size(), 3)
+    var war := _make_battling_war(gs, "islam", "chr_wschodnie", [])
+    wm.offer_peace(war, {
+        "clergy_extermination": {"faction_id": "hezychazm"}
+    }, gs)
+    assert_eq(def.factions.size(), 2)
+    assert_null(def.get_faction("hezychazm"))
+
+func test_offer_peace_clergy_extermination_redistributes_influence() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var def: Religion = gs.get_religion("chr_wschodnie")
+    # influence_start: patriarchowie=0.45, hezychazm=0.30, cesarze_teologowie=0.25
+    var patr := def.get_faction("patriarchowie")
+    var ces := def.get_faction("cesarze_teologowie")
+    var patr_before := patr.influence
+    var ces_before := ces.influence
+    var hez_influence := def.get_faction("hezychazm").influence
+    var war := _make_battling_war(gs, "islam", "chr_wschodnie", [])
+    wm.offer_peace(war, {
+        "clergy_extermination": {"faction_id": "hezychazm"}
+    }, gs)
+    # 0.30 podzielone przez 2 pozostałe frakcje = 0.15 każda
+    assert_almost_eq(patr.influence, patr_before + hez_influence / 2.0, 0.001)
+    assert_almost_eq(ces.influence, ces_before + hez_influence / 2.0, 0.001)
+
+func test_offer_peace_clergy_extermination_invalid_faction_noop() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var def: Religion = gs.get_religion("chr_wschodnie")
+    var size_before := def.factions.size()
+    var war := _make_battling_war(gs, "islam", "chr_wschodnie", [])
+    wm.offer_peace(war, {
+        "clergy_extermination": {"faction_id": "nieistnieje"}
+    }, gs)
+    assert_eq(def.factions.size(), size_before, "nieistniejąca frakcja → no-op")
+
+func test_offer_peace_clergy_extermination_last_faction_just_removes() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var def: Religion = gs.get_religion("chr_wschodnie")
+    # Sztucznie zostaw tylko 1 frakcję
+    while def.factions.size() > 1:
+        def.factions.pop_back()
+    var only_id: String = def.factions[0].id
+    var war := _make_battling_war(gs, "islam", "chr_wschodnie", [])
+    wm.offer_peace(war, {
+        "clergy_extermination": {"faction_id": only_id}
+    }, gs)
+    assert_eq(def.factions.size(), 0, "ostatnia frakcja usunięta — brak komu rozdzielić wpływ")

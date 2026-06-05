@@ -147,7 +147,10 @@ func offer_peace(war: War, terms: Dictionary, state: Node) -> bool:
         var axis: String = fc.get("axis", "")
         var delta: float = fc.get("delta", 0.0)
         _apply_forced_council(war, axis, delta, state)
-    # Eksterminacja kleru — Task 9
+    if terms.has("clergy_extermination"):
+        var ce: Dictionary = terms["clergy_extermination"]
+        var faction_id: String = ce.get("faction_id", "")
+        _apply_clergy_extermination(war, faction_id, state)
     war.state = "ENDED"
     war.outcome = "WIN" if war.contested_provinces.size() > 0 else "DRAW"
     state.active_wars.erase(war)
@@ -176,6 +179,20 @@ func _apply_forced_council(war: War, axis: String, delta: float, state: Node) ->
     if defender == null or axis == "":
         return
     defender.shift_axis(axis, delta)
+
+func _apply_clergy_extermination(war: War, faction_id: String, state: Node) -> void:
+    var defender: Religion = state.get_religion(war.defender_id)
+    if defender == null or faction_id == "":
+        return
+    var target: Faction = defender.get_faction(faction_id)
+    if target == null:
+        return
+    var redistributed := target.influence
+    defender.factions.erase(target)
+    if defender.factions.size() > 0:
+        var share := redistributed / float(defender.factions.size())
+        for f: Faction in defender.factions:
+            f.influence += share
 
 func attack_province(war: War, province_id: String, state: Node) -> Dictionary:
     if war.state != "BATTLING":
