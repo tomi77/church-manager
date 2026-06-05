@@ -1,7 +1,6 @@
 extends GutTest
 
 const GameStateScript := preload("res://scripts/engine/GameState.gd")
-const Idea := preload("res://scripts/engine/Idea.gd")
 
 func _make_state() -> Node:
     var gs: Node = GameStateScript.new()
