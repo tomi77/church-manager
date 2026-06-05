@@ -236,3 +236,167 @@ Wojna nie jest narzędziem ekspansji — jest **testem doktrynalnym**. Każdy ko
 - Czy neutralne terytoria (bez religii) istnieją jako cel ekspansji?
 - Jak działa dyplomacja między religiami poza kontekstem wojennym?
 - Czy gracz może prowadzić wojnę domową (np. stłumienie schizmy siłą wewnątrz własnych prowincji)?
+
+---
+
+## Apendyks A: Decyzje implementacyjne (Plan 3a, 2026-06-05)
+
+Brainstorming Plan 3 podzielił spec wojny na trzy plany implementacyjne. Apendyks dokumentuje, co wchodzi w fundament (3a), a co odsuwamy na później.
+
+### Podział spec → plany
+
+| Sekcja speca | Plan 3a (fundament) | Plan 3b (Dyplomacja) | Plan 3c (Meta-mechaniki) |
+|---|---|---|---|
+| Sekcja 1: CB z doktryny (4 typy) | ✓ | – | – |
+| Sekcja 1: CB ze schizmy `[Stłumienie Herezji]` | ✓ (akcja gracza) | – | – |
+| Sekcja 1: Obowiązkowe wojny `[Fatwa]`/`[Sobór Wojenny]` | – | – | ✓ |
+| Sekcja 2: Formuła siły + modyfikatory | ✓ | – | – |
+| Sekcja 2: Etapy kampanii (4 stany) | ✓ | – | – |
+| Sekcja 3: Aneksja + polityka asymilacji | ✓ | – | – |
+| Sekcja 3: Wymuszony sobór | ✓ | – | – |
+| Sekcja 3: Eksterminacja kleru | ✓ | – | – |
+| Sekcja 3: Trybut | – | ✓ (wymaga Religion.resources) | – |
+| Sekcja 3: Unia pod zwierzchnictwem | – | ✓ (wymaga vassalage) | – |
+| Sekcja 3: Klęska + Teologia klęski | ✓ (pending event) | – | – |
+| Sekcja 4: Zmęczenie wojenne | ✓ | – | – |
+| Sekcja 4: Wskaźnik zagrożenia | – | ✓ | – |
+| Sekcja 4: Frakcje pacyfistyczne jako blokada | – | – | ✓ |
+| Sekcja 5: Krucjata/Dżihad jako meta-mechanika | – | – | ✓ |
+
+### Kluczowe decyzje projektowe
+
+1. **CB ze schizmy = akcja gracza.** `SchismManager.trigger_schism` nie tworzy automatycznie CB. Gracz musi sam wypowiedzieć wojnę religii-córce.
+2. **Baza militarna = populacja prowincji + prestiż.** "Kler" ze speca pomijamy (brak modelu w grze).
+3. **RNG = `randf()` Godota.** Testy na skrajnych proporcjach sił (np. 10000 vs 10 → niemal pewne zwycięstwo), nie deterministyczne.
+4. **4-stanowa kampania.** `MOBILIZING` (2 tury) → `BATTLING` (atak per prowincja) → `OCCUPYING` (2 tury po wygranej, broniący może kontratak) → `ENDED`.
+5. **Cele wojny = brak listy.** `declare_war(attacker, defender, cb)` bez prowincji. Atakujący wybiera prowincje opportunistycznie w `attack_province`. Okupowane prowincje akumulują się w `War.contested_provinces`. Przy pokoju gracz wybiera, które aneksować.
+6. **Zmęczenie = per religia globalnie.** Pole `Religion.war_weariness: float = 0.0`. Suma efektów ze wszystkich aktywnych wojen religii.
+7. **Religia-córka schizmatyczna** identyfikowana przez nowe pole `Religion.parent_religion_id: String = ""`. `SchismManager.trigger_schism` wypełnia je przy tworzeniu nowej religii.
+8. **Bez limitu równoczesnych wojen.** Religia może mieć wiele aktywnych. Limity (np. "jeden Dżihad") odłożone do Plan 3c.
+9. **Klęska = pending event.** `DefeatEvent` w `GameState.pending_defeat_events`, analogicznie do `pending_ideas`. Gracz wybiera 1 z 3 predefiniowanych opcji teologicznych (każda przesuwa inną oś).
+10. **Asymilacja prestiżowo neutralna.** `[Wypędź]` / `[Nawracaj]` / `[Zasymiluj]` różnią się tylko efektami populacji i osi C — żadna z opcji nie daje ani nie zabiera prestiżu.
+
+### Formuła siły militarnej (PoC)
+
+```
+strength = (sum(pop_owned) × 0.1 + prestige × 2.0)
+        × (1 + axis_modifiers)        # 6 progów osi, sumowane
+        × (1 + cb_bonus)               # 0.10 (nawrocenie_mieczem) do 0.40 (dzihad)
+        × (1 - weariness_penalty)      # 0 / 0.10 / 0.20 / 0.30
+        × (1 + terrain_modifier)       # tylko broniący prowincji
+
+p_win = atk_strength / (atk_strength + def_strength)
+victory = randf() < p_win
+```
+
+**Modyfikatory osi (sumowane do `axis_modifiers`):**
+
+| Próg | Modyfikator |
+|---|---|
+| Dogmatyzm (A) >60 | +0.15 |
+| Hierarchia (B) >60 | +0.20 |
+| Transcendencja (D) >65 | +0.25 |
+| Doczesność (D) >65 | +0.15 |
+| Synkretyzm (C) >60 | +0.10 |
+
+**Modyfikator terenu (broniący w prowincji):**
+
+| Teren | Modyfikator |
+|---|---|
+| mountains | +0.15 |
+| desert | +0.10 |
+| fertile | +0.05 |
+| plains, coast | 0 |
+
+**Kara za zmęczenie:**
+
+| war_weariness | Penalty |
+|---|---|
+| >30 | -0.10 |
+| >55 | -0.20 |
+| >75 | -0.30 |
+
+### Model danych
+
+**Nowe pliki:**
+
+```gdscript
+# scripts/engine/War.gd
+class_name War
+extends Resource
+
+@export var attacker_id: String = ""
+@export var defender_id: String = ""
+@export var casus_belli: String = ""        # krucjata|dzihad|wojna_sprawiedliwa|nawrocenie_mieczem|stlumienie_herezji
+@export var state: String = "MOBILIZING"    # MOBILIZING|BATTLING|OCCUPYING|ENDED
+@export var turns_in_state: int = 0
+@export var contested_provinces: Array[String] = []
+@export var battles_won: int = 0
+@export var battles_lost: int = 0
+@export var outcome: String = ""            # ""|WIN|LOSS|DRAW (po ENDED)
+```
+
+```gdscript
+# scripts/engine/DefeatEvent.gd
+class_name DefeatEvent
+extends Resource
+
+@export var religion_id: String = ""
+@export var opponent_id: String = ""
+@export var cb: String = ""
+@export var options: Array = []   # Array[Dictionary]: {label, axis, delta}
+```
+
+**Modyfikacje istniejących plików:**
+
+```gdscript
+# Religion.gd — dodaj:
+@export var war_weariness: float = 0.0
+@export var parent_religion_id: String = ""
+
+# GameState.gd — dodaj:
+var active_wars: Array[War] = []
+var pending_defeat_events: Array[DefeatEvent] = []
+
+# SchismManager.gd — w trigger_schism:
+new_rel.parent_religion_id = religion.id
+```
+
+### API `WarManager` (stateless RefCounted)
+
+```gdscript
+class_name WarManager
+extends RefCounted
+
+# Stałe (wybór)
+const MOBILIZATION_TURNS := 2
+const OCCUPATION_TURNS := 2
+const WEARINESS_PER_TURN := 3.0
+const WEARINESS_FORCED_PEACE := 90.0
+const DECLARE_WAR_PRESTIGE := 10
+const BASE_POPULATION_FACTOR := 0.1
+const BASE_PRESTIGE_FACTOR := 2.0
+
+# Publiczne API
+func available_casus_belli(attacker: Religion, defender: Religion) -> Array[String]
+func declare_war(attacker_id: String, defender_id: String, cb: String, state: Node) -> War
+func compute_army_strength(religion: Religion, target_province: Province, war: War, state: Node) -> float
+func attack_province(war: War, province_id: String, state: Node) -> Dictionary  # {victory, atk_str, def_str, p_win}
+func offer_peace(war: War, terms: Dictionary, state: Node) -> bool
+func resolve_defeat(event: DefeatEvent, option_index: int, state: Node) -> void
+
+# Warunki pokoju (wywoływane wewnętrznie przez offer_peace)
+func _apply_annexation(war, province_ids: Array[String], policy: String, state: Node) -> void
+func _apply_forced_council(war, axis: String, delta: float, state: Node) -> void
+func _apply_clergy_extermination(war, faction_id: String, state: Node) -> void
+```
+
+### Integracja z `TurnManager`
+
+W `process_turn` po istniejących krokach (presja → relikwie → napięcie frakcji → uczeni → exodus) dodajemy `_process_active_wars(state)`:
+
+- inkrementacja `turns_in_state` dla każdej `War`
+- `MOBILIZING` → `BATTLING` po `MOBILIZATION_TURNS`
+- `OCCUPYING` → `BATTLING` po `OCCUPATION_TURNS`
+- nalicza `war_weariness` (`+= WEARINESS_PER_TURN`) dla obu stron każdej aktywnej wojny
+- gdy `war_weariness >= WEARINESS_FORCED_PEACE` → `War.state = "ENDED"`, `outcome = "LOSS"` dla strony nad progiem, tworzy `DefeatEvent` w `pending_defeat_events`
