@@ -182,3 +182,14 @@ func test_trigger_schism_faction_belongs_to_new_religion() -> void:
 	var new_rel := sm.trigger_schism(faction, rel, gs)
 	assert_not_null(new_rel)
 	assert_not_null(new_rel.get_faction(faction_id))
+
+func test_trigger_schism_sets_parent_religion_id() -> void:
+	var sm := SchismManagerScript.new()
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("islam")
+	var faction := rel.factions[0]
+	faction.tension = 90.0
+	faction.influence = 0.5
+	var new_rel := sm.trigger_schism(faction, rel, gs)
+	assert_not_null(new_rel)
+	assert_eq(new_rel.parent_religion_id, rel.id)

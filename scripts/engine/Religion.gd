@@ -11,6 +11,8 @@ extends Resource
 @export var trait_id: String = ""
 @export var color: String = "#ffffff"
 @export var accent_color: String = "#ffffff"
+@export var war_weariness: float = 0.0
+@export var parent_religion_id: String = ""
 
 func get_axis(axis: String) -> float:
     return axes.get(axis, 50.0)

@@ -50,6 +50,7 @@ func trigger_schism(faction: Faction, religion: Religion, state: Node) -> Religi
 		return null
 	var new_rel := Religion.new()
 	new_rel.id = religion.id + "_" + faction.id + "_schizma"
+	new_rel.parent_religion_id = religion.id
 	new_rel.display_name = faction.display_name + " (Schizma)"
 	new_rel.prestige = SCHISM_INITIAL_PRESTIGE
 	new_rel.color = religion.color
