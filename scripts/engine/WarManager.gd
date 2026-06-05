@@ -194,6 +194,30 @@ func _apply_clergy_extermination(war: War, faction_id: String, state: Node) -> v
         for f: Faction in defender.factions:
             f.influence += share
 
+func force_loss(war: War, loser_id: String, state: Node) -> void:
+    if war.state == "ENDED":
+        return
+    war.state = "ENDED"
+    war.outcome = "LOSS"
+    state.active_wars.erase(war)
+    var winner_id: String = war.defender_id if loser_id == war.attacker_id else war.attacker_id
+    var ev := DefeatEvent.new()
+    ev.religion_id = loser_id
+    ev.opponent_id = winner_id
+    ev.cb = war.casus_belli
+    ev.options = DEFEAT_OPTIONS.duplicate(true)
+    state.pending_defeat_events.append(ev)
+
+func resolve_defeat(event: DefeatEvent, option_index: int, state: Node) -> void:
+    if option_index < 0 or option_index >= event.options.size():
+        return
+    var option: Dictionary = event.options[option_index]
+    var religion: Religion = state.get_religion(event.religion_id)
+    if religion == null:
+        return
+    religion.shift_axis(option.get("axis", ""), option.get("delta", 0.0))
+    state.pending_defeat_events.erase(event)
+
 func attack_province(war: War, province_id: String, state: Node) -> Dictionary:
     if war.state != "BATTLING":
         return {"victory": false, "atk_str": 0.0, "def_str": 0.0, "p_win": 0.0, "error": "not_battling"}

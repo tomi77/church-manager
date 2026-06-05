@@ -595,3 +595,73 @@ func test_offer_peace_clergy_extermination_last_faction_just_removes() -> void:
         "clergy_extermination": {"faction_id": only_id}
     }, gs)
     assert_eq(def.factions.size(), 0, "ostatnia frakcja usunięta — brak komu rozdzielić wpływ")
+
+func test_force_loss_ends_war_and_creates_defeat_event() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var war := _make_battling_war(gs, "islam", "chr_wschodnie", [])
+    war.casus_belli = "dzihad"
+    assert_eq(gs.pending_defeat_events.size(), 0)
+    wm.force_loss(war, "islam", gs)
+    assert_eq(war.state, "ENDED")
+    assert_eq(war.outcome, "LOSS")
+    assert_eq(gs.active_wars.size(), 0)
+    assert_eq(gs.pending_defeat_events.size(), 1)
+    var ev: DefeatEvent = gs.pending_defeat_events[0]
+    assert_eq(ev.religion_id, "islam")
+    assert_eq(ev.opponent_id, "chr_wschodnie")
+    assert_eq(ev.cb, "dzihad")
+    assert_eq(ev.options.size(), 3)
+
+func test_force_loss_for_defender_creates_defeat_event_for_defender() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var war := _make_battling_war(gs, "islam", "chr_wschodnie", [])
+    war.casus_belli = "wojna_sprawiedliwa"
+    wm.force_loss(war, "chr_wschodnie", gs)
+    assert_eq(war.outcome, "LOSS")
+    var ev: DefeatEvent = gs.pending_defeat_events[0]
+    assert_eq(ev.religion_id, "chr_wschodnie")
+    assert_eq(ev.opponent_id, "islam")
+
+func test_resolve_defeat_shifts_chosen_axis_and_removes_event() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var rel: Religion = gs.get_religion("islam")
+    _pin_axes(rel, 50.0, 50.0, 50.0, 50.0)
+    var ev := DefeatEvent.new()
+    ev.religion_id = "islam"
+    ev.opponent_id = "chr_wschodnie"
+    ev.cb = "dzihad"
+    ev.options = WarManagerScript.DEFEAT_OPTIONS.duplicate(true)
+    gs.pending_defeat_events.append(ev)
+    # Opcja 0: "Kara za grzechy", A, +5.0
+    wm.resolve_defeat(ev, 0, gs)
+    assert_almost_eq(rel.get_axis("A"), 55.0, 0.001)
+    assert_eq(gs.pending_defeat_events.size(), 0)
+
+func test_resolve_defeat_negative_delta_option() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var rel: Religion = gs.get_religion("islam")
+    _pin_axes(rel, 50.0, 50.0, 50.0, 50.0)
+    var ev := DefeatEvent.new()
+    ev.religion_id = "islam"
+    ev.options = WarManagerScript.DEFEAT_OPTIONS.duplicate(true)
+    gs.pending_defeat_events.append(ev)
+    # Opcja 1: "Wola niezbadana", A, -8.0
+    wm.resolve_defeat(ev, 1, gs)
+    assert_almost_eq(rel.get_axis("A"), 42.0, 0.001)
+
+func test_resolve_defeat_invalid_index_noop() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var rel: Religion = gs.get_religion("islam")
+    _pin_axes(rel, 50.0, 50.0, 50.0, 50.0)
+    var ev := DefeatEvent.new()
+    ev.religion_id = "islam"
+    ev.options = WarManagerScript.DEFEAT_OPTIONS.duplicate(true)
+    gs.pending_defeat_events.append(ev)
+    wm.resolve_defeat(ev, 99, gs)  # invalid
+    assert_almost_eq(rel.get_axis("A"), 50.0, 0.001)
+    assert_eq(gs.pending_defeat_events.size(), 1, "invalid index — event NIE usunięty")
