@@ -89,3 +89,24 @@ func test_koncesja_fails_without_prestige() -> void:
 	faction.tension = 70.0
 	var ok := sm.respond_koncesja(faction, rel)
 	assert_false(ok)
+	assert_almost_eq(faction.tension, 70.0, 0.001)
+	assert_eq(rel.prestige, 5)
+
+func test_stlumienie_clamps_at_zero() -> void:
+	var sm := SchismManagerScript.new()
+	var faction := _get_faction(_make_state())
+	faction.tension = 0.0
+	faction.influence = 0.0
+	sm.respond_stlumienie(faction)
+	assert_almost_eq(faction.tension, 0.0, 0.001)
+	assert_almost_eq(faction.influence, 0.0, 0.001)
+
+func test_dialog_handles_empty_axis_preferences() -> void:
+	var sm := SchismManagerScript.new()
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("islam")
+	var faction := rel.factions[0]
+	faction.axis_preferences.clear()
+	faction.tension = 60.0
+	sm.respond_dialoguj(faction, rel)
+	assert_almost_eq(faction.tension, 60.0 - SchismManagerScript.TENSION_REDUCE_DIALOGUJ, 0.001)
