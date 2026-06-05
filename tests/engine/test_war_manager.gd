@@ -503,3 +503,39 @@ func test_offer_peace_removes_war_from_active_wars() -> void:
     assert_eq(gs.active_wars.size(), 1)
     wm.offer_peace(war, {"annexation": {"provinces": ["anatolia"], "policy": "nawracaj"}}, gs)
     assert_eq(gs.active_wars.size(), 0, "wojna ENDED powinna być usunięta z active_wars")
+
+func test_offer_peace_forced_council_shifts_defender_axis() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var def: Religion = gs.get_religion("chr_wschodnie")
+    _pin_axes(def, 50.0, 50.0, 50.0, 50.0)
+    var war := _make_battling_war(gs, "islam", "chr_wschodnie", ["anatolia"])
+    var ok := wm.offer_peace(war, {
+        "annexation": {"provinces": ["anatolia"], "policy": "nawracaj"},
+        "forced_council": {"axis": "A", "delta": 8.0}
+    }, gs)
+    assert_true(ok)
+    assert_almost_eq(def.get_axis("A"), 58.0, 0.001)
+
+func test_offer_peace_forced_council_negative_delta() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var def: Religion = gs.get_religion("chr_wschodnie")
+    _pin_axes(def, 50.0, 50.0, 50.0, 50.0)
+    var war := _make_battling_war(gs, "islam", "chr_wschodnie", [])
+    wm.offer_peace(war, {
+        "forced_council": {"axis": "B", "delta": -10.0}
+    }, gs)
+    assert_almost_eq(def.get_axis("B"), 40.0, 0.001)
+
+func test_offer_peace_forced_council_without_annexation_still_works() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var def: Religion = gs.get_religion("chr_wschodnie")
+    _pin_axes(def, 60.0, 60.0, 60.0, 60.0)
+    var war := _make_battling_war(gs, "islam", "chr_wschodnie", [])
+    wm.offer_peace(war, {
+        "forced_council": {"axis": "D", "delta": 5.0}
+    }, gs)
+    assert_almost_eq(def.get_axis("D"), 65.0, 0.001)
+    assert_eq(war.state, "ENDED")

@@ -142,7 +142,12 @@ func offer_peace(war: War, terms: Dictionary, state: Node) -> bool:
         var provinces: Array = ann.get("provinces", [])
         var policy: String = ann.get("policy", "nawracaj")
         _apply_annexation(war, provinces, policy, state)
-    # Wymuszony sobór i Eksterminacja kleru — Task 8, 9
+    if terms.has("forced_council"):
+        var fc: Dictionary = terms["forced_council"]
+        var axis: String = fc.get("axis", "")
+        var delta: float = fc.get("delta", 0.0)
+        _apply_forced_council(war, axis, delta, state)
+    # Eksterminacja kleru — Task 9
     war.state = "ENDED"
     war.outcome = "WIN" if war.contested_provinces.size() > 0 else "DRAW"
     state.active_wars.erase(war)
@@ -165,6 +170,12 @@ func _apply_annexation(war: War, province_ids: Array, policy: String, state: Nod
             "zasymiluj":
                 if attacker != null:
                     attacker.shift_axis("C", ASYMILACJA_AXIS_C_DELTA)
+
+func _apply_forced_council(war: War, axis: String, delta: float, state: Node) -> void:
+    var defender: Religion = state.get_religion(war.defender_id)
+    if defender == null or axis == "":
+        return
+    defender.shift_axis(axis, delta)
 
 func attack_province(war: War, province_id: String, state: Node) -> Dictionary:
     if war.state != "BATTLING":
