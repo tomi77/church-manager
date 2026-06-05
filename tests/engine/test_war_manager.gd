@@ -165,3 +165,50 @@ func test_cb_empty_when_all_axes_neutral() -> void:
     _pin_axes(def, 50.0, 50.0, 50.0, 50.0)
     var cbs := wm.available_casus_belli(att, def)
     assert_eq(cbs.size(), 0, "Religia ze wszystkimi osiami w środku nie powinna mieć CB")
+
+func test_declare_war_succeeds_when_cb_available_and_prestige_enough() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var att: Religion = gs.get_religion("islam")
+    var def: Religion = gs.get_religion("chr_wschodnie")
+    _pin_axes(att, 50.0, 50.0, 20.0, 75.0)  # Dżihad dostępny
+    att.prestige = 100
+    var war := wm.declare_war("islam", "chr_wschodnie", "dzihad", gs)
+    assert_not_null(war)
+    assert_eq(war.attacker_id, "islam")
+    assert_eq(war.defender_id, "chr_wschodnie")
+    assert_eq(war.casus_belli, "dzihad")
+    assert_eq(war.state, "MOBILIZING")
+    assert_eq(war.turns_in_state, 0)
+    assert_eq(gs.active_wars.size(), 1)
+    assert_eq(gs.active_wars[0], war)
+    assert_eq(att.prestige, 100 - WarManagerScript.DECLARE_WAR_PRESTIGE)
+
+func test_declare_war_fails_when_cb_not_available() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var att: Religion = gs.get_religion("islam")
+    _pin_axes(att, 50.0, 50.0, 50.0, 50.0)  # żadne CB nie dostępne
+    att.prestige = 100
+    var war := wm.declare_war("islam", "chr_wschodnie", "dzihad", gs)
+    assert_null(war)
+    assert_eq(gs.active_wars.size(), 0)
+    assert_eq(att.prestige, 100, "prestige nie powinien być wydany przy fail")
+
+func test_declare_war_fails_when_not_enough_prestige() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var att: Religion = gs.get_religion("islam")
+    _pin_axes(att, 50.0, 50.0, 20.0, 75.0)  # Dżihad dostępny
+    att.prestige = 5  # <10
+    var war := wm.declare_war("islam", "chr_wschodnie", "dzihad", gs)
+    assert_null(war)
+    assert_eq(gs.active_wars.size(), 0)
+    assert_eq(att.prestige, 5)
+
+func test_declare_war_fails_when_attacker_does_not_exist() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var war := wm.declare_war("nieistnieje", "chr_wschodnie", "dzihad", gs)
+    assert_null(war)
+    assert_eq(gs.active_wars.size(), 0)

@@ -87,3 +87,22 @@ func _religion_matches_axis_rules(religion: Religion, rules: Array) -> bool:
         if rule.has("max") and value > rule["max"]:
             return false
     return true
+
+func declare_war(attacker_id: String, defender_id: String, cb: String, state: Node) -> War:
+    var attacker: Religion = state.get_religion(attacker_id)
+    var defender: Religion = state.get_religion(defender_id)
+    if attacker == null or defender == null:
+        return null
+    if not available_casus_belli(attacker, defender).has(cb):
+        return null
+    if attacker.prestige < DECLARE_WAR_PRESTIGE:
+        return null
+    attacker.add_prestige(-DECLARE_WAR_PRESTIGE)
+    var war := War.new()
+    war.attacker_id = attacker_id
+    war.defender_id = defender_id
+    war.casus_belli = cb
+    war.state = "MOBILIZING"
+    war.turns_in_state = 0
+    state.active_wars.append(war)
+    return war
