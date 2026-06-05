@@ -134,6 +134,38 @@ func compute_army_strength(religion: Religion, target_province: Province, war: W
         strength *= (1.0 + terrain_bonus)
     return strength
 
+func offer_peace(war: War, terms: Dictionary, state: Node) -> bool:
+    if war.state == "ENDED":
+        return false
+    if terms.has("annexation"):
+        var ann: Dictionary = terms["annexation"]
+        var provinces: Array = ann.get("provinces", [])
+        var policy: String = ann.get("policy", "nawracaj")
+        _apply_annexation(war, provinces, policy, state)
+    # Wymuszony sobór i Eksterminacja kleru — Task 8, 9
+    war.state = "ENDED"
+    war.outcome = "WIN" if war.contested_provinces.size() > 0 else "DRAW"
+    state.active_wars.erase(war)
+    return true
+
+func _apply_annexation(war: War, province_ids: Array, policy: String, state: Node) -> void:
+    var attacker: Religion = state.get_religion(war.attacker_id)
+    for province_id in province_ids:
+        if not war.contested_provinces.has(province_id):
+            continue  # tylko prowincje faktycznie okupowane
+        var province: Province = state.province_graph.get_province(province_id)
+        if province == null:
+            continue
+        province.owner = war.attacker_id
+        match policy:
+            "wypedz":
+                province.population = 0
+            "nawracaj":
+                pass  # zostaje populacja i pressure
+            "zasymiluj":
+                if attacker != null:
+                    attacker.shift_axis("C", ASYMILACJA_AXIS_C_DELTA)
+
 func attack_province(war: War, province_id: String, state: Node) -> Dictionary:
     if war.state != "BATTLING":
         return {"victory": false, "atk_str": 0.0, "def_str": 0.0, "p_win": 0.0, "error": "not_battling"}

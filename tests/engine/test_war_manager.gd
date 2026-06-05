@@ -415,3 +415,91 @@ func test_attack_province_loss_keeps_state_battling_and_no_contested() -> void:
     assert_eq(war.state, "BATTLING")
     assert_eq(war.contested_provinces.size(), 0)
     assert_eq(war.battles_lost, 1)
+
+func _make_battling_war(gs: Node, att_id: String, def_id: String, contested: Array[String]) -> War:
+    var war := War.new()
+    war.attacker_id = att_id
+    war.defender_id = def_id
+    war.casus_belli = ""
+    war.state = "BATTLING"
+    war.contested_provinces = contested
+    gs.active_wars.append(war)
+    return war
+
+func test_offer_peace_annexation_wypedz_zeros_population_and_changes_owner() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var anatolia: Province = gs.province_graph.get_province("anatolia")
+    var pop_before := anatolia.population
+    assert_gt(pop_before, 0)
+    var war := _make_battling_war(gs, "islam", "chr_wschodnie", ["anatolia"])
+    var ok := wm.offer_peace(war, {
+        "annexation": {"provinces": ["anatolia"], "policy": "wypedz"}
+    }, gs)
+    assert_true(ok)
+    assert_eq(anatolia.owner, "islam")
+    assert_eq(anatolia.population, 0)
+    assert_eq(war.state, "ENDED")
+    assert_eq(war.outcome, "WIN")
+
+func test_offer_peace_annexation_nawracaj_keeps_population_and_changes_owner() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var anatolia: Province = gs.province_graph.get_province("anatolia")
+    var pop_before := anatolia.population
+    var war := _make_battling_war(gs, "islam", "chr_wschodnie", ["anatolia"])
+    var ok := wm.offer_peace(war, {
+        "annexation": {"provinces": ["anatolia"], "policy": "nawracaj"}
+    }, gs)
+    assert_true(ok)
+    assert_eq(anatolia.owner, "islam")
+    assert_eq(anatolia.population, pop_before)
+    assert_eq(war.state, "ENDED")
+
+func test_offer_peace_annexation_zasymiluj_shifts_attacker_axis_C() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var att: Religion = gs.get_religion("islam")
+    _pin_axes(att, 50.0, 50.0, 30.0, 50.0)  # C=30
+    var anatolia: Province = gs.province_graph.get_province("anatolia")
+    var pop_before := anatolia.population
+    var war := _make_battling_war(gs, "islam", "chr_wschodnie", ["anatolia"])
+    var ok := wm.offer_peace(war, {
+        "annexation": {"provinces": ["anatolia"], "policy": "zasymiluj"}
+    }, gs)
+    assert_true(ok)
+    assert_eq(anatolia.owner, "islam")
+    assert_eq(anatolia.population, pop_before)
+    assert_almost_eq(att.get_axis("C"), 30.0 + WarManagerScript.ASYMILACJA_AXIS_C_DELTA, 0.001)
+
+func test_offer_peace_annexation_only_contested_provinces() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var anatolia: Province = gs.province_graph.get_province("anatolia")
+    var lewant: Province = gs.province_graph.get_province("lewant")
+    var owner_lewant_before := lewant.owner
+    # war.contested = ["anatolia"]; terms próbuje aneksować ["anatolia", "lewant"]
+    var war := _make_battling_war(gs, "islam", "chr_wschodnie", ["anatolia"])
+    var ok := wm.offer_peace(war, {
+        "annexation": {"provinces": ["anatolia", "lewant"], "policy": "wypedz"}
+    }, gs)
+    assert_true(ok)
+    assert_eq(anatolia.owner, "islam")
+    assert_eq(lewant.owner, owner_lewant_before, "lewant nie był w contested → nie powinien zmienić właściciela")
+
+func test_offer_peace_empty_terms_ends_war_as_draw() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var war := _make_battling_war(gs, "islam", "chr_wschodnie", [])
+    var ok := wm.offer_peace(war, {}, gs)
+    assert_true(ok)
+    assert_eq(war.state, "ENDED")
+    assert_eq(war.outcome, "DRAW")
+
+func test_offer_peace_removes_war_from_active_wars() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var war := _make_battling_war(gs, "islam", "chr_wschodnie", ["anatolia"])
+    assert_eq(gs.active_wars.size(), 1)
+    wm.offer_peace(war, {"annexation": {"provinces": ["anatolia"], "policy": "nawracaj"}}, gs)
+    assert_eq(gs.active_wars.size(), 0, "wojna ENDED powinna być usunięta z active_wars")
