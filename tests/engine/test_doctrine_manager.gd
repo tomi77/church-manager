@@ -155,16 +155,14 @@ func test_generate_idea_returns_idea_when_axes_differ() -> void:
     var islam: Religion = gs.get_religion("islam")
     var chr: Religion = gs.get_religion("chr_zachodnie")
     # Pinuj wszystkie osie żeby A miała największą różnicę (uniknięcie zależności od JSON)
-    islam.axes["A"] = 50.0
+    islam.axes["A"] = 30.0
     islam.axes["B"] = 50.0
     islam.axes["C"] = 50.0
     islam.axes["D"] = 50.0
-    chr.axes["A"] = 50.0
+    chr.axes["A"] = 70.0
     chr.axes["B"] = 50.0
     chr.axes["C"] = 50.0
     chr.axes["D"] = 50.0
-    islam.axes["A"] = 30.0
-    chr.axes["A"] = 70.0
     var idea: Idea = dm.generate_idea("islam", "chr_zachodnie", gs)
     assert_not_null(idea)
     assert_eq(idea.from_religion_id, "islam")
@@ -211,3 +209,21 @@ func test_reject_idea_removes_from_pending() -> void:
     gs.pending_ideas.append(idea)
     dm.reject_idea(idea, gs)
     assert_eq(gs.pending_ideas.size(), 0)
+
+func test_generate_idea_delta_negative_when_to_axis_lower() -> void:
+    var dm := DoctrineManagerScript.new()
+    var gs := _make_state()
+    var islam: Religion = gs.get_religion("islam")
+    var chr: Religion = gs.get_religion("chr_zachodnie")
+    islam.axes["A"] = 70.0
+    islam.axes["B"] = 50.0
+    islam.axes["C"] = 50.0
+    islam.axes["D"] = 50.0
+    chr.axes["A"] = 30.0
+    chr.axes["B"] = 50.0
+    chr.axes["C"] = 50.0
+    chr.axes["D"] = 50.0
+    var idea: Idea = dm.generate_idea("islam", "chr_zachodnie", gs)
+    assert_not_null(idea)
+    assert_eq(idea.axis, "A")
+    assert_lt(idea.delta, 0.0)
