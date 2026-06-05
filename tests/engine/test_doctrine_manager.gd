@@ -55,6 +55,7 @@ func test_doctrine_manager_axis_middle_no_threshold_actions() -> void:
     rel.axes["A"] = 50.0
     rel.axes["B"] = 50.0
     rel.axes["C"] = 50.0
+    rel.axes["D"] = 50.0
     var actions := dm.available_threshold_actions(rel)
     assert_eq(actions.size(), 0)
 

@@ -11,6 +11,7 @@ const IDEA_MIN_AXIS_DIFF := 10.0
 const IDEA_DELTA_FACTOR := 0.3
 const IDEA_MAX_DELTA := 8.0
 
+# Każda reguła: {"min": X} = oś >= X, {"max": X} = oś <= X. Klucze są wzajemnie wykluczające się.
 const AXIS_THRESHOLDS: Dictionary = {
 	"A": [
 		{"min": 75.0, "actions": ["kanon_doktryny"]},
