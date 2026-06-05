@@ -124,5 +124,18 @@ func test_issue_edict_fails_if_not_enough_prestige() -> void:
     var gs := _make_state()
     var rel: Religion = gs.get_religion("islam")
     rel.prestige = 5
+    var axis_before := rel.get_axis("B")
     var ok: bool = dm.issue_edict(rel, "B", 5.0)
     assert_false(ok)
+    assert_almost_eq(rel.get_axis("B"), axis_before, 0.001)
+    assert_eq(rel.prestige, 5)
+
+func test_issue_edict_clamps_negative_delta() -> void:
+    var dm := DoctrineManagerScript.new()
+    var gs := _make_state()
+    var rel: Religion = gs.get_religion("islam")
+    rel.prestige = 50
+    var axis_before := rel.get_axis("B")
+    var ok: bool = dm.issue_edict(rel, "B", -10.0)
+    assert_true(ok)
+    assert_almost_eq(rel.get_axis("B"), axis_before - DoctrineManagerScript.EDICT_MAX_DELTA, 0.001)
