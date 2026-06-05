@@ -81,3 +81,87 @@ func test_defeat_event_fields_are_settable() -> void:
     assert_eq(ev.religion_id, "islam")
     assert_eq(ev.options.size(), 2)
     assert_eq(ev.options[0]["axis"], "A")
+
+const WarManagerScript := preload("res://scripts/engine/WarManager.gd")
+
+func _pin_axes(rel: Religion, a: float, b: float, c: float, d: float) -> void:
+    rel.axes["A"] = a
+    rel.axes["B"] = b
+    rel.axes["C"] = c
+    rel.axes["D"] = d
+
+func test_cb_krucjata_unlocked_when_exclusivism_high_and_doczesnosc_high() -> void:
+    # Ekskluzywizm >75 → C <25; Doczesność >60 → D <40
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var att: Religion = gs.get_religion("islam")
+    var def: Religion = gs.get_religion("chr_wschodnie")
+    _pin_axes(att, 50.0, 50.0, 20.0, 30.0)
+    _pin_axes(def, 50.0, 50.0, 50.0, 50.0)
+    var cbs := wm.available_casus_belli(att, def)
+    assert_true(cbs.has("krucjata"), "Ekskl. 80 + Doczesność 70 powinno odblokować Krucjatę")
+
+func test_cb_dzihad_unlocked_when_exclusivism_high_and_transcendencja_high() -> void:
+    # Ekskluzywizm >75 → C <25; Transcendencja >70 → D >70
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var att: Religion = gs.get_religion("islam")
+    var def: Religion = gs.get_religion("chr_wschodnie")
+    _pin_axes(att, 50.0, 50.0, 20.0, 75.0)
+    _pin_axes(def, 50.0, 50.0, 50.0, 50.0)
+    var cbs := wm.available_casus_belli(att, def)
+    assert_true(cbs.has("dzihad"), "Ekskl. 80 + Transcendencja 75 powinno odblokować Dżihad")
+
+func test_cb_wojna_sprawiedliwa_unlocked_when_hierarchia_high_and_doczesnosc_high() -> void:
+    # Hierarchia >60 → B >60; Doczesność >50 → D <50
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var att: Religion = gs.get_religion("islam")
+    var def: Religion = gs.get_religion("chr_wschodnie")
+    _pin_axes(att, 50.0, 70.0, 50.0, 40.0)
+    _pin_axes(def, 50.0, 50.0, 50.0, 50.0)
+    var cbs := wm.available_casus_belli(att, def)
+    assert_true(cbs.has("wojna_sprawiedliwa"))
+
+func test_cb_nawrocenie_mieczem_unlocked_when_exclusivism_high_and_dogmatyzm_high() -> void:
+    # Ekskluzywizm >60 → C <40; Dogmatyzm >65 → A >65
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var att: Religion = gs.get_religion("islam")
+    var def: Religion = gs.get_religion("chr_wschodnie")
+    _pin_axes(att, 70.0, 50.0, 30.0, 50.0)
+    _pin_axes(def, 50.0, 50.0, 50.0, 50.0)
+    var cbs := wm.available_casus_belli(att, def)
+    assert_true(cbs.has("nawrocenie_mieczem"))
+
+func test_cb_stlumienie_herezji_when_defender_is_schismatic_child() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var att: Religion = gs.get_religion("islam")
+    var def: Religion = gs.get_religion("chr_wschodnie")
+    _pin_axes(att, 50.0, 50.0, 50.0, 50.0)
+    _pin_axes(def, 50.0, 50.0, 50.0, 50.0)
+    def.parent_religion_id = "islam"  # symulujemy że defender to schizma islamu
+    var cbs := wm.available_casus_belli(att, def)
+    assert_true(cbs.has("stlumienie_herezji"))
+
+func test_cb_stlumienie_herezji_NOT_when_defender_is_not_child() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var att: Religion = gs.get_religion("islam")
+    var def: Religion = gs.get_religion("chr_wschodnie")
+    _pin_axes(att, 50.0, 50.0, 50.0, 50.0)
+    _pin_axes(def, 50.0, 50.0, 50.0, 50.0)
+    # def.parent_religion_id == "" — nie jest schizmą islamu
+    var cbs := wm.available_casus_belli(att, def)
+    assert_false(cbs.has("stlumienie_herezji"))
+
+func test_cb_empty_when_all_axes_neutral() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var att: Religion = gs.get_religion("islam")
+    var def: Religion = gs.get_religion("chr_wschodnie")
+    _pin_axes(att, 50.0, 50.0, 50.0, 50.0)
+    _pin_axes(def, 50.0, 50.0, 50.0, 50.0)
+    var cbs := wm.available_casus_belli(att, def)
+    assert_eq(cbs.size(), 0, "Religia ze wszystkimi osiami w środku nie powinna mieć CB")
