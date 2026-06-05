@@ -57,3 +57,40 @@ func issue_edict(religion: Religion, axis: String, delta: float) -> bool:
 	var clamped_delta := clampf(delta, -EDICT_MAX_DELTA, EDICT_MAX_DELTA)
 	religion.shift_axis(axis, clamped_delta)
 	return true
+
+func dispatch_scholar(state: Node, from_religion_id: String, to_religion_id: String) -> void:
+	state.scholar_missions.append({
+		"from_religion_id": from_religion_id,
+		"to_religion_id": to_religion_id,
+		"turns_remaining": SCHOLAR_MISSION_TURNS,
+	})
+
+func generate_idea(from_religion_id: String, to_religion_id: String, state: Node) -> Idea:
+	var from_rel: Religion = state.get_religion(from_religion_id)
+	var to_rel: Religion = state.get_religion(to_religion_id)
+	if from_rel == null or to_rel == null:
+		return null
+	var best_axis := ""
+	var best_diff := 0.0
+	for axis: String in ["A", "B", "C", "D"]:
+		var diff := absf(to_rel.get_axis(axis) - from_rel.get_axis(axis))
+		if diff > best_diff:
+			best_diff = diff
+			best_axis = axis
+	if best_diff < IDEA_MIN_AXIS_DIFF:
+		return null
+	var idea := Idea.new()
+	idea.from_religion_id = from_religion_id
+	idea.axis = best_axis
+	idea.delta = minf(best_diff * IDEA_DELTA_FACTOR, IDEA_MAX_DELTA)
+	var sign_val := 1.0 if to_rel.get_axis(best_axis) > from_rel.get_axis(best_axis) else -1.0
+	idea.delta *= sign_val
+	idea.description = "Idea z " + from_religion_id + " (oś " + best_axis + ")"
+	return idea
+
+func accept_idea(idea: Idea, religion: Religion, state: Node) -> void:
+	religion.shift_axis(idea.axis, idea.delta)
+	state.pending_ideas.erase(idea)
+
+func reject_idea(idea: Idea, state: Node) -> void:
+	state.pending_ideas.erase(idea)

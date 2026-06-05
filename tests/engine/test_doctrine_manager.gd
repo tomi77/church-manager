@@ -139,3 +139,75 @@ func test_issue_edict_clamps_negative_delta() -> void:
     var ok: bool = dm.issue_edict(rel, "B", -10.0)
     assert_true(ok)
     assert_almost_eq(rel.get_axis("B"), axis_before - DoctrineManagerScript.EDICT_MAX_DELTA, 0.001)
+
+func test_dispatch_scholar_adds_mission_to_state() -> void:
+    var dm := DoctrineManagerScript.new()
+    var gs := _make_state()
+    dm.dispatch_scholar(gs, "islam", "chr_zachodnie")
+    assert_eq(gs.scholar_missions.size(), 1)
+    assert_eq(gs.scholar_missions[0]["from_religion_id"], "islam")
+    assert_eq(gs.scholar_missions[0]["to_religion_id"], "chr_zachodnie")
+    assert_eq(gs.scholar_missions[0]["turns_remaining"], DoctrineManagerScript.SCHOLAR_MISSION_TURNS)
+
+func test_generate_idea_returns_idea_when_axes_differ() -> void:
+    var dm := DoctrineManagerScript.new()
+    var gs := _make_state()
+    var islam: Religion = gs.get_religion("islam")
+    var chr: Religion = gs.get_religion("chr_zachodnie")
+    # Pinuj wszystkie osie żeby A miała największą różnicę (uniknięcie zależności od JSON)
+    islam.axes["A"] = 50.0
+    islam.axes["B"] = 50.0
+    islam.axes["C"] = 50.0
+    islam.axes["D"] = 50.0
+    chr.axes["A"] = 50.0
+    chr.axes["B"] = 50.0
+    chr.axes["C"] = 50.0
+    chr.axes["D"] = 50.0
+    islam.axes["A"] = 30.0
+    chr.axes["A"] = 70.0
+    var idea: Idea = dm.generate_idea("islam", "chr_zachodnie", gs)
+    assert_not_null(idea)
+    assert_eq(idea.from_religion_id, "islam")
+    assert_eq(idea.axis, "A")
+    assert_gt(idea.delta, 0.0)
+    assert_lte(idea.delta, DoctrineManagerScript.IDEA_MAX_DELTA)
+
+func test_generate_idea_returns_null_when_axes_too_similar() -> void:
+    var dm := DoctrineManagerScript.new()
+    var gs := _make_state()
+    var islam: Religion = gs.get_religion("islam")
+    var chr: Religion = gs.get_religion("chr_zachodnie")
+    islam.axes["A"] = 50.0
+    chr.axes["A"] = 55.0
+    islam.axes["B"] = 50.0
+    chr.axes["B"] = 55.0
+    islam.axes["C"] = 50.0
+    chr.axes["C"] = 55.0
+    islam.axes["D"] = 50.0
+    chr.axes["D"] = 55.0
+    var idea: Idea = dm.generate_idea("islam", "chr_zachodnie", gs)
+    assert_null(idea)
+
+func test_accept_idea_shifts_axis() -> void:
+    var dm := DoctrineManagerScript.new()
+    var gs := _make_state()
+    var rel: Religion = gs.get_religion("islam")
+    var idea := Idea.new()
+    idea.from_religion_id = "chr_zachodnie"
+    idea.axis = "A"
+    idea.delta = 5.0
+    gs.pending_ideas.append(idea)
+    var axis_before := rel.get_axis("A")
+    dm.accept_idea(idea, rel, gs)
+    assert_almost_eq(rel.get_axis("A"), axis_before + 5.0, 0.001)
+    assert_eq(gs.pending_ideas.size(), 0)
+
+func test_reject_idea_removes_from_pending() -> void:
+    var dm := DoctrineManagerScript.new()
+    var gs := _make_state()
+    var idea := Idea.new()
+    idea.axis = "A"
+    idea.delta = 5.0
+    gs.pending_ideas.append(idea)
+    dm.reject_idea(idea, gs)
+    assert_eq(gs.pending_ideas.size(), 0)
