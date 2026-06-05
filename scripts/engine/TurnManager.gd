@@ -105,7 +105,11 @@ func _process_active_wars(state: Node) -> void:
             defender.war_weariness = clampf(defender.war_weariness + WarManager.WEARINESS_PER_TURN, 0.0, 100.0)
         still_active.append(war)
     state.active_wars = still_active
-    # Drugi przebieg: force_loss dla stron z weariness >= próg
+    # Drugi przebieg: force_loss dla stron z weariness >= próg.
+    # Tie-break: atakujący sprawdzany pierwszy (elif), więc przy jednoczesnym przekroczeniu
+    # progu obie strony — atakujący przegrywa. Defender'a excess weariness pozostaje
+    # i wyzwoli force_loss w kolejnej turze, jeśli wojna by trwała (a nie trwa, bo wojna
+    # właśnie się skończyła force_loss atakującego).
     var to_force: Array = []
     for war: War in state.active_wars:
         var attacker: Religion = state.get_religion(war.attacker_id)
