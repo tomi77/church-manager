@@ -40,3 +40,20 @@ func available_threshold_actions(religion: Religion) -> Array[String]:
 				for action: String in rule["actions"]:
 					result.append(action)
 	return result
+
+func call_sobor(religion: Religion, axis: String, delta: float) -> bool:
+	if religion.prestige < SOBOR_PRESTIGE_COST:
+		return false
+	religion.add_prestige(-SOBOR_PRESTIGE_COST)
+	religion.shift_axis(axis, delta)
+	for faction: Faction in religion.factions:
+		faction.add_tension(FACTION_TENSION_FROM_SOBOR)
+	return true
+
+func issue_edict(religion: Religion, axis: String, delta: float) -> bool:
+	if religion.prestige < EDICT_PRESTIGE_COST:
+		return false
+	religion.add_prestige(-EDICT_PRESTIGE_COST)
+	var clamped_delta := clampf(delta, -EDICT_MAX_DELTA, EDICT_MAX_DELTA)
+	religion.shift_axis(axis, clamped_delta)
+	return true

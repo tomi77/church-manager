@@ -76,3 +76,53 @@ func test_doctrine_manager_axis_C_low_unlocks_inkwizycja_and_klatwa() -> void:
     var actions := dm.available_threshold_actions(rel)
     assert_true(actions.has("inkwizycja"))
     assert_true(actions.has("klatwa"))
+
+func test_call_sobor_shifts_axis_and_costs_prestige() -> void:
+    var dm := DoctrineManagerScript.new()
+    var gs := _make_state()
+    var rel: Religion = gs.get_religion("islam")
+    rel.prestige = 50
+    var axis_before := rel.get_axis("A")
+    var ok: bool = dm.call_sobor(rel, "A", 10.0)
+    assert_true(ok)
+    assert_eq(rel.prestige, 50 - DoctrineManagerScript.SOBOR_PRESTIGE_COST)
+    assert_almost_eq(rel.get_axis("A"), axis_before + 10.0, 0.001)
+
+func test_call_sobor_fails_if_not_enough_prestige() -> void:
+    var dm := DoctrineManagerScript.new()
+    var gs := _make_state()
+    var rel: Religion = gs.get_religion("islam")
+    rel.prestige = 10
+    var axis_before := rel.get_axis("A")
+    var ok: bool = dm.call_sobor(rel, "A", 10.0)
+    assert_false(ok)
+    assert_almost_eq(rel.get_axis("A"), axis_before, 0.001)
+    assert_eq(rel.prestige, 10)
+
+func test_sobor_increases_faction_tension() -> void:
+    var dm := DoctrineManagerScript.new()
+    var gs := _make_state()
+    var rel: Religion = gs.get_religion("islam")
+    rel.prestige = 100
+    var tension_before := rel.factions[0].tension
+    dm.call_sobor(rel, "A", 5.0)
+    assert_almost_eq(rel.factions[0].tension, tension_before + DoctrineManagerScript.FACTION_TENSION_FROM_SOBOR, 0.001)
+
+func test_issue_edict_shifts_axis_within_cap() -> void:
+    var dm := DoctrineManagerScript.new()
+    var gs := _make_state()
+    var rel: Religion = gs.get_religion("islam")
+    rel.prestige = 50
+    var axis_before := rel.get_axis("B")
+    var ok: bool = dm.issue_edict(rel, "B", 10.0)
+    assert_true(ok)
+    assert_eq(rel.prestige, 50 - DoctrineManagerScript.EDICT_PRESTIGE_COST)
+    assert_almost_eq(rel.get_axis("B"), axis_before + DoctrineManagerScript.EDICT_MAX_DELTA, 0.001)
+
+func test_issue_edict_fails_if_not_enough_prestige() -> void:
+    var dm := DoctrineManagerScript.new()
+    var gs := _make_state()
+    var rel: Religion = gs.get_religion("islam")
+    rel.prestige = 5
+    var ok: bool = dm.issue_edict(rel, "B", 5.0)
+    assert_false(ok)
