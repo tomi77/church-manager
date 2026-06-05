@@ -136,3 +136,80 @@ func test_process_turn_exodus_clamps_population_at_zero() -> void:
     province.owner = "islam"
     tm.process_turn(gs)
     assert_eq(province.population, 0)
+
+const WarManagerScript := preload("res://scripts/engine/WarManager.gd")
+
+func _pin_axes_tm(rel: Religion, a: float, b: float, c: float, d: float) -> void:
+    rel.axes["A"] = a
+    rel.axes["B"] = b
+    rel.axes["C"] = c
+    rel.axes["D"] = d
+
+func test_process_turn_mobilizing_war_transitions_to_battling_after_2_turns() -> void:
+    var tm := TurnManager.new()
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var att: Religion = gs.get_religion("islam")
+    _pin_axes_tm(att, 50.0, 50.0, 20.0, 75.0)
+    att.prestige = 100
+    var war := wm.declare_war("islam", "chr_wschodnie", "dzihad", gs)
+    assert_eq(war.state, "MOBILIZING")
+    tm.process_turn(gs)
+    assert_eq(war.state, "MOBILIZING")
+    assert_eq(war.turns_in_state, 1)
+    tm.process_turn(gs)
+    assert_eq(war.state, "BATTLING")
+    assert_eq(war.turns_in_state, 0)
+
+func test_process_turn_occupying_war_returns_to_battling_after_2_turns() -> void:
+    var tm := TurnManager.new()
+    var gs := _make_state()
+    var war := War.new()
+    war.attacker_id = "islam"
+    war.defender_id = "chr_wschodnie"
+    war.casus_belli = "dzihad"
+    war.state = "OCCUPYING"
+    war.turns_in_state = 0
+    gs.active_wars.append(war)
+    tm.process_turn(gs)
+    assert_eq(war.state, "OCCUPYING")
+    assert_eq(war.turns_in_state, 1)
+    tm.process_turn(gs)
+    assert_eq(war.state, "BATTLING")
+    assert_eq(war.turns_in_state, 0)
+
+func test_process_turn_increments_war_weariness_for_both_sides() -> void:
+    var tm := TurnManager.new()
+    var gs := _make_state()
+    var att: Religion = gs.get_religion("islam")
+    var def: Religion = gs.get_religion("chr_wschodnie")
+    att.war_weariness = 10.0
+    def.war_weariness = 5.0
+    var war := War.new()
+    war.attacker_id = "islam"
+    war.defender_id = "chr_wschodnie"
+    war.state = "BATTLING"
+    gs.active_wars.append(war)
+    tm.process_turn(gs)
+    assert_almost_eq(att.war_weariness, 10.0 + WarManagerScript.WEARINESS_PER_TURN, 0.001)
+    assert_almost_eq(def.war_weariness, 5.0 + WarManagerScript.WEARINESS_PER_TURN, 0.001)
+
+func test_process_turn_force_peace_at_weariness_90_creates_defeat_event() -> void:
+    var tm := TurnManager.new()
+    var gs := _make_state()
+    var att: Religion = gs.get_religion("islam")
+    att.war_weariness = 88.0  # po +3 → 91, próg 90 przekroczony
+    var war := War.new()
+    war.attacker_id = "islam"
+    war.defender_id = "chr_wschodnie"
+    war.casus_belli = "dzihad"
+    war.state = "BATTLING"
+    gs.active_wars.append(war)
+    tm.process_turn(gs)
+    assert_eq(war.state, "ENDED")
+    assert_eq(war.outcome, "LOSS")
+    assert_eq(gs.active_wars.size(), 0)
+    assert_eq(gs.pending_defeat_events.size(), 1)
+    var ev: DefeatEvent = gs.pending_defeat_events[0]
+    assert_eq(ev.religion_id, "islam")
+    assert_eq(ev.opponent_id, "chr_wschodnie")

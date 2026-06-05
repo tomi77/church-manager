@@ -12,6 +12,7 @@ func process_turn(state: Node) -> void:
     _update_faction_tensions(state)
     _process_scholar_missions(state)
     _apply_believer_exodus(state)
+    _process_active_wars(state)
     state.advance_turn()
 
 func _apply_passive_pressure(graph: ProvinceGraph) -> void:
@@ -83,3 +84,35 @@ func _apply_believer_exodus(state: Node) -> void:
             continue
         for province: Province in state.province_graph.provinces_with_owner(religion.id):
             province.population = maxi(0, province.population - BELIEVER_EXODUS_PER_TURN)
+
+func _process_active_wars(state: Node) -> void:
+    var wm := WarManager.new()
+    # Najpierw przejścia stanów i naliczanie weariness
+    var still_active: Array[War] = []
+    for war: War in state.active_wars:
+        war.turns_in_state += 1
+        if war.state == "MOBILIZING" and war.turns_in_state >= WarManager.MOBILIZATION_TURNS:
+            war.state = "BATTLING"
+            war.turns_in_state = 0
+        elif war.state == "OCCUPYING" and war.turns_in_state >= WarManager.OCCUPATION_TURNS:
+            war.state = "BATTLING"
+            war.turns_in_state = 0
+        var attacker: Religion = state.get_religion(war.attacker_id)
+        var defender: Religion = state.get_religion(war.defender_id)
+        if attacker != null:
+            attacker.war_weariness = clampf(attacker.war_weariness + WarManager.WEARINESS_PER_TURN, 0.0, 100.0)
+        if defender != null:
+            defender.war_weariness = clampf(defender.war_weariness + WarManager.WEARINESS_PER_TURN, 0.0, 100.0)
+        still_active.append(war)
+    state.active_wars = still_active
+    # Drugi przebieg: force_loss dla stron z weariness >= próg
+    var to_force: Array = []
+    for war: War in state.active_wars:
+        var attacker: Religion = state.get_religion(war.attacker_id)
+        var defender: Religion = state.get_religion(war.defender_id)
+        if attacker != null and attacker.war_weariness >= WarManager.WEARINESS_FORCED_PEACE:
+            to_force.append({"war": war, "loser_id": war.attacker_id})
+        elif defender != null and defender.war_weariness >= WarManager.WEARINESS_FORCED_PEACE:
+            to_force.append({"war": war, "loser_id": war.defender_id})
+    for entry: Dictionary in to_force:
+        wm.force_loss(entry["war"], entry["loser_id"], state)
