@@ -27,5 +27,8 @@ func all_religions() -> Array[Religion]:
         result.append(r)
     return result
 
+func add_religion(religion: Religion) -> void:
+    _religions[religion.id] = religion
+
 func advance_turn() -> void:
     current_turn += 1

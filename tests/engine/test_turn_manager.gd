@@ -112,6 +112,11 @@ func test_process_turn_no_exodus_in_phase1() -> void:
     var tm := TurnManager.new()
     var gs := _make_state()
     var rel: Religion = gs.get_religion("islam")
+    # Pinuj osie żeby _update_faction_tensions nie pchnęło frakcji do fazy 2
+    rel.axes["A"] = 50.0
+    rel.axes["B"] = 50.0
+    rel.axes["C"] = 50.0
+    rel.axes["D"] = 50.0
     rel.factions[0].tension = 50.0
     var province: Province = gs.province_graph.get_province("mekka")
     assert_not_null(province)
