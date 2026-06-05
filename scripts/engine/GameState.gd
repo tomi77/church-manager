@@ -1,10 +1,14 @@
 extends Node
 
+const Idea := preload("res://scripts/engine/Idea.gd")
+
 var current_turn: int = 1
 var player_religion_id: String = ""
 var province_graph: ProvinceGraph = null
 
 var _religions: Dictionary = {}
+var pending_ideas: Array[Idea] = []
+var scholar_missions: Array = []
 
 func initialize(player_id: String, religions: Array[Religion], graph: ProvinceGraph) -> void:
     player_religion_id = player_id
