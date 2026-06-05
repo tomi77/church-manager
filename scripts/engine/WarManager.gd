@@ -106,3 +106,30 @@ func declare_war(attacker_id: String, defender_id: String, cb: String, state: No
     war.turns_in_state = 0
     state.active_wars.append(war)
     return war
+
+func compute_army_strength(religion: Religion, target_province: Province, war: War, state: Node) -> float:
+    var owned: Array[Province] = state.province_graph.provinces_with_owner(religion.id)
+    var pop_total := 0
+    for p: Province in owned:
+        pop_total += p.population
+    var base := float(pop_total) * BASE_POPULATION_FACTOR + float(religion.prestige) * BASE_PRESTIGE_FACTOR
+    var axis_modifier := 0.0
+    for rule: Dictionary in AXIS_STRENGTH_MODIFIERS:
+        var axis: String = rule["axis"]
+        var value := religion.get_axis(axis)
+        if rule.has("min") and value >= rule["min"]:
+            axis_modifier += rule["bonus"]
+        elif rule.has("max") and value <= rule["max"]:
+            axis_modifier += rule["bonus"]
+    var cb_modifier: float = CB_BONUS.get(war.casus_belli, 0.0)
+    var weariness_penalty := 0.0
+    for rule: Dictionary in WEARINESS_PENALTIES:
+        if religion.war_weariness >= rule["min"]:
+            weariness_penalty = rule["penalty"]
+            break  # WEARINESS_PENALTIES posortowane od max do min
+    var strength := base * (1.0 + axis_modifier) * (1.0 + cb_modifier) * (1.0 - weariness_penalty)
+    # Modyfikator terenu tylko dla broniącego
+    if religion.id == war.defender_id and target_province != null:
+        var terrain_bonus: float = TERRAIN_DEFENDER_MODIFIERS.get(target_province.terrain, 0.0)
+        strength *= (1.0 + terrain_bonus)
+    return strength

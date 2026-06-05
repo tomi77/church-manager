@@ -212,3 +212,96 @@ func test_declare_war_fails_when_attacker_does_not_exist() -> void:
     var war := wm.declare_war("nieistnieje", "chr_wschodnie", "dzihad", gs)
     assert_null(war)
     assert_eq(gs.active_wars.size(), 0)
+
+func _make_war_for(att_id: String, def_id: String, cb: String, gs: Node) -> War:
+    var war := War.new()
+    war.attacker_id = att_id
+    war.defender_id = def_id
+    war.casus_belli = cb
+    war.state = "BATTLING"
+    return war
+
+func test_compute_strength_base_no_modifiers() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var rel: Religion = gs.get_religion("islam")
+    _pin_axes(rel, 50.0, 50.0, 50.0, 50.0)
+    rel.prestige = 300
+    rel.war_weariness = 0.0
+    # islam vladnie mezopotamia (pop=400) wg JSON
+    var target: Province = gs.province_graph.get_province("mezopotamia")
+    var war := _make_war_for("islam", "chr_wschodnie", "wojna_sprawiedliwa", gs)
+    war.casus_belli = ""  # neutralne CB żeby wyłączyć bonus
+    # Baza: 400 * 0.1 + 300 * 2.0 = 40 + 600 = 640
+    var strength := wm.compute_army_strength(rel, target, war, gs)
+    assert_almost_eq(strength, 640.0, 0.5)
+
+func test_compute_strength_with_dogmatyzm_modifier() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var rel: Religion = gs.get_religion("islam")
+    _pin_axes(rel, 70.0, 50.0, 50.0, 50.0)  # Dogmatyzm >60 → +0.15
+    rel.prestige = 300
+    rel.war_weariness = 0.0
+    var target: Province = gs.province_graph.get_province("mezopotamia")
+    var war := _make_war_for("islam", "chr_wschodnie", "", gs)
+    # 640 * 1.15 = 736
+    var strength := wm.compute_army_strength(rel, target, war, gs)
+    assert_almost_eq(strength, 736.0, 0.5)
+
+func test_compute_strength_with_cb_bonus() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var rel: Religion = gs.get_religion("islam")
+    _pin_axes(rel, 50.0, 50.0, 50.0, 50.0)
+    rel.prestige = 300
+    rel.war_weariness = 0.0
+    var target: Province = gs.province_graph.get_province("mezopotamia")
+    var war := _make_war_for("islam", "chr_wschodnie", "dzihad", gs)  # +0.40
+    # 640 * 1.40 = 896
+    var strength := wm.compute_army_strength(rel, target, war, gs)
+    assert_almost_eq(strength, 896.0, 0.5)
+
+func test_compute_strength_with_weariness_penalty() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var rel: Religion = gs.get_religion("islam")
+    _pin_axes(rel, 50.0, 50.0, 50.0, 50.0)
+    rel.prestige = 300
+    rel.war_weariness = 60.0  # >55 → -0.20
+    var target: Province = gs.province_graph.get_province("mezopotamia")
+    var war := _make_war_for("islam", "chr_wschodnie", "", gs)
+    # 640 * 0.80 = 512
+    var strength := wm.compute_army_strength(rel, target, war, gs)
+    assert_almost_eq(strength, 512.0, 0.5)
+
+func test_compute_strength_terrain_modifier_only_for_defender() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var rel: Religion = gs.get_religion("chr_wschodnie")
+    _pin_axes(rel, 50.0, 50.0, 50.0, 50.0)
+    rel.prestige = 100
+    rel.war_weariness = 0.0
+    # chr_wschodnie vladnie armenia (mountains, pop=200)
+    var target: Province = gs.province_graph.get_province("armenia")
+    var war := _make_war_for("islam", "chr_wschodnie", "", gs)
+    # Suma populacji chr_wschodnie: lewant(300) + jerozolima(150) + anatolia(400) + konstantynopol(600) + armenia(200) = 1650
+    # Baza: 1650 * 0.1 + 100 * 2.0 = 165 + 200 = 365
+    # Modyfikator terenu (mountains): +0.15 dla broniącego
+    # 365 * 1.15 = 419.75
+    var strength := wm.compute_army_strength(rel, target, war, gs)
+    assert_almost_eq(strength, 419.75, 0.5)
+
+func test_compute_strength_terrain_modifier_skipped_for_attacker() -> void:
+    var wm := WarManagerScript.new()
+    var gs := _make_state()
+    var rel: Religion = gs.get_religion("islam")
+    _pin_axes(rel, 50.0, 50.0, 50.0, 50.0)
+    rel.prestige = 300
+    rel.war_weariness = 0.0
+    var target: Province = gs.province_graph.get_province("armenia")  # mountains
+    var war := _make_war_for("islam", "chr_wschodnie", "", gs)
+    # islam jest atakującym — modyfikator terenu pomijany
+    # Baza 640
+    var strength := wm.compute_army_strength(rel, target, war, gs)
+    assert_almost_eq(strength, 640.0, 0.5)
