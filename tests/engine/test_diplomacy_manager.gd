@@ -1425,3 +1425,71 @@ func test_vassal_council_below_min_delta_clamped_up() -> void:
     var ok := dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 1.0)  # poniżej MIN=3
     assert_true(ok)
     assert_almost_eq(client.get_axis("D"), 50.0 + DiplomacyManager.VASSAL_COUNCIL_MIN_AXIS_DELTA, 0.001, "delta 1 clampnięta do MIN=3 z zachowanym znakiem")
+
+# --- people_council (Plan 06) ---
+
+func test_people_council_success() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("judaizm")
+    _pin_axes(src, 50.0, 20.0, 50.0, 50.0)  # B=20 → Równouprawnienie >70
+    src.prestige = 50
+    var ok := dm.people_council(gs, "judaizm")
+    assert_true(ok)
+    assert_eq(src.prestige, 50 - DiplomacyManager.PEOPLE_COUNCIL_PRESTIGE_COST)
+    assert_eq(src.interdict_immunity_until, gs.current_turn + DiplomacyManager.PEOPLE_COUNCIL_IMMUNITY_TURNS)
+
+func test_people_council_blocked_high_hierarchia() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("judaizm")
+    _pin_axes(src, 50.0, 30.0, 50.0, 50.0)  # B=30 dokładnie — próg ostry: B<30
+    src.prestige = 50
+    assert_false(dm.people_council(gs, "judaizm"), "B==30 nie kwalifikuje")
+
+func test_people_council_blocked_low_prestige() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("judaizm")
+    _pin_axes(src, 50.0, 20.0, 50.0, 50.0)
+    src.prestige = DiplomacyManager.PEOPLE_COUNCIL_PRESTIGE_COST - 1
+    assert_false(dm.people_council(gs, "judaizm"))
+
+func test_people_council_null_religion() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    assert_false(dm.people_council(gs, "nonexistent"))
+
+# --- proclaim_interdict guard (Plan 06) ---
+
+func test_proclaim_interdict_blocked_by_immunity() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 100
+    var target: Religion = gs.get_religion("judaizm")
+    target.interdict_immunity_until = gs.current_turn + 3  # 3 tury immunity w przyszłość
+    assert_false(dm.proclaim_interdict(gs, "islam", "judaizm"), "immunity blokuje Interdykt")
+    assert_eq(src.prestige, 100, "prestiż nietknięty przy zablokowanej akcji")
+
+func test_proclaim_interdict_passes_when_immunity_expired() -> void:
+    # Granica wygaśnięcia: guard używa `>` (immunity_until > current_turn).
+    # Gdy current_turn DOGONI immunity_until (jest mu równy), guard zwraca false → akcja przechodzi.
+    # To zdefiniowana semantyka "ostatniej tury immunity" — immunity działa do tury T-1 włącznie,
+    # przestaje działać dokładnie w turze T (== immunity_until).
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 100
+    var target: Religion = gs.get_religion("judaizm")
+    target.interdict_immunity_until = gs.current_turn  # immunity równe current_turn → już nie blokuje
+    assert_true(dm.proclaim_interdict(gs, "islam", "judaizm"), "immunity == current_turn już nie blokuje")
+    assert_eq(src.prestige, 100 - DiplomacyManager.INTERDICT_PRESTIGE_COST)
+
+func test_proclaim_interdict_baseline_no_immunity() -> void:
+    # Sanity: bez immunity Interdykt powinien przechodzić jak wcześniej
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 100
+    assert_true(dm.proclaim_interdict(gs, "islam", "judaizm"))

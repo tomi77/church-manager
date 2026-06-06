@@ -141,6 +141,10 @@ func proclaim_interdict(state: Node, source_id: String, target_id: String) -> bo
         return false
     if source.prestige < INTERDICT_PRESTIGE_COST:
         return false
+    # Guard immunity (Plan 06): target ze świeżym Soborem Ludowym jest niewzruszalny
+    var target: Religion = state.get_religion(target_id)
+    if target != null and target.interdict_immunity_until > state.current_turn:
+        return false
     var rel := get_or_create_relation(state, source_id, target_id)
     source.add_prestige(-INTERDICT_PRESTIGE_COST)
     rel.military_tension = clampf(rel.military_tension + INTERDICT_TENSION_INCREASE, 0.0, 100.0)
@@ -385,4 +389,17 @@ func vassal_council(state: Node, patron_id: String, client_id: String, axis: Str
     if dom != null:
         dom.add_tension(VASSAL_COUNCIL_CLIENT_TENSION_BUMP)
     rel.vassal_council_cooldown_until = state.current_turn + VASSAL_COUNCIL_COOLDOWN_TURNS
+    return true
+
+func people_council(state: Node, source_id: String) -> bool:
+    var source: Religion = state.get_religion(source_id)
+    if source == null:
+        return false
+    # Spec 07 sek.2: B<30 (Równouprawnienie >70); próg ostry
+    if source.get_axis("B") >= PEOPLE_COUNCIL_ROWNOUPRAWNIENIE_THRESHOLD:
+        return false
+    if source.prestige < PEOPLE_COUNCIL_PRESTIGE_COST:
+        return false
+    source.add_prestige(-PEOPLE_COUNCIL_PRESTIGE_COST)
+    source.interdict_immunity_until = state.current_turn + PEOPLE_COUNCIL_IMMUNITY_TURNS
     return true
