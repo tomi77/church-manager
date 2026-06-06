@@ -393,3 +393,37 @@ func test_peace_council_fails_low_prestige() -> void:
     assert_false(ok)
     assert_eq(src.prestige, 20)
     assert_almost_eq(src.war_weariness, 60.0, 0.001)
+
+func test_integration_coalition_lifecycle() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var tm := TurnManager.new()
+    var wm := WarManager.new()
+    var islam: Religion = gs.get_religion("islam")
+    _pin_axes(islam, 50.0, 50.0, 20.0, 40.0)  # CB krucjata dostępny (C<25, D<40)
+    islam.prestige = 100
+
+    # 1. Islam wypowiada 3 wojny — agresja → threat=60
+    for ofiara: String in ["chr_zachodnie", "hinduizm", "buddyzm"]:
+        var war: War = wm.declare_war("islam", ofiara, "krucjata", gs)
+        assert_not_null(war, "declare_war failed for %s" % ofiara)
+
+    # 2. Sąsiedzi mają wysokie napięcie (z declare_war: +20, więc po jednym CB tension=20)
+    # podkręcamy ręcznie żeby przekroczyć próg 40
+    for member: String in ["judaizm", "zoroastryzm"]:
+        var rel := dm.get_or_create_relation(gs, member, "islam")
+        rel.military_tension = 50.0
+
+    # 3. Turn 1: TurnManager wywołuje evaluate_coalitions
+    tm.process_turn(gs)
+    assert_eq(gs.active_coalitions.size(), 1, "koalicja powinna powstać")
+    var c: Coalition = gs.active_coalitions[0]
+    assert_eq(c.target_id, "islam")
+    assert_eq(c.members.size(), 2)
+
+    # 4. Wszystkie wojny się kończą (czyścimy active_wars) → threat spada do 0
+    gs.active_wars.clear()
+
+    # 5. Turn 2: dissolve_coalitions widzi threat<30 → rozpad
+    tm.process_turn(gs)
+    assert_eq(gs.active_coalitions.size(), 0, "koalicja powinna się rozpaść")
