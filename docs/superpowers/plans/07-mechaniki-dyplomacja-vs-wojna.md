@@ -855,7 +855,7 @@ func _has_holy_war_ally(religion: Religion, state: Node) -> bool:
 Expected: 6 nowych testów HolyWar PASS, brak regresji w istniejących testach `compute_army_strength`.
 
 Częste pułapki:
-- Jeśli zapomnisz `religion.id == war.attacker_id` → test `test_holy_war_bonus_blocked_for_defender_in_crusade` FAIL.
+- Jeśli zapomnisz `religion.id == war.attacker_id` → test `test_holy_war_bonus_blocked_for_defender_in_holy_war` FAIL.
 - Jeśli użyjesz `>=` zamiast `>` → test `test_holy_war_bonus_blocked_when_d_below_threshold` FAIL (D=65 dostanie bonus).
 - Helper `_has_holy_war_ally` przegląda WSZYSTKIE wojny — jeśli sojusznik ma wojnę ENDED z krucjatą jest pomijana przez guard `war.state == "ENDED"`.
 - `_setup_holy_war_alliance` używa `_make_war_for` i ręcznie appenduje wojny do `gs.active_wars` — bez tego `_has_holy_war_ally` zwróci false (iteruje `state.active_wars`). Wzorzec: `var w := _make_war_for(...); gs.active_wars.append(w)`.
