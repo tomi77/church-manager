@@ -1057,3 +1057,81 @@ func test_integration_council_missionaries_coalition_lifecycle() -> void:
     assert_true("manicheizm" in coalition.members, "manicheizm kwalifikuje się przez napięcie")
     # 7e. zoroastryzm dołączył przez auto_join (tension <40, ale sojusz z judaizm)
     assert_true("zoroastryzm" in coalition.members, "zoroastryzm dołączył auto-join przez sojusz z judaizm")
+
+# --- recognize_suzerainty (Plan 06) ---
+
+func test_recognize_suzerainty_success() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var client: Religion = gs.get_religion("judaizm")
+    var patron: Religion = gs.get_religion("chr_zachodnie")
+    _pin_axes(client, 50.0, 50.0, 50.0, 50.0)  # A=50 (<80) OK
+    patron.prestige = 0
+    var rel := dm.get_or_create_relation(gs, "judaizm", "chr_zachodnie")
+    rel.theological_trust = 45.0  # >40 OK
+    var ok := dm.recognize_suzerainty(gs, "judaizm", "chr_zachodnie")
+    assert_true(ok, "akceptacja przy A<80, trust>40, brak wojny")
+    assert_eq(client.suzerain_id, "chr_zachodnie")
+    assert_eq(patron.prestige, DiplomacyManager.SUZERAINTY_PATRON_PRESTIGE_GAIN)
+    assert_almost_eq(rel.economic_cooperation, DiplomacyManager.SUZERAINTY_ECON_GAIN, 0.001)
+
+func test_recognize_suzerainty_blocked_dogmatyzm() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var client: Religion = gs.get_religion("judaizm")
+    _pin_axes(client, 85.0, 50.0, 50.0, 50.0)  # A=85 → Dogmatyzm >80 blokuje
+    var rel := dm.get_or_create_relation(gs, "judaizm", "chr_zachodnie")
+    rel.theological_trust = 60.0
+    var ok := dm.recognize_suzerainty(gs, "judaizm", "chr_zachodnie")
+    assert_false(ok, "A>=80 blokuje uznanie")
+    assert_eq(client.suzerain_id, "")
+
+func test_recognize_suzerainty_blocked_dogmatyzm_threshold() -> void:
+    # Próg jest <80 (ostry); A=80 dokładnie nadal blokuje (warunek: A >= 80)
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var client: Religion = gs.get_religion("judaizm")
+    _pin_axes(client, 80.0, 50.0, 50.0, 50.0)
+    var rel := dm.get_or_create_relation(gs, "judaizm", "chr_zachodnie")
+    rel.theological_trust = 60.0
+    assert_false(dm.recognize_suzerainty(gs, "judaizm", "chr_zachodnie"), "A==80 blokuje")
+
+func test_recognize_suzerainty_blocked_low_trust() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var client: Religion = gs.get_religion("judaizm")
+    _pin_axes(client, 50.0, 50.0, 50.0, 50.0)
+    var rel := dm.get_or_create_relation(gs, "judaizm", "chr_zachodnie")
+    rel.theological_trust = 40.0  # próg ostry: trust > 40
+    var ok := dm.recognize_suzerainty(gs, "judaizm", "chr_zachodnie")
+    assert_false(ok, "trust<=40 blokuje")
+
+func test_recognize_suzerainty_blocked_active_war() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var client: Religion = gs.get_religion("judaizm")
+    _pin_axes(client, 50.0, 50.0, 50.0, 50.0)
+    var rel := dm.get_or_create_relation(gs, "judaizm", "chr_zachodnie")
+    rel.theological_trust = 70.0
+    var war := War.new()
+    war.attacker_id = "chr_zachodnie"
+    war.defender_id = "judaizm"
+    war.state = "BATTLING"
+    gs.active_wars.append(war)
+    assert_false(dm.recognize_suzerainty(gs, "judaizm", "chr_zachodnie"))
+
+func test_recognize_suzerainty_blocked_existing_patron() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var client: Religion = gs.get_religion("judaizm")
+    client.suzerain_id = "islam"  # już ma patrona
+    _pin_axes(client, 50.0, 50.0, 50.0, 50.0)
+    var rel := dm.get_or_create_relation(gs, "judaizm", "chr_zachodnie")
+    rel.theological_trust = 70.0
+    assert_false(dm.recognize_suzerainty(gs, "judaizm", "chr_zachodnie"), "klient z istniejącym patronem nie może uznać kolejnego")
+
+func test_recognize_suzerainty_returns_false_on_null_religions() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    assert_false(dm.recognize_suzerainty(gs, "nonexistent", "chr_zachodnie"))
+    assert_false(dm.recognize_suzerainty(gs, "judaizm", "nonexistent"))

@@ -60,6 +60,34 @@ const DOGMATYZM_IDEA_DELTA_MULTIPLIER := 0.5
 const EKSKLUZYWIZM_FACTION_THRESHOLD := 30.0   # C<30 → Ekskluzywizm >70 → bump frakcji
 const EKSKLUZYWIZM_FACTION_TENSION_BUMP := 10.0
 
+# --- Stałe Wasalstwa (Plan 06) ---
+const SUZERAINTY_DOGMATYZM_BLOCK := 80.0       # A>=80 blokuje uznanie zwierzchnictwa (spec 03 sek.3)
+const SUZERAINTY_TRUST_THRESHOLD := 40.0       # trust>40 wymagane
+const SUZERAINTY_PATRON_PRESTIGE_GAIN := 20    # one-time bonus prestiżu patrona
+const SUZERAINTY_ECON_GAIN := 20.0             # one-time bonus economic_cooperation
+
+# --- Stałe ekonomii (Plan 06) ---
+const PASSIVE_INCOME_PER_TURN := 5             # bazowy dochód zasobów wszystkich religii
+const TRIBUTE_PER_TURN := 3                    # przepływ klient → patron
+
+# --- Stałe Buntu (Plan 06) ---
+const REVOLT_FACTION_TENSION_THRESHOLD := 80.0 # tension dominującej frakcji klienta > 80 → bunt
+const REVOLT_TENSION_INCREASE := 30.0          # military_tension klient↔patron po buncie
+const REVOLT_TENSION_RELIEF := 40.0            # spadek tension dominującej frakcji klienta po buncie
+
+# --- Stałe Soboru Wasalnego (Plan 06) ---
+const VASSAL_COUNCIL_HIERARCHIA_THRESHOLD := 75.0  # B>75 patrona
+const VASSAL_COUNCIL_PRESTIGE_COST := 30
+const VASSAL_COUNCIL_MIN_AXIS_DELTA := 3.0
+const VASSAL_COUNCIL_MAX_AXIS_DELTA := 8.0
+const VASSAL_COUNCIL_CLIENT_TENSION_BUMP := 15.0   # bump tension dominującej frakcji klienta
+const VASSAL_COUNCIL_COOLDOWN_TURNS := 5
+
+# --- Stałe Soboru Ludowego (Plan 06) ---
+const PEOPLE_COUNCIL_ROWNOUPRAWNIENIE_THRESHOLD := 30.0  # B<30 (Równouprawnienie >70)
+const PEOPLE_COUNCIL_PRESTIGE_COST := 15
+const PEOPLE_COUNCIL_IMMUNITY_TURNS := 5
+
 func _pair_key(a: String, b: String) -> Array:
     var pair: Array = [a, b]
     pair.sort()
@@ -295,3 +323,32 @@ func _axis_trust_gain_modifier(religion: Religion) -> float:
     if c > SYNKRETYZM_TRUST_LOW_THRESHOLD:
         return SYNKRETYZM_TRUST_LOW_MULTIPLIER
     return 1.0
+
+# --- Akcje wasalstwa (Plan 06) ---
+
+func recognize_suzerainty(state: Node, client_id: String, patron_id: String) -> bool:
+    var client: Religion = state.get_religion(client_id)
+    var patron: Religion = state.get_religion(patron_id)
+    if client == null or patron == null:
+        return false
+    # Klient nie może mieć już patrona (spec 07 sek.2)
+    if client.suzerain_id != "":
+        return false
+    # Blokada: Dogmatyzm >=80 (spec 03 sek.3 + spec 07 sek.2)
+    if client.get_axis("A") >= SUZERAINTY_DOGMATYZM_BLOCK:
+        return false
+    var rel := get_or_create_relation(state, client_id, patron_id)
+    # Blokada: trust <=40 (spec 07 sek.2; próg ostry)
+    if rel.theological_trust <= SUZERAINTY_TRUST_THRESHOLD:
+        return false
+    # Blokada: aktywna wojna między stronami
+    for war: War in state.active_wars:
+        if war.state == "ENDED":
+            continue
+        if (war.attacker_id == client_id and war.defender_id == patron_id) or \
+           (war.attacker_id == patron_id and war.defender_id == client_id):
+            return false
+    client.suzerain_id = patron_id
+    patron.add_prestige(SUZERAINTY_PATRON_PRESTIGE_GAIN)
+    rel.economic_cooperation = clampf(rel.economic_cooperation + SUZERAINTY_ECON_GAIN, 0.0, 100.0)
+    return true
