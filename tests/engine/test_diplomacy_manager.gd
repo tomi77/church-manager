@@ -987,3 +987,71 @@ func test_auto_join_runs_in_process_diplomacy() -> void:
     # Po turze: koalicja nadal aktywna i zoroastryzm dołączył przez auto-join
     assert_eq(gs.active_coalitions.size(), 1)
     assert_true("zoroastryzm" in gs.active_coalitions[0].members)
+
+# --- Integration test Plan 05: cykl doktrynalny + koalicja ---
+
+func test_integration_council_missionaries_coalition_lifecycle() -> void:
+    var gs := _make_state()
+    var tm := TurnManagerScript.new()
+    var dm := DiplomacyManager.new()
+
+    var islam: Religion = gs.get_religion("islam")
+    islam.prestige = 200
+    _pin_axes(islam, 50.0, 50.0, 50.0, 50.0)
+    var chr_zach: Religion = gs.get_religion("chr_zachodnie")
+    # A=70 (NIE Dogmatyzm bo nie >70 strict), różnica A=20 zapewnia generację Idei nawet po Sobór
+    _pin_axes(chr_zach, 70.0, 50.0, 50.0, 50.0)
+    var rel_islam_chr := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel_islam_chr.theological_trust = 65.0
+    rel_islam_chr.military_tension = 20.0
+
+    # 1. Sobór Ekumeniczny: islam shift A +5 (po Sobór: A=55, diff od chr=15 — dalej ≥10 dla Idea)
+    var sobor_ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", 5.0)
+    assert_true(sobor_ok, "Sobór powinien przejść (trust=65>60, Synkr=50>40, brak wojny)")
+    assert_almost_eq(islam.get_axis("A"), 55.0, 0.001)
+    assert_almost_eq(rel_islam_chr.theological_trust, 80.0, 0.001)  # 65 + 15
+
+    # 2. Misjonarze Wymienni: islam ↔ chr_zachodnie (trust=80>30, nie Eksklu, napięcie 10 po Sobór)
+    var send_ok := dm.send_missionaries(gs, "islam", "chr_zachodnie")
+    assert_true(send_ok, "Misjonarze powinni zostać wysłani")
+    assert_eq(gs.missionary_missions.size(), 2)
+    assert_almost_eq(rel_islam_chr.theological_trust, 90.0, 0.001)  # 80 + 10
+
+    # 3. Koalicja: 3 wars przez islam → threat = 3 × 20 = 60 (≥50)
+    for defender: String in ["hinduizm", "buddyzm", "religie_arabskie"]:
+        var war := War.new()
+        war.attacker_id = "islam"
+        war.defender_id = defender
+        war.state = "BATTLING"
+        gs.active_wars.append(war)
+
+    # 4. Tensions kwalifikujące judaizm i manicheizm jako członków koalicji (≥40 vs islam)
+    var rel_islam_jud := dm.get_or_create_relation(gs, "islam", "judaizm")
+    rel_islam_jud.military_tension = 50.0
+    var rel_islam_man := dm.get_or_create_relation(gs, "islam", "manicheizm")
+    rel_islam_man.military_tension = 50.0
+
+    # 5. Auto-join setup: judaizm ↔ zoroastryzm alliance, ALE zoroastryzm BEZ tension≥40 vs islam
+    var rel_jud_zoro := dm.get_or_create_relation(gs, "judaizm", "zoroastryzm")
+    rel_jud_zoro.alliance_active = true
+    var rel_islam_zoro := dm.get_or_create_relation(gs, "islam", "zoroastryzm")
+    rel_islam_zoro.military_tension = 10.0  # <40 → NIE kwalifikuje przez evaluate_coalitions
+
+    # 6. process_turn × 3 — misjonarze wracają na turze 3, koalicja formuje się na każdej turze
+    tm.process_turn(gs)
+    tm.process_turn(gs)
+    tm.process_turn(gs)
+
+    # 7a. Misjonarze wrócili
+    assert_eq(gs.missionary_missions.size(), 0, "misje powinny się zakończyć po 3 turach")
+    # 7b. 2 Idee zwrotne w pending_ideas (diff A=15 ≥ IDEA_MIN_AXIS_DIFF=10)
+    assert_eq(gs.pending_ideas.size(), 2, "2 idee powinny powstać z misjonarzy wymiennych")
+    # 7c. Koalicja przeciw islam istnieje
+    assert_eq(gs.active_coalitions.size(), 1, "koalicja powinna powstać przy threat=60")
+    var coalition: Coalition = gs.active_coalitions[0]
+    assert_eq(coalition.target_id, "islam")
+    # 7d. judaizm i manicheizm dołączyli przez evaluate_coalitions (tension≥40)
+    assert_true("judaizm" in coalition.members, "judaizm kwalifikuje się przez napięcie")
+    assert_true("manicheizm" in coalition.members, "manicheizm kwalifikuje się przez napięcie")
+    # 7e. zoroastryzm dołączył przez auto_join (tension <40, ale sojusz z judaizm)
+    assert_true("zoroastryzm" in coalition.members, "zoroastryzm dołączył auto-join przez sojusz z judaizm")
