@@ -46,6 +46,12 @@ const COUNCIL_TRUST_GAIN := 15.0
 const COUNCIL_TENSION_DROP := 10.0
 const BLOCK_TENSION_FOR_DIALOGUE := 85.0       # napięcie >85 blokuje dialog
 
+# --- Stałe Misjonarzy Wymiennych (Plan 05) ---
+const MISSIONARIES_PRESTIGE_COST := 10
+const MISSIONARIES_TRUST_THRESHOLD := 30.0
+const MISSIONARIES_TURNS := 3
+const MISSIONARIES_TRUST_GAIN := 10.0
+
 func _pair_key(a: String, b: String) -> Array:
     var pair: Array = [a, b]
     pair.sort()
@@ -207,6 +213,40 @@ func ecumenical_council(state: Node, source_id: String, target_id: String, axis:
     var gain := COUNCIL_TRUST_GAIN * gain_modifier
     rel.theological_trust = clampf(rel.theological_trust + gain, 0.0, 100.0)
     rel.military_tension = clampf(rel.military_tension - COUNCIL_TENSION_DROP, 0.0, 100.0)
+    return true
+
+func send_missionaries(state: Node, source_id: String, target_id: String) -> bool:
+    var source: Religion = state.get_religion(source_id)
+    var target: Religion = state.get_religion(target_id)
+    if source == null or target == null:
+        return false
+    # Blokada Ekskluzywizm >80 source (C<20, spec sec.3)
+    if source.get_axis("C") < ALLIANCE_EXCLUSIVITY_BLOCK:
+        return false
+    var rel := get_or_create_relation(state, source_id, target_id)
+    # Blokada napięcia >85 (spec sec.1)
+    if rel.military_tension > BLOCK_TENSION_FOR_DIALOGUE:
+        return false
+    # Blokada trust ≤30 (spec sec.2 wymaga >30)
+    if rel.theological_trust <= MISSIONARIES_TRUST_THRESHOLD:
+        return false
+    var cost := int(round(MISSIONARIES_PRESTIGE_COST * _axis_cost_modifier(source)))
+    if source.prestige < cost:
+        return false
+    var gain_modifier := _axis_trust_gain_modifier(source)
+    source.add_prestige(-cost)
+    var m1 := MissionaryMission.new()
+    m1.source_id = source_id
+    m1.target_id = target_id
+    m1.turns_remaining = MISSIONARIES_TURNS
+    state.missionary_missions.append(m1)
+    var m2 := MissionaryMission.new()
+    m2.source_id = target_id
+    m2.target_id = source_id
+    m2.turns_remaining = MISSIONARIES_TURNS
+    state.missionary_missions.append(m2)
+    var gain := MISSIONARIES_TRUST_GAIN * gain_modifier
+    rel.theological_trust = clampf(rel.theological_trust + gain, 0.0, 100.0)
     return true
 
 # --- Helpery modyfikatorów osi (Plan 05) ---

@@ -656,3 +656,99 @@ func test_ecumenical_council_fails_zero_delta() -> void:
     var ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", 0.0)
     assert_false(ok)
     assert_eq(src.prestige, 50)
+
+# --- Misjonarze Wymienni (akcja) ---
+
+func test_send_missionaries_success() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 30
+    _pin_axes(src, 50.0, 50.0, 50.0, 50.0)
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 40.0
+    var ok := dm.send_missionaries(gs, "islam", "chr_zachodnie")
+    assert_true(ok)
+    assert_eq(src.prestige, 20)  # 30 - 10
+    assert_eq(gs.missionary_missions.size(), 2)
+    assert_almost_eq(rel.theological_trust, 50.0, 0.001)  # 40 + 10
+
+func test_send_missionaries_creates_symmetric_pair() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 30
+    _pin_axes(src, 50.0, 50.0, 50.0, 50.0)
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 40.0
+    dm.send_missionaries(gs, "islam", "chr_zachodnie")
+    var sources: Array[String] = []
+    var targets: Array[String] = []
+    for m: MissionaryMission in gs.missionary_missions:
+        sources.append(m.source_id)
+        targets.append(m.target_id)
+        assert_eq(m.turns_remaining, 3)
+    assert_true("islam" in sources)
+    assert_true("chr_zachodnie" in sources)
+    assert_true("islam" in targets)
+    assert_true("chr_zachodnie" in targets)
+
+func test_send_missionaries_fails_low_trust() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 30
+    _pin_axes(src, 50.0, 50.0, 50.0, 50.0)
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 20.0  # <30
+    var ok := dm.send_missionaries(gs, "islam", "chr_zachodnie")
+    assert_false(ok)
+    assert_eq(src.prestige, 30)
+    assert_eq(gs.missionary_missions.size(), 0)
+
+func test_send_missionaries_fails_high_exclusivity() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 30
+    _pin_axes(src, 50.0, 50.0, 15.0, 50.0)  # C=15 → Ekskluzywizm 85 (>80)
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 40.0
+    var ok := dm.send_missionaries(gs, "islam", "chr_zachodnie")
+    assert_false(ok)
+    assert_eq(gs.missionary_missions.size(), 0)
+
+func test_send_missionaries_fails_high_tension() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 30
+    _pin_axes(src, 50.0, 50.0, 50.0, 50.0)
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 40.0
+    rel.military_tension = 90.0  # >85
+    var ok := dm.send_missionaries(gs, "islam", "chr_zachodnie")
+    assert_false(ok)
+
+func test_send_missionaries_fails_insufficient_prestige() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 5  # <10
+    _pin_axes(src, 50.0, 50.0, 50.0, 50.0)
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 40.0
+    var ok := dm.send_missionaries(gs, "islam", "chr_zachodnie")
+    assert_false(ok)
+
+func test_send_missionaries_hierarchia_discount() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 30
+    _pin_axes(src, 50.0, 70.0, 50.0, 50.0)  # B=70 → koszt 10*0.8=8
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 40.0
+    var ok := dm.send_missionaries(gs, "islam", "chr_zachodnie")
+    assert_true(ok)
+    assert_eq(src.prestige, 22)  # 30 - 8
