@@ -71,3 +71,54 @@ func test_get_or_create_relation_symmetric_lookup() -> void:
     dm.get_or_create_relation(gs, "chr_zachodnie", "islam")
     dm.get_or_create_relation(gs, "islam", "hinduizm")
     assert_eq(gs.relations.size(), 2)
+
+func test_threat_index_zero_without_wars() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var threat := dm.compute_threat_index(gs, "islam")
+    assert_almost_eq(threat, 0.0, 0.001)
+
+func test_threat_index_active_attacker_war() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var war := War.new()
+    war.attacker_id = "islam"
+    war.defender_id = "chr_zachodnie"
+    war.state = "BATTLING"
+    gs.active_wars.append(war)
+    var threat := dm.compute_threat_index(gs, "islam")
+    assert_almost_eq(threat, 20.0, 0.001)
+
+func test_threat_index_active_defender_war() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var war := War.new()
+    war.attacker_id = "chr_zachodnie"
+    war.defender_id = "islam"
+    war.state = "BATTLING"
+    gs.active_wars.append(war)
+    var threat := dm.compute_threat_index(gs, "islam")
+    assert_almost_eq(threat, 5.0, 0.001)
+
+func test_threat_index_multiple_wars_clamped() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    for target_id in ["chr_zachodnie", "hinduizm", "buddyzm", "judaizm", "zoroastryzm", "manicheizm"]:
+        var war := War.new()
+        war.attacker_id = "islam"
+        war.defender_id = target_id
+        war.state = "BATTLING"
+        gs.active_wars.append(war)
+    var threat := dm.compute_threat_index(gs, "islam")
+    assert_almost_eq(threat, 100.0, 0.001)  # 6 wojen * 20 = 120, clamp do 100
+
+func test_threat_index_ignores_ended_wars() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var war := War.new()
+    war.attacker_id = "islam"
+    war.defender_id = "chr_zachodnie"
+    war.state = "ENDED"
+    gs.active_wars.append(war)
+    var threat := dm.compute_threat_index(gs, "islam")
+    assert_almost_eq(threat, 0.0, 0.001)

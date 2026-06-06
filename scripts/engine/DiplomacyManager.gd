@@ -43,3 +43,14 @@ func get_or_create_relation(state: Node, a: String, b: String) -> RelationState:
     new_rel.religion_b_id = key[1]
     state.relations.append(new_rel)
     return new_rel
+
+func compute_threat_index(state: Node, religion_id: String) -> float:
+    var threat := 0.0
+    for war: War in state.active_wars:
+        if war.state == "ENDED":
+            continue
+        if war.attacker_id == religion_id:
+            threat += THREAT_PER_ACTIVE_WAR
+        elif war.defender_id == religion_id:
+            threat += THREAT_PER_PASSIVE_WAR
+    return clampf(threat, 0.0, THREAT_MAX)
