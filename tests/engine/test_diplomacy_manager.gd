@@ -1559,7 +1559,7 @@ func test_integration_vassalage_lifecycle() -> void:
     tm._process_vassal_revolts(gs)
     assert_eq(client.suzerain_id, "", "krok 4: klient się buntuje przy tension>80")
     # rel jest tym samym RelationState (klucz pary jest symetryczny)
-    assert_true(rel.military_tension >= DiplomacyManager.REVOLT_TENSION_INCREASE - 0.001, "military_tension >= 30 po buncie")
+    assert_almost_eq(rel.military_tension, DiplomacyManager.REVOLT_TENSION_INCREASE, 0.001, "military_tension == 30 po buncie")
     assert_almost_eq(dom.tension, 90.0 - DiplomacyManager.REVOLT_TENSION_RELIEF, 0.001, "ulga -40")
 
     # 5. Sanity: trybut przestał płynąć po buncie
@@ -1600,7 +1600,7 @@ func test_integration_people_council_protects_against_interdict() -> void:
     # 3. Przewińmy turę aż immunity wygaśnie (proclaim_interdict używa `>` więc immunity == current_turn już nie blokuje)
     for _t in range(DiplomacyManager.PEOPLE_COUNCIL_IMMUNITY_TURNS):
         tm.process_turn(gs)
-    assert_true(gs.current_turn >= immunity_turn, "current_turn dogonił immunity_until")
+    assert_eq(gs.current_turn, immunity_turn, "current_turn dogonił immunity_until po IMMUNITY_TURNS turach process_turn")
 
     # 4. Po wygaśnięciu — Interdykt przechodzi
     assert_true(dm.proclaim_interdict(gs, "islam", "judaizm"), "po wygaśnięciu immunity Interdykt działa")
