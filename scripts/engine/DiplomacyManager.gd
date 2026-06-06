@@ -53,6 +53,12 @@ const MISSIONARIES_TURNS := 3
 const MISSIONARIES_TRUST_GAIN := 10.0
 const MISSIONARIES_EXCLUSIVITY_BLOCK := 20.0   # C<20 → Ekskluzywizm>80 source blokuje wysyłkę misjonarzy
 
+# --- Stałe efektów zwrotnych Misjonarzy (Plan 05) ---
+const DOGMATYZM_RESISTANCE_THRESHOLD := 70.0   # A>70 → -50% siła obcej idei
+const DOGMATYZM_IDEA_DELTA_MULTIPLIER := 0.5
+const EKSKLUZYWIZM_FACTION_THRESHOLD := 30.0   # C<30 → Ekskluzywizm >70 → bump frakcji
+const EKSKLUZYWIZM_FACTION_TENSION_BUMP := 10.0
+
 func _pair_key(a: String, b: String) -> Array:
     var pair: Array = [a, b]
     pair.sort()

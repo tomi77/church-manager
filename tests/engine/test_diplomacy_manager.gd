@@ -765,3 +765,109 @@ func test_send_missionaries_synkretyzm_trust_bonus() -> void:
     assert_true(ok)
     # trust gain = 10 * 1.35 = 13.5
     assert_almost_eq(rel.theological_trust, 40.0 + 13.5, 0.001)
+
+# --- Misjonarze Wymienni (powrót i efekty) ---
+
+const TurnManagerScript := preload("res://scripts/engine/TurnManager.gd")
+
+func test_missionary_decrement_per_turn() -> void:
+    var gs := _make_state()
+    var tm := TurnManagerScript.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 30
+    _pin_axes(src, 50.0, 50.0, 50.0, 50.0)
+    var dst: Religion = gs.get_religion("chr_zachodnie")
+    _pin_axes(dst, 50.0, 50.0, 50.0, 50.0)
+    var dm := DiplomacyManager.new()
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 40.0
+    dm.send_missionaries(gs, "islam", "chr_zachodnie")
+    # Po wysłaniu: turns_remaining=3 dla obu misji
+    for m: MissionaryMission in gs.missionary_missions:
+        assert_eq(m.turns_remaining, 3)
+    tm.process_turn(gs)
+    # Po 1 turze: turns_remaining=2
+    for m: MissionaryMission in gs.missionary_missions:
+        assert_eq(m.turns_remaining, 2)
+
+func test_missionary_returns_after_three_turns_spawns_ideas() -> void:
+    var gs := _make_state()
+    var tm := TurnManagerScript.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 30
+    _pin_axes(src, 50.0, 50.0, 50.0, 50.0)
+    var dst: Religion = gs.get_religion("chr_zachodnie")
+    # Wymuszamy różnicę osi > IDEA_MIN_AXIS_DIFF (=10), żeby Idea powstała
+    _pin_axes(dst, 80.0, 50.0, 50.0, 50.0)  # A=80 vs source A=50 → diff 30
+    var dm := DiplomacyManager.new()
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 40.0
+    dm.send_missionaries(gs, "islam", "chr_zachodnie")
+    tm.process_turn(gs)
+    tm.process_turn(gs)
+    tm.process_turn(gs)
+    # Misje powinny już zniknąć
+    assert_eq(gs.missionary_missions.size(), 0)
+    # 2 idee powinny pojawić się w pending_ideas
+    assert_eq(gs.pending_ideas.size(), 2)
+
+func test_missionary_dogmatyzm_reduces_idea_delta() -> void:
+    var gs := _make_state()
+    var tm := TurnManagerScript.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 30
+    _pin_axes(src, 50.0, 50.0, 50.0, 50.0)  # A=50
+    var dst: Religion = gs.get_religion("chr_zachodnie")
+    _pin_axes(dst, 80.0, 50.0, 50.0, 50.0)  # A=80 → Dogmatyzm 80 (>70), diff=30
+    var dm := DiplomacyManager.new()
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 40.0
+    dm.send_missionaries(gs, "islam", "chr_zachodnie")
+    tm.process_turn(gs)
+    tm.process_turn(gs)
+    tm.process_turn(gs)
+    # Idea wracająca DO chr_zachodnie (target=chr_zachodnie) ma 50% delta
+    # Idea wracająca DO islam (target=islam, A=50, nie Dogmatyzm) ma 100% delta
+    # Idea pochodząca od islam: best_axis=A (diff 30), delta = min(30*0.3, 8) = 8.0
+    # Idea pochodząca od chr_zachodnie: też axis A, delta = 8.0
+    var idea_to_islam: Idea = null
+    var idea_to_chr: Idea = null
+    for idea: Idea in gs.pending_ideas:
+        if idea.from_religion_id == "chr_zachodnie":
+            idea_to_islam = idea  # idea od chr_zachodnie wraca do islam
+        else:
+            idea_to_chr = idea
+    assert_not_null(idea_to_islam)
+    assert_not_null(idea_to_chr)
+    # delta absolutna dla idei wracającej do islam = 8.0 (pełna), do chr = 4.0 (50%)
+    assert_almost_eq(absf(idea_to_islam.delta), 8.0, 0.001)
+    assert_almost_eq(absf(idea_to_chr.delta), 4.0, 0.001)
+
+func test_missionary_exclusivity_bumps_faction_tension() -> void:
+    var gs := _make_state()
+    var tm := TurnManagerScript.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 30
+    # Pin osie islam tak żeby JEGO dominująca frakcja nie dryfowała w _update_faction_tensions:
+    # islam dominant faction = "ulema" (prefs A+1, B+1), nie diverged przy A=80,B=80.
+    _pin_axes(src, 80.0, 80.0, 50.0, 50.0)  # Ekskluzywizm 50 (nie >70), brak dryfu napięcia
+    var dst: Religion = gs.get_religion("chr_zachodnie")
+    # Pin chr_zachodnie tak by: (a) C=20 → Ekskluzywizm 80 (>70) wywoła bump,
+    # (b) papiestwo (dominant, prefs A+1, B+1) NIE diverged przy A=80,B=80 → brak dryfu.
+    # Pozostałe frakcje (zakonnicy/reformatorzy) mogą dryfować, ale nie są dominujące.
+    _pin_axes(dst, 80.0, 80.0, 20.0, 50.0)
+    assert_true(dst.factions.size() > 0, "chr_zachodnie powinno mieć frakcje w danych historycznych")
+    var dom_before := dst.dominant_faction()
+    var initial_tension := dom_before.tension
+    var dm := DiplomacyManager.new()
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 40.0
+    dm.send_missionaries(gs, "islam", "chr_zachodnie")
+    tm.process_turn(gs)
+    tm.process_turn(gs)
+    tm.process_turn(gs)
+    var dom_after := dst.dominant_faction()
+    # Misjonarz z islam→chr (m1) wraca: target=chr_zachodnie, C=20 (Eksklu>70) → bump +10.0
+    # Misjonarz z chr→islam (m2) wraca: target=islam, C=50 (Eksklu 50, nie >70) → brak bumpa
+    # → tylko chr_zachodnie's dominant faction (papiestwo) dostaje +10.0
+    assert_almost_eq(dom_after.tension, initial_tension + 10.0, 0.001)

@@ -13,6 +13,7 @@ func process_turn(state: Node) -> void:
     _process_scholar_missions(state)
     _apply_believer_exodus(state)
     _process_active_wars(state)
+    _process_missionaries(state)
     _process_diplomacy(state)
     state.advance_turn()
 
@@ -137,3 +138,28 @@ func _pair_in_active_war(state: Node, a: String, b: String) -> bool:
         if (war.attacker_id == a and war.defender_id == b) or (war.attacker_id == b and war.defender_id == a):
             return true
     return false
+
+func _process_missionaries(state: Node) -> void:
+    var doctm := DoctrineManager.new()
+    var still_active: Array[MissionaryMission] = []
+    for mission: MissionaryMission in state.missionary_missions:
+        mission.turns_remaining -= 1
+        if mission.turns_remaining > 0:
+            still_active.append(mission)
+            continue
+        # Spec sec.2 "Misjonarze Wymienni" — przy powrocie misjonarza, target to religia
+        # przyjmująca obcą ideę; jej Dogmatyzm zmniejsza skuteczność, jej Ekskluzywizm
+        # generuje napięcie u własnej dominującej frakcji ("własna frakcja konserwatywna").
+        # send_missionaries tworzy symetryczną parę misji, więc każda religia jest sprawdzana
+        # jako target dokładnie raz.
+        var target: Religion = state.get_religion(mission.target_id)
+        var idea := doctm.generate_idea(mission.source_id, mission.target_id, state)
+        if idea != null:
+            if target != null and target.get_axis("A") > DiplomacyManager.DOGMATYZM_RESISTANCE_THRESHOLD:
+                idea.delta *= DiplomacyManager.DOGMATYZM_IDEA_DELTA_MULTIPLIER
+            state.pending_ideas.append(idea)
+        if target != null and target.get_axis("C") < DiplomacyManager.EKSKLUZYWIZM_FACTION_THRESHOLD:
+            var dom := target.dominant_faction()
+            if dom != null:
+                dom.add_tension(DiplomacyManager.EKSKLUZYWIZM_FACTION_TENSION_BUMP)
+    state.missionary_missions = still_active
