@@ -200,4 +200,4 @@ func _process_vassal_revolts(state: Node) -> void:
         client.suzerain_id = ""
         var rel := dm.get_or_create_relation(state, client.id, patron_id)
         rel.military_tension = clampf(rel.military_tension + DiplomacyManager.REVOLT_TENSION_INCREASE, 0.0, 100.0)
-        dom.tension = maxf(0.0, dom.tension - DiplomacyManager.REVOLT_TENSION_RELIEF)
+        dom.add_tension(-DiplomacyManager.REVOLT_TENSION_RELIEF)
