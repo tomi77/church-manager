@@ -51,7 +51,7 @@ const MISSIONARIES_PRESTIGE_COST := 10
 const MISSIONARIES_TRUST_THRESHOLD := 30.0
 const MISSIONARIES_TURNS := 3
 const MISSIONARIES_TRUST_GAIN := 10.0
-const MISSIONARIES_EXCLUSIVITY_BLOCK := 20.0   # C<20 → Ekskluzywizm>80 source blokuje wysyłkę misjonarzy
+const MISSIONARIES_EXCLUSIVITY_BLOCK := 20.0   # C<20 → Ekskluzywizm>80 source blokuje wysyłkę misjonarzy. Celowo odrębne od ALLIANCE_EXCLUSIVITY_BLOCK — declare_alliance ma węższą blokadę (Task 6: + Synkretyzm partnera).
 
 # --- Stałe efektów zwrotnych Misjonarzy (Plan 05) ---
 const DOGMATYZM_RESISTANCE_THRESHOLD := 70.0   # A>70 → -50% siła obcej idei

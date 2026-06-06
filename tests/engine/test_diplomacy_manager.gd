@@ -5,6 +5,7 @@ const RelationStateScript := preload("res://scripts/engine/RelationState.gd")
 const CoalitionScript := preload("res://scripts/engine/Coalition.gd")
 const DiplomacyManagerScript := preload("res://scripts/engine/DiplomacyManager.gd")
 const MissionaryMissionScript := preload("res://scripts/engine/MissionaryMission.gd")
+const TurnManagerScript := preload("res://scripts/engine/TurnManager.gd")
 
 func _make_state() -> Node:
     var gs: Node = GameStateScript.new()
@@ -767,8 +768,6 @@ func test_send_missionaries_synkretyzm_trust_bonus() -> void:
     assert_almost_eq(rel.theological_trust, 40.0 + 13.5, 0.001)
 
 # --- Misjonarze Wymienni (powrót i efekty) ---
-
-const TurnManagerScript := preload("res://scripts/engine/TurnManager.gd")
 
 func test_missionary_decrement_per_turn() -> void:
     var gs := _make_state()
