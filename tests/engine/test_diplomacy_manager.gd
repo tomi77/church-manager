@@ -644,3 +644,15 @@ func test_ecumenical_council_synkretyzm_trust_bonus() -> void:
     assert_true(ok)
     # trust gain = 15 * 1.35 = 20.25
     assert_almost_eq(rel.theological_trust, 65.0 + 20.25, 0.001)
+
+func test_ecumenical_council_fails_zero_delta() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 50
+    _pin_axes(src, 50.0, 50.0, 50.0, 50.0)
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 65.0
+    var ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", 0.0)
+    assert_false(ok)
+    assert_eq(src.prestige, 50)

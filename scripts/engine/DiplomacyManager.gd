@@ -174,7 +174,7 @@ func ecumenical_council(state: Node, source_id: String, target_id: String, axis:
     if source == null or target == null:
         return false
     # Spec sec.2: brak działania bez wybranego kierunku ustępstwa
-    if delta == 0.0:
+    if is_zero_approx(delta):
         return false
     # Blokada: Synkretyzm source ≤40 (spec sec.2 wymaga >40)
     if source.get_axis("C") <= COUNCIL_SYNKRETYZM_THRESHOLD:
@@ -201,9 +201,10 @@ func ecumenical_council(state: Node, source_id: String, target_id: String, axis:
     var sign_val := signf(delta)
     var clamped_abs := clampf(absf(delta), COUNCIL_MIN_AXIS_DELTA, COUNCIL_MAX_AXIS_DELTA)
     var final_delta := clamped_abs * sign_val
+    var gain_modifier := _axis_trust_gain_modifier(source)
     source.add_prestige(-cost)
     source.shift_axis(axis, final_delta)
-    var gain := COUNCIL_TRUST_GAIN * _axis_trust_gain_modifier(source)
+    var gain := COUNCIL_TRUST_GAIN * gain_modifier
     rel.theological_trust = clampf(rel.theological_trust + gain, 0.0, 100.0)
     rel.military_tension = clampf(rel.military_tension - COUNCIL_TENSION_DROP, 0.0, 100.0)
     return true
