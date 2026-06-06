@@ -478,3 +478,24 @@ func test_axis_trust_gain_modifier_synkretyzm_high() -> void:
     var src: Religion = gs.get_religion("islam")
     _pin_axes(src, 50.0, 50.0, 80.0, 50.0)  # C=80 → Synkretyzm wysoki (>75)
     assert_almost_eq(dm._axis_trust_gain_modifier(src), 1.35, 0.001)
+
+func test_axis_cost_modifier_hierarchia_at_threshold() -> void:
+    var dm := DiplomacyManager.new()
+    var gs := _make_state()
+    var src: Religion = gs.get_religion("islam")
+    _pin_axes(src, 50.0, 60.0, 50.0, 50.0)  # B=60 → exact threshold, no discount
+    assert_almost_eq(dm._axis_cost_modifier(src), 1.0, 0.001)
+
+func test_axis_trust_gain_modifier_synkretyzm_at_low_threshold() -> void:
+    var dm := DiplomacyManager.new()
+    var gs := _make_state()
+    var src: Religion = gs.get_religion("islam")
+    _pin_axes(src, 50.0, 50.0, 60.0, 50.0)  # C=60 → exact threshold, no bonus
+    assert_almost_eq(dm._axis_trust_gain_modifier(src), 1.0, 0.001)
+
+func test_axis_trust_gain_modifier_synkretyzm_at_high_threshold() -> void:
+    var dm := DiplomacyManager.new()
+    var gs := _make_state()
+    var src: Religion = gs.get_religion("islam")
+    _pin_axes(src, 50.0, 50.0, 75.0, 50.0)  # C=75 → exact threshold, only low bonus
+    assert_almost_eq(dm._axis_trust_gain_modifier(src), 1.20, 0.001)
