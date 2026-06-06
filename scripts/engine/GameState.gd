@@ -9,6 +9,8 @@ var pending_ideas: Array[Idea] = []
 var scholar_missions: Array = []  # Untyped: Array[Dictionary] not supported as typed array in GDScript 2.0
 var active_wars: Array[War] = []
 var pending_defeat_events: Array[DefeatEvent] = []
+var relations: Array[RelationState] = []
+var active_coalitions: Array[Coalition] = []
 
 func initialize(player_id: String, religions: Array[Religion], graph: ProvinceGraph) -> void:
     player_religion_id = player_id
