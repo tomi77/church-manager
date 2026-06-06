@@ -240,3 +240,73 @@ func test_proclaim_interdict_fails_low_prestige() -> void:
     var ok := dm.proclaim_interdict(gs, "islam", "chr_zachodnie")
     assert_false(ok)
     assert_eq(src.prestige, 10)
+
+func _setup_agresor_scenario(gs: Node, agresor: String, ofiary: Array) -> void:
+    for ofiara: String in ofiary:
+        var w := War.new()
+        w.attacker_id = agresor
+        w.defender_id = ofiara
+        w.state = "BATTLING"
+        gs.active_wars.append(w)
+
+func test_evaluate_coalitions_creates_coalition() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    _setup_agresor_scenario(gs, "islam", ["chr_zachodnie", "hinduizm", "buddyzm"])
+    for member: String in ["judaizm", "zoroastryzm", "manicheizm"]:
+        var rel := dm.get_or_create_relation(gs, member, "islam")
+        rel.military_tension = 50.0
+    dm.evaluate_coalitions(gs)
+    assert_eq(gs.active_coalitions.size(), 1)
+    var c: Coalition = gs.active_coalitions[0]
+    assert_eq(c.target_id, "islam")
+    assert_eq(c.members.size(), 3)
+    assert_true("judaizm" in c.members)
+    assert_true("zoroastryzm" in c.members)
+    assert_true("manicheizm" in c.members)
+
+func test_evaluate_coalitions_skips_low_threat() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    _setup_agresor_scenario(gs, "islam", ["chr_zachodnie"])
+    var rel := dm.get_or_create_relation(gs, "judaizm", "islam")
+    rel.military_tension = 60.0
+    var rel2 := dm.get_or_create_relation(gs, "zoroastryzm", "islam")
+    rel2.military_tension = 60.0
+    dm.evaluate_coalitions(gs)
+    assert_eq(gs.active_coalitions.size(), 0)
+
+func test_evaluate_coalitions_skips_too_few_members() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    _setup_agresor_scenario(gs, "islam", ["chr_zachodnie", "hinduizm", "buddyzm"])
+    var rel := dm.get_or_create_relation(gs, "judaizm", "islam")
+    rel.military_tension = 60.0
+    dm.evaluate_coalitions(gs)
+    assert_eq(gs.active_coalitions.size(), 0)
+
+func test_evaluate_coalitions_does_not_duplicate() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    _setup_agresor_scenario(gs, "islam", ["chr_zachodnie", "hinduizm", "buddyzm"])
+    for member: String in ["judaizm", "zoroastryzm"]:
+        var rel := dm.get_or_create_relation(gs, member, "islam")
+        rel.military_tension = 50.0
+    dm.evaluate_coalitions(gs)
+    dm.evaluate_coalitions(gs)
+    assert_eq(gs.active_coalitions.size(), 1)
+
+func test_evaluate_coalitions_excludes_agresor_and_victims() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    _setup_agresor_scenario(gs, "islam", ["chr_zachodnie", "hinduizm", "buddyzm"])
+    for victim: String in ["chr_zachodnie", "hinduizm", "buddyzm"]:
+        var rel := dm.get_or_create_relation(gs, victim, "islam")
+        rel.military_tension = 80.0
+    for member: String in ["judaizm", "zoroastryzm"]:
+        var rel := dm.get_or_create_relation(gs, member, "islam")
+        rel.military_tension = 50.0
+    dm.evaluate_coalitions(gs)
+    var c: Coalition = gs.active_coalitions[0]
+    assert_eq(c.members.size(), 2)
+    assert_false("chr_zachodnie" in c.members)

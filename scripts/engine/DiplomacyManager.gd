@@ -83,3 +83,36 @@ func proclaim_interdict(state: Node, source_id: String, target_id: String) -> bo
     rel.military_tension = clampf(rel.military_tension + INTERDICT_TENSION_INCREASE, 0.0, 100.0)
     rel.theological_trust = clampf(rel.theological_trust - INTERDICT_TRUST_DECREASE, 0.0, 100.0)
     return true
+
+func evaluate_coalitions(state: Node) -> void:
+    var aggressors: Dictionary = {}  # agresor_id -> Array[String] (ofiary)
+    for war: War in state.active_wars:
+        if war.state == "ENDED":
+            continue
+        if not aggressors.has(war.attacker_id):
+            aggressors[war.attacker_id] = []
+        aggressors[war.attacker_id].append(war.defender_id)
+    for aggressor_id: String in aggressors.keys():
+        if compute_threat_index(state, aggressor_id) < COALITION_THREAT_THRESHOLD:
+            continue
+        if _has_active_coalition(state, aggressor_id):
+            continue
+        var victims: Array = aggressors[aggressor_id]
+        var members: Array[String] = []
+        for religion: Religion in state.all_religions():
+            if religion.id == aggressor_id or religion.id in victims:
+                continue
+            var rel := get_or_create_relation(state, religion.id, aggressor_id)
+            if rel.military_tension >= COALITION_MEMBER_TENSION_THRESHOLD:
+                members.append(religion.id)
+        if members.size() >= 2:
+            var c := Coalition.new()
+            c.target_id = aggressor_id
+            c.members = members
+            state.active_coalitions.append(c)
+
+func _has_active_coalition(state: Node, target_id: String) -> bool:
+    for c: Coalition in state.active_coalitions:
+        if c.target_id == target_id:
+            return true
+    return false
