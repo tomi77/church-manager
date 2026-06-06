@@ -169,6 +169,7 @@ func dissolve_coalitions(state: Node) -> void:
 
 func auto_join_allies_to_coalitions(state: Node) -> void:
     for c: Coalition in state.active_coalitions:
+        # Snapshot zapobiega kaskadzie: tylko członkowie z momentu wywołania mogą wciągać nowych sojuszników (1 poziom per plan).
         var snapshot: Array[String] = []
         for m: String in c.members:
             snapshot.append(m)
