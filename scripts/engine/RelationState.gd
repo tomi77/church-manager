@@ -7,3 +7,4 @@ extends Resource
 @export var economic_cooperation: float = 0.0    # 0-100
 @export var military_tension: float = 0.0        # 0-100
 @export var alliance_active: bool = false        # Sojusz Obronny
+@export var vassal_council_cooldown_until: int = 0    # anty-spam Soboru Wasalnego (per para)

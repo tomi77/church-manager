@@ -22,6 +22,7 @@ func test_relation_state_defaults() -> void:
     assert_almost_eq(rs.economic_cooperation, 0.0, 0.001)
     assert_almost_eq(rs.military_tension, 0.0, 0.001)
     assert_false(rs.alliance_active)
+    assert_eq(rs.vassal_council_cooldown_until, 0)
 
 func test_coalition_defaults() -> void:
     var c: Coalition = CoalitionScript.new()

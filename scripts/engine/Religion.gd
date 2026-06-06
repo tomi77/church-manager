@@ -13,6 +13,9 @@ extends Resource
 @export var accent_color: String = "#ffffff"
 @export var war_weariness: float = 0.0
 @export var parent_religion_id: String = ""
+@export var resources: int = 0
+@export var suzerain_id: String = ""
+@export var interdict_immunity_until: int = 0
 
 func get_axis(axis: String) -> float:
     return axes.get(axis, 50.0)

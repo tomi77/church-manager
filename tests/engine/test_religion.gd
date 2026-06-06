@@ -56,3 +56,9 @@ func test_religion_prestige_cannot_go_below_zero() -> void:
     var r := _make_test_religion()
     r.add_prestige(-9999)
     assert_eq(r.prestige, 0)
+
+func test_religion_vassal_fields_defaults() -> void:
+    var r := Religion.new()
+    assert_eq(r.resources, 0)
+    assert_eq(r.suzerain_id, "")
+    assert_eq(r.interdict_immunity_until, 0)
