@@ -71,3 +71,15 @@ func declare_alliance(state: Node, source_id: String, target_id: String) -> bool
     rel.alliance_active = true
     rel.military_tension = clampf(rel.military_tension - ALLIANCE_TENSION_DROP, 0.0, 100.0)
     return true
+
+func proclaim_interdict(state: Node, source_id: String, target_id: String) -> bool:
+    var source: Religion = state.get_religion(source_id)
+    if source == null:
+        return false
+    if source.prestige < INTERDICT_PRESTIGE_COST:
+        return false
+    var rel := get_or_create_relation(state, source_id, target_id)
+    source.add_prestige(-INTERDICT_PRESTIGE_COST)
+    rel.military_tension = clampf(rel.military_tension + INTERDICT_TENSION_INCREASE, 0.0, 100.0)
+    rel.theological_trust = clampf(rel.theological_trust - INTERDICT_TRUST_DECREASE, 0.0, 100.0)
+    return true

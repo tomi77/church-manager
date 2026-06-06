@@ -195,3 +195,48 @@ func test_declare_alliance_fails_insufficient_prestige() -> void:
     assert_false(ok)
     assert_false(rel.alliance_active)
     assert_eq(src.prestige, 10)
+
+func test_proclaim_interdict_success() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 50
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.military_tension = 10.0
+    rel.theological_trust = 40.0
+    var ok := dm.proclaim_interdict(gs, "islam", "chr_zachodnie")
+    assert_true(ok)
+    assert_eq(src.prestige, 35)  # 50 - 15
+    assert_almost_eq(rel.military_tension, 30.0, 0.001)
+    assert_almost_eq(rel.theological_trust, 15.0, 0.001)
+
+func test_proclaim_interdict_clamps_trust_at_zero() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 50
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 10.0
+    var ok := dm.proclaim_interdict(gs, "islam", "chr_zachodnie")
+    assert_true(ok)
+    assert_almost_eq(rel.theological_trust, 0.0, 0.001)
+
+func test_proclaim_interdict_clamps_tension_at_100() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 50
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.military_tension = 90.0
+    var ok := dm.proclaim_interdict(gs, "islam", "chr_zachodnie")
+    assert_true(ok)
+    assert_almost_eq(rel.military_tension, 100.0, 0.001)
+
+func test_proclaim_interdict_fails_low_prestige() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 10
+    var ok := dm.proclaim_interdict(gs, "islam", "chr_zachodnie")
+    assert_false(ok)
+    assert_eq(src.prestige, 10)
