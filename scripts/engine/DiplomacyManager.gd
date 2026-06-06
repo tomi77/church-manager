@@ -10,6 +10,7 @@ const PEACE_COUNCIL_PRESTIGE_COST := 25
 const ALLIANCE_TRUST_THRESHOLD := 50.0       # Zaufanie teologiczne >50 OR
 const ALLIANCE_ECONOMIC_THRESHOLD := 60.0    # Współpraca ekonomiczna >60
 const ALLIANCE_EXCLUSIVITY_BLOCK := 20.0     # C <20 (Ekskluzywizm >80) → blokada sojuszu
+const ALLIANCE_PARTNER_SYNKRETYZM_BLOCK := 60.0  # partner Synkretyzm >60 → wzmacnia blokadę Ekskluzywizmu
 const COALITION_THREAT_THRESHOLD := 50.0
 const COALITION_MEMBER_TENSION_THRESHOLD := 40.0   # NPC kwalifikuje się i akceptuje członkostwo deterministycznie powyżej tego progu
 const COALITION_DISSOLUTION_THREAT := 30.0
@@ -92,8 +93,11 @@ func declare_alliance(state: Node, source_id: String, target_id: String) -> bool
         return false
     if source.prestige < ALLIANCE_PRESTIGE_COST:
         return false
-    # Blokada Ekskluzywizm >80 → C < (100 - 80) = 20
-    if source.get_axis("C") < ALLIANCE_EXCLUSIVITY_BLOCK:
+    # Blokada Sojuszu (spec sekcja 3): source Ekskluzywizm >80 (C<20) AND target Synkretyzm >60 (C>60)
+    var target: Religion = state.get_religion(target_id)
+    if target == null:
+        return false
+    if source.get_axis("C") < ALLIANCE_EXCLUSIVITY_BLOCK and target.get_axis("C") > ALLIANCE_PARTNER_SYNKRETYZM_BLOCK:
         return false
     var rel := get_or_create_relation(state, source_id, target_id)
     if rel.theological_trust < ALLIANCE_TRUST_THRESHOLD and rel.economic_cooperation < ALLIANCE_ECONOMIC_THRESHOLD:

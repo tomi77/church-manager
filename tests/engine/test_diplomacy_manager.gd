@@ -172,18 +172,34 @@ func test_declare_alliance_fails_no_thresholds() -> void:
     assert_false(rel.alliance_active)
     assert_eq(src.prestige, 50)  # bez potrącenia
 
-func test_declare_alliance_blocked_by_exclusivity() -> void:
+func test_declare_alliance_blocked_by_exclusivity_and_partner_synkretyzm() -> void:
     var gs := _make_state()
     var dm := DiplomacyManager.new()
     var src: Religion = gs.get_religion("islam")
     src.prestige = 50
     _pin_axes(src, 50.0, 50.0, 15.0, 50.0)  # C=15 → Ekskluzywizm 85
+    var dst: Religion = gs.get_religion("chr_zachodnie")
+    _pin_axes(dst, 50.0, 50.0, 70.0, 50.0)  # C=70 → Synkretyzm 70 (>60 partnera)
     var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
     rel.theological_trust = 70.0
     var ok := dm.declare_alliance(gs, "islam", "chr_zachodnie")
     assert_false(ok)
     assert_false(rel.alliance_active)
     assert_eq(src.prestige, 50)
+
+func test_declare_alliance_passes_high_exclusivity_low_partner_synkretyzm() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 50
+    _pin_axes(src, 50.0, 50.0, 15.0, 50.0)  # C=15 → Ekskluzywizm 85
+    var dst: Religion = gs.get_religion("chr_zachodnie")
+    _pin_axes(dst, 50.0, 50.0, 40.0, 50.0)  # C=40 → Synkretyzm 40 (≤60, nie blokuje)
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 70.0
+    var ok := dm.declare_alliance(gs, "islam", "chr_zachodnie")
+    assert_true(ok)
+    assert_true(rel.alliance_active)
 
 func test_declare_alliance_fails_insufficient_prestige() -> void:
     var gs := _make_state()
