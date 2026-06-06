@@ -1604,3 +1604,13 @@ func test_integration_people_council_protects_against_interdict() -> void:
 
     # 4. Po wygaśnięciu — Interdykt przechodzi
     assert_true(dm.proclaim_interdict(gs, "islam", "judaizm"), "po wygaśnięciu immunity Interdykt działa")
+
+func test_recognize_suzerainty_blocked_self_suzerainty() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var solo: Religion = gs.get_religion("judaizm")
+    _pin_axes(solo, 50.0, 50.0, 50.0, 50.0)
+    var relations_before: int = gs.relations.size()
+    assert_false(dm.recognize_suzerainty(gs, "judaizm", "judaizm"), "religia nie może być własnym patronem")
+    assert_eq(solo.suzerain_id, "", "suzerain_id nie zmienia się")
+    assert_eq(gs.relations.size(), relations_before, "brak self-relation w state.relations")

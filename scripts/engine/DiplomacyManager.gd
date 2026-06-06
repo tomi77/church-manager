@@ -60,6 +60,9 @@ const DOGMATYZM_IDEA_DELTA_MULTIPLIER := 0.5
 const EKSKLUZYWIZM_FACTION_THRESHOLD := 30.0   # C<30 → Ekskluzywizm >70 → bump frakcji
 const EKSKLUZYWIZM_FACTION_TENSION_BUMP := 10.0
 
+# UWAGA: w Plan 06 mamy dwa "5-turowe" timery o RÓŻNYCH semantykach:
+# vassal_council_cooldown_until używa `<=` (5 tur blokady); interdict_immunity_until używa `>` (4 tury blokady).
+
 # --- Stałe Wasalstwa (Plan 06) ---
 const SUZERAINTY_DOGMATYZM_BLOCK := 80.0       # A>=80 blokuje uznanie zwierzchnictwa (spec 03 sek.3)
 const SUZERAINTY_TRUST_THRESHOLD := 40.0       # trust>40 wymagane
@@ -334,6 +337,9 @@ func recognize_suzerainty(state: Node, client_id: String, patron_id: String) -> 
     var client: Religion = state.get_religion(client_id)
     var patron: Religion = state.get_religion(patron_id)
     if client == null or patron == null:
+        return false
+    # Religia nie może być własnym patronem
+    if client_id == patron_id:
         return false
     # Klient nie może mieć już patrona (spec 07 sek.2)
     if client.suzerain_id != "":
