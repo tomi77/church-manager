@@ -51,6 +51,7 @@ const MISSIONARIES_PRESTIGE_COST := 10
 const MISSIONARIES_TRUST_THRESHOLD := 30.0
 const MISSIONARIES_TURNS := 3
 const MISSIONARIES_TRUST_GAIN := 10.0
+const MISSIONARIES_EXCLUSIVITY_BLOCK := 20.0   # C<20 → Ekskluzywizm>80 source blokuje wysyłkę misjonarzy
 
 func _pair_key(a: String, b: String) -> Array:
     var pair: Array = [a, b]
@@ -221,7 +222,7 @@ func send_missionaries(state: Node, source_id: String, target_id: String) -> boo
     if source == null or target == null:
         return false
     # Blokada Ekskluzywizm >80 source (C<20, spec sec.3)
-    if source.get_axis("C") < ALLIANCE_EXCLUSIVITY_BLOCK:
+    if source.get_axis("C") < MISSIONARIES_EXCLUSIVITY_BLOCK:
         return false
     var rel := get_or_create_relation(state, source_id, target_id)
     # Blokada napięcia >85 (spec sec.1)

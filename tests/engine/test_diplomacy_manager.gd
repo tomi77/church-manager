@@ -752,3 +752,16 @@ func test_send_missionaries_hierarchia_discount() -> void:
     var ok := dm.send_missionaries(gs, "islam", "chr_zachodnie")
     assert_true(ok)
     assert_eq(src.prestige, 22)  # 30 - 8
+
+func test_send_missionaries_synkretyzm_trust_bonus() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 30
+    _pin_axes(src, 50.0, 50.0, 80.0, 50.0)  # C=80 → Synkretyzm wysoki (1.35x)
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 40.0
+    var ok := dm.send_missionaries(gs, "islam", "chr_zachodnie")
+    assert_true(ok)
+    # trust gain = 10 * 1.35 = 13.5
+    assert_almost_eq(rel.theological_trust, 40.0 + 13.5, 0.001)
