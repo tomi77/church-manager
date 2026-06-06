@@ -122,3 +122,76 @@ func test_threat_index_ignores_ended_wars() -> void:
     gs.active_wars.append(war)
     var threat := dm.compute_threat_index(gs, "islam")
     assert_almost_eq(threat, 0.0, 0.001)
+
+func _pin_axes(rel: Religion, a: float, b: float, c: float, d: float) -> void:
+    rel.axes["A"] = a
+    rel.axes["B"] = b
+    rel.axes["C"] = c
+    rel.axes["D"] = d
+
+func test_declare_alliance_success_high_trust() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 50
+    _pin_axes(src, 50.0, 50.0, 60.0, 50.0)  # C=60 → Ekskluzywizm 40 (brak blokady)
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 55.0
+    rel.military_tension = 20.0
+    var ok := dm.declare_alliance(gs, "islam", "chr_zachodnie")
+    assert_true(ok)
+    assert_true(rel.alliance_active)
+    assert_eq(src.prestige, 30)  # 50 - 20
+    assert_almost_eq(rel.military_tension, 5.0, 0.001)  # 20 - 15
+
+func test_declare_alliance_success_high_economic() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 30
+    _pin_axes(src, 50.0, 50.0, 60.0, 50.0)
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.economic_cooperation = 65.0
+    var ok := dm.declare_alliance(gs, "islam", "chr_zachodnie")
+    assert_true(ok)
+    assert_true(rel.alliance_active)
+
+func test_declare_alliance_fails_no_thresholds() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 50
+    _pin_axes(src, 50.0, 50.0, 60.0, 50.0)
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 30.0
+    rel.economic_cooperation = 30.0
+    var ok := dm.declare_alliance(gs, "islam", "chr_zachodnie")
+    assert_false(ok)
+    assert_false(rel.alliance_active)
+    assert_eq(src.prestige, 50)  # bez potrącenia
+
+func test_declare_alliance_blocked_by_exclusivity() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 50
+    _pin_axes(src, 50.0, 50.0, 15.0, 50.0)  # C=15 → Ekskluzywizm 85
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 70.0
+    var ok := dm.declare_alliance(gs, "islam", "chr_zachodnie")
+    assert_false(ok)
+    assert_false(rel.alliance_active)
+    assert_eq(src.prestige, 50)
+
+func test_declare_alliance_fails_insufficient_prestige() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 10  # < 20
+    _pin_axes(src, 50.0, 50.0, 60.0, 50.0)
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 70.0
+    var ok := dm.declare_alliance(gs, "islam", "chr_zachodnie")
+    assert_false(ok)
+    assert_false(rel.alliance_active)
+    assert_eq(src.prestige, 10)

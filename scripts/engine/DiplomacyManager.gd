@@ -54,3 +54,20 @@ func compute_threat_index(state: Node, religion_id: String) -> float:
         elif war.defender_id == religion_id:
             threat += THREAT_PER_PASSIVE_WAR
     return clampf(threat, 0.0, THREAT_MAX)
+
+func declare_alliance(state: Node, source_id: String, target_id: String) -> bool:
+    var source: Religion = state.get_religion(source_id)
+    if source == null:
+        return false
+    if source.prestige < ALLIANCE_PRESTIGE_COST:
+        return false
+    # Blokada Ekskluzywizm >80 → C < (100 - 80) = 20
+    if source.get_axis("C") < ALLIANCE_EXCLUSIVITY_BLOCK:
+        return false
+    var rel := get_or_create_relation(state, source_id, target_id)
+    if rel.theological_trust < ALLIANCE_TRUST_THRESHOLD and rel.economic_cooperation < ALLIANCE_ECONOMIC_THRESHOLD:
+        return false
+    source.add_prestige(-ALLIANCE_PRESTIGE_COST)
+    rel.alliance_active = true
+    rel.military_tension = clampf(rel.military_tension - ALLIANCE_TENSION_DROP, 0.0, 100.0)
+    return true
