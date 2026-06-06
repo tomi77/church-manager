@@ -1025,7 +1025,8 @@ func test_integration_council_missionaries_coalition_lifecycle() -> void:
         war.state = "BATTLING"
         gs.active_wars.append(war)
 
-    # 4. Tensions kwalifikujące judaizm i manicheizm jako członków koalicji (≥40 vs islam)
+    # 4. Tensions kwalifikujące judaizm i manicheizm jako członków koalicji (≥40 vs islam).
+    # Decay: 50.0 - 3 × PEACE_TENSION_DECAY_PER_TURN(1.0) = 47.0, nadal ≥ COALITION_MEMBER_TENSION_THRESHOLD(40.0).
     var rel_islam_jud := dm.get_or_create_relation(gs, "islam", "judaizm")
     rel_islam_jud.military_tension = 50.0
     var rel_islam_man := dm.get_or_create_relation(gs, "islam", "manicheizm")
@@ -1049,7 +1050,7 @@ func test_integration_council_missionaries_coalition_lifecycle() -> void:
     # 7c. Koalicja przeciw islam istnieje
     assert_eq(gs.active_coalitions.size(), 1, "koalicja powinna powstać przy threat=60")
     var coalition: Coalition = gs.active_coalitions[0]
-    assert_eq(coalition.target_id, "islam")
+    assert_eq(coalition.target_id, "islam", "koalicja powinna celować w islam (agresor wojen)")
     # 7d. judaizm i manicheizm dołączyli przez evaluate_coalitions (tension≥40)
     assert_true("judaizm" in coalition.members, "judaizm kwalifikuje się przez napięcie")
     assert_true("manicheizm" in coalition.members, "manicheizm kwalifikuje się przez napięcie")
