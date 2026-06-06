@@ -215,3 +215,46 @@ func test_process_turn_force_peace_at_weariness_90_creates_defeat_event() -> voi
     var ev: DefeatEvent = gs.pending_defeat_events[0]
     assert_eq(ev.religion_id, "islam")
     assert_eq(ev.opponent_id, "chr_wschodnie")
+
+const DiplomacyManagerScript := preload("res://scripts/engine/DiplomacyManager.gd")
+
+func test_turn_decays_tension_in_peace() -> void:
+    var state := _make_state()
+    var tm := TurnManager.new()
+    var dm := DiplomacyManager.new()
+    var rel := dm.get_or_create_relation(state, "islam", "chr_zachodnie")
+    rel.military_tension = 20.0
+    tm.process_turn(state)
+    assert_almost_eq(rel.military_tension, 19.0, 0.001)
+
+func test_turn_does_not_decay_tension_during_war() -> void:
+    var state := _make_state()
+    var tm := TurnManager.new()
+    var dm := DiplomacyManager.new()
+    var rel := dm.get_or_create_relation(state, "islam", "chr_zachodnie")
+    rel.military_tension = 20.0
+    var w := War.new()
+    w.attacker_id = "islam"
+    w.defender_id = "chr_zachodnie"
+    w.state = "BATTLING"
+    state.active_wars.append(w)
+    tm.process_turn(state)
+    assert_almost_eq(rel.military_tension, 20.0, 0.001)
+
+func test_turn_evaluates_coalitions() -> void:
+    var state := _make_state()
+    var tm := TurnManager.new()
+    var dm := DiplomacyManager.new()
+    # 3 wojny islamu → threat=60, próg pokonany
+    for ofiara: String in ["chr_zachodnie", "hinduizm", "buddyzm"]:
+        var w := War.new()
+        w.attacker_id = "islam"
+        w.defender_id = ofiara
+        w.state = "BATTLING"
+        state.active_wars.append(w)
+    for member: String in ["judaizm", "zoroastryzm"]:
+        var rel := dm.get_or_create_relation(state, member, "islam")
+        rel.military_tension = 50.0
+    tm.process_turn(state)
+    assert_eq(state.active_coalitions.size(), 1)
+    assert_eq(state.active_coalitions[0].target_id, "islam")

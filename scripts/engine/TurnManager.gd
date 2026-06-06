@@ -13,6 +13,7 @@ func process_turn(state: Node) -> void:
     _process_scholar_missions(state)
     _apply_believer_exodus(state)
     _process_active_wars(state)
+    _process_diplomacy(state)
     state.advance_turn()
 
 func _apply_passive_pressure(graph: ProvinceGraph) -> void:
@@ -120,3 +121,19 @@ func _process_active_wars(state: Node) -> void:
             to_force.append({"war": war, "loser_id": war.defender_id})
     for entry: Dictionary in to_force:
         wm.force_loss(entry["war"], entry["loser_id"], state)
+
+func _process_diplomacy(state: Node) -> void:
+    var dm := DiplomacyManager.new()
+    for rel: RelationState in state.relations:
+        if not _pair_in_active_war(state, rel.religion_a_id, rel.religion_b_id):
+            rel.military_tension = clampf(rel.military_tension - DiplomacyManager.PEACE_TENSION_DECAY_PER_TURN, 0.0, 100.0)
+    dm.evaluate_coalitions(state)
+    dm.dissolve_coalitions(state)
+
+func _pair_in_active_war(state: Node, a: String, b: String) -> bool:
+    for war: War in state.active_wars:
+        if war.state == "ENDED":
+            continue
+        if (war.attacker_id == a and war.defender_id == b) or (war.attacker_id == b and war.defender_id == a):
+            return true
+    return false
