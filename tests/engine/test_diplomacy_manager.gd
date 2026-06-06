@@ -1171,14 +1171,13 @@ func test_process_resources_tribute_floor_zero() -> void:
     var client: Religion = gs.get_religion("judaizm")
     var patron: Religion = gs.get_religion("chr_zachodnie")
     client.suzerain_id = "chr_zachodnie"
-    # Klient ma 1 resource ZA passive income — po +5 ma 6, trybut nie zubaża <0
-    # Sprawdźmy też najgorszy przypadek: klient z 0 zasobami przed turą
+    # Worst case: klient startuje turę z 0. Passive income daje mu 5, trybut pobiera min(3,5)=3.
     client.resources = 0
     patron.resources = 0
     tm._process_resources(gs)
     # klient: 0 + 5 passive = 5, potem -min(3,5) = 2 → patron dostaje 3
     assert_eq(client.resources, 2)
-    assert_eq(patron.resources, 8)  # 0 + 5 passive + 3 trybut
+    assert_eq(patron.resources, 8, "patron: passive +5 + trybut 3")
 
 func test_process_resources_no_patron_no_tribute() -> void:
     var gs := _make_state()
