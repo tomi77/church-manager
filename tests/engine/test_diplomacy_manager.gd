@@ -1213,3 +1213,73 @@ func test_process_resources_does_not_leak_into_unrelated_state() -> void:
     assert_almost_eq(probe.war_weariness, 12.5, 0.001)
     assert_almost_eq(probe.get_axis("A"), a_before, 0.001)
     assert_eq(probe.resources, 5 * DiplomacyManager.PASSIVE_INCOME_PER_TURN, "tylko resources naliczane")
+
+# --- _process_vassal_revolts (Plan 06) ---
+
+func _make_client_with_faction_tension(gs: Node, client_id: String, patron_id: String, tension: float) -> void:
+    var client: Religion = gs.get_religion(client_id)
+    client.suzerain_id = patron_id
+    # Zapewnij dominującą frakcję z określonym tension
+    if client.factions.is_empty():
+        var f := Faction.new()
+        f.id = "test_dom"
+        f.influence = 100.0
+        f.tension = tension
+        client.factions.append(f)
+    else:
+        var dom := client.dominant_faction()
+        dom.tension = tension
+
+func test_vassal_revolt_triggers_above_threshold() -> void:
+    var gs := _make_state()
+    var tm := TurnManagerScript.new()
+    var dm := DiplomacyManager.new()
+    _make_client_with_faction_tension(gs, "judaizm", "chr_zachodnie", 85.0)  # >80
+    var rel := dm.get_or_create_relation(gs, "judaizm", "chr_zachodnie")
+    rel.military_tension = 10.0
+    tm._process_vassal_revolts(gs)
+    var client: Religion = gs.get_religion("judaizm")
+    assert_eq(client.suzerain_id, "", "klient się wyzwala")
+    assert_almost_eq(rel.military_tension, 10.0 + DiplomacyManager.REVOLT_TENSION_INCREASE, 0.001, "military_tension += 30")
+    assert_almost_eq(client.dominant_faction().tension, 85.0 - DiplomacyManager.REVOLT_TENSION_RELIEF, 0.001, "ulga po buncie -40")
+
+func test_vassal_revolt_threshold_boundary() -> void:
+    # Próg ostry: tension > 80; dokładnie 80.0 NIE triggeruje
+    var gs := _make_state()
+    var tm := TurnManagerScript.new()
+    _make_client_with_faction_tension(gs, "judaizm", "chr_zachodnie", 80.0)
+    tm._process_vassal_revolts(gs)
+    var client: Religion = gs.get_religion("judaizm")
+    assert_eq(client.suzerain_id, "chr_zachodnie", "tension==80 nie triggeruje buntu")
+
+func test_vassal_revolt_no_op_below_threshold() -> void:
+    var gs := _make_state()
+    var tm := TurnManagerScript.new()
+    _make_client_with_faction_tension(gs, "judaizm", "chr_zachodnie", 50.0)
+    tm._process_vassal_revolts(gs)
+    var client: Religion = gs.get_religion("judaizm")
+    assert_eq(client.suzerain_id, "chr_zachodnie", "klient bez buntu pod progiem")
+
+func test_vassal_revolt_skips_religions_without_patron() -> void:
+    var gs := _make_state()
+    var tm := TurnManagerScript.new()
+    # Religia bez patrona, ale z wysokim tension dominującej frakcji — NIE powinno wywoływać akcji
+    var orphan: Religion = gs.get_religion("judaizm")
+    if orphan.factions.is_empty():
+        var f := Faction.new()
+        f.id = "test_dom"
+        f.influence = 100.0
+        f.tension = 95.0
+        orphan.factions.append(f)
+    tm._process_vassal_revolts(gs)
+    assert_eq(orphan.suzerain_id, "")  # bez zmian
+
+func test_vassal_revolt_skips_client_without_factions() -> void:
+    var gs := _make_state()
+    var tm := TurnManagerScript.new()
+    var client: Religion = gs.get_religion("judaizm")
+    client.factions.clear()  # brak frakcji
+    client.suzerain_id = "chr_zachodnie"
+    tm._process_vassal_revolts(gs)
+    # klient bez frakcji → dominant_faction() == null → no-op
+    assert_eq(client.suzerain_id, "chr_zachodnie", "klient bez frakcji nie buntuje się")

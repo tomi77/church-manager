@@ -16,6 +16,7 @@ func process_turn(state: Node) -> void:
     _process_missionaries(state)
     _process_diplomacy(state)
     _process_resources(state)
+    _process_vassal_revolts(state)
     state.advance_turn()
 
 func _apply_passive_pressure(graph: ProvinceGraph) -> void:
@@ -181,3 +182,22 @@ func _process_resources(state: Node) -> void:
         var amount: int = mini(DiplomacyManager.TRIBUTE_PER_TURN, client.resources)
         client.resources -= amount
         patron.resources += amount
+
+func _process_vassal_revolts(state: Node) -> void:
+    # Spec 07 sek.3: gdy dominująca frakcja klienta ma tension > 80, klient zrywa.
+    # Bunt skutkuje: utratą patrona, wzrostem napięcia militarnego klient↔patron,
+    # ulgą frakcji (rozładowanie energii społecznej po wyzwoleniu).
+    var dm := DiplomacyManager.new()
+    for client: Religion in state.all_religions():
+        if client.suzerain_id == "":
+            continue
+        var dom: Faction = client.dominant_faction()
+        if dom == null:
+            continue
+        if dom.tension <= DiplomacyManager.REVOLT_FACTION_TENSION_THRESHOLD:
+            continue
+        var patron_id := client.suzerain_id
+        client.suzerain_id = ""
+        var rel := dm.get_or_create_relation(state, client.id, patron_id)
+        rel.military_tension = clampf(rel.military_tension + DiplomacyManager.REVOLT_TENSION_INCREASE, 0.0, 100.0)
+        dom.tension = maxf(0.0, dom.tension - DiplomacyManager.REVOLT_TENSION_RELIEF)
