@@ -361,3 +361,35 @@ func test_coalition_dissolves_after_5_turns_without_conflict() -> void:
     for i in range(5):
         dm.dissolve_coalitions(gs)
     assert_eq(gs.active_coalitions.size(), 0)
+
+func test_peace_council_reduces_weariness() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 50
+    src.war_weariness = 60.0
+    var ok := dm.peace_council(gs, "islam")
+    assert_true(ok)
+    assert_eq(src.prestige, 25)  # 50 - 25
+    assert_almost_eq(src.war_weariness, 30.0, 0.001)
+
+func test_peace_council_clamps_weariness_at_zero() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 50
+    src.war_weariness = 10.0
+    var ok := dm.peace_council(gs, "islam")
+    assert_true(ok)
+    assert_almost_eq(src.war_weariness, 0.0, 0.001)
+
+func test_peace_council_fails_low_prestige() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 20
+    src.war_weariness = 60.0
+    var ok := dm.peace_council(gs, "islam")
+    assert_false(ok)
+    assert_eq(src.prestige, 20)
+    assert_almost_eq(src.war_weariness, 60.0, 0.001)

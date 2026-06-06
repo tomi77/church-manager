@@ -139,3 +139,13 @@ func _aggressor_has_offensive_war(state: Node, aggressor_id: String) -> bool:
         if war.attacker_id == aggressor_id:
             return true
     return false
+
+func peace_council(state: Node, religion_id: String) -> bool:
+    var rel: Religion = state.get_religion(religion_id)
+    if rel == null:
+        return false
+    if rel.prestige < PEACE_COUNCIL_PRESTIGE_COST:
+        return false
+    rel.add_prestige(-PEACE_COUNCIL_PRESTIGE_COST)
+    rel.war_weariness = clampf(rel.war_weariness - PEACE_COUNCIL_WEARINESS_DROP, 0.0, 100.0)
+    return true
