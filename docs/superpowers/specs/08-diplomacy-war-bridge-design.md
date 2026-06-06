@@ -30,7 +30,7 @@ Każdy komponent rozszerza istniejącą strukturę bez nowych klas danych. Wprow
 
 Grievance to własność religii (target Interdyktu), nie pary. Powód: target może mieć zniewagę tylko od jednej religii naraz — kolejny Interdykt nadpisuje poprzednią. Jednorazowy charakter CB jest reprezentowany przez wyzerowanie obu pól po `declare_war(cb="rewanz")`.
 
-Semantyka `>` (a nie `<=`) operatora porównania jest analogiczna do `interdict_immunity_until` w Plan 06 — okno wynosi *efektywnie* `GRIEVANCE_WINDOW_TURNS - 1 = 9` tur, ale stała nominalna to 10 dla spójności językowej i wykresów.
+Semantyka operatora porównania jest świadomie wybrana: `interdict_grievance_until > state.current_turn` używa `>` (strict), spójnie z `interdict_immunity_until` z Plan 06, świadomie *inaczej* niż `vassal_council_cooldown_until <= state.current_turn` z Plan 06. Skutek: jeśli `interdict_grievance_until = T+10`, CB Rewanż jest aktywny w turach `T+1..T+9` (efektywnie 9 tur okna); stała nominalna to 10 dla spójności językowej.
 
 ### Brak zmian w `RelationState`
 
@@ -53,10 +53,12 @@ for c in state.active_coalitions:
     snapshot = c.members.duplicate()           # tylko obecni członkowie wciągają wasali
     for member_id in snapshot:
         if member_id == c.target_id: continue  # bezpiecznik (target nie powinien być członkiem, ale)
-        for client in all_religions():
+        for client in state.all_religions():
             if client.suzerain_id != member_id: continue
-            if client.id == c.target_id: continue       # klient nie atakuje sam siebie
-            if client.id in c.members: continue          # już członek
+            if state.get_religion(client.suzerain_id) == null: continue  # patron usunięty z gry
+            if client.suzerain_id == c.target_id: continue                # patron klienta jest celem koalicji — vetto: klient nie atakuje własnego patrona
+            if client.id == c.target_id: continue                          # klient nie może atakować sam siebie jako target_id
+            if client.id in c.members: continue                            # już członek
             c.members.append(client.id)
 ```
 
@@ -90,7 +92,16 @@ Reaktywny `casus_belli` aktywny tylko dla religii, która została ostatnio cele
 
 #### Krok 1: Zapis zniewagi w `proclaim_interdict`
 
-Gdy Interdykt przechodzi wszystkie obecne guardy (włącznie z immunity z Plan 06), na końcu *przed* `return true`:
+Plan 07 dodaje *na początku* `proclaim_interdict` guard self-Interdykt:
+
+```
+if source_id == target_id:
+    return false
+```
+
+To analogicznie do `recognize_suzerainty` (Plan 06) — religia nie może rzucić Interdyktu na samą siebie. Zapobiega też degenerowanej zniewadze, gdzie `attacker.id == attacker.interdict_grievance_from_id == defender.id` (samowojna).
+
+Gdy Interdykt przechodzi wszystkie pozostałe guardy (włącznie z immunity z Plan 06), na końcu *przed* `return true`:
 
 ```
 target.interdict_grievance_from_id = source_id
@@ -109,11 +120,17 @@ Po istniejącej iteracji `CB_AXIS_REQUIREMENTS` i sprawdzeniu `stlumienie_herezj
 
 ```
 # Rewanż za zniewagę (Plan 07): reaktywne CB
-if attacker.interdict_grievance_from_id == defender.id \
+if state != null \
+   and attacker.id != defender.id \
+   and attacker.interdict_grievance_from_id == defender.id \
    and attacker.interdict_grievance_until > state.current_turn \
    and attacker.get_axis("C") < GRIEVANCE_EKSKLUZYWIZM_THRESHOLD:   # 30
     result.append("rewanz")
 ```
+
+Defensywne guardy:
+- `state != null` — pozwala wywołać `available_casus_belli(a, b, null)` w testach jednostkowych, które nie potrzebują reaktywnych CB. Zwraca wtedy tylko statyczne CB z `CB_AXIS_REQUIREMENTS` + `stlumienie_herezji`.
+- `attacker.id != defender.id` — wyklucza degenerowany self-Rewanż (gdyby self-Interdykt zdarzył się jakoś poza `proclaim_interdict`, np. w testach setupujących grievance ręcznie).
 
 #### Krok 3: Zużycie zniewagi w `declare_war`
 
@@ -131,9 +148,9 @@ Jednorazowy CB — kolejna wojna Rewanż za tę samą zniewagę nie jest możliw
 
 - **Warunek Ekskluzywizmu** — C < 30 (Ekskluzywizm >70). Religia tolerancyjna nie wypowiada wojny za teologiczną zniewagę.
 - **Asymetria celów** — Rewanż musi być przeciw *konkretnemu* sprawcy Interdyktu. Próba `available_casus_belli(victim, other, state)` (gdzie `other != grievance_from_id`) nie zawiera "rewanz".
-- **Okno czasowe** — `current_turn < grievance_until`. Jeśli `grievance_until = state.current_turn + 10` przy `T=20`, to działa dla `T ∈ [21..29]` (operator `>` jest ostry; w turze 30 grievance już wygasło). Spójne z immunity z Plan 06.
+- **Okno czasowe** — operator `>` (strict). Jeśli `grievance_until = state.current_turn + 10` przy `T=20`, to działa dla `T ∈ [21..29]` (w turze 30 grievance już wygasło). Spójne z immunity z Plan 06.
 - **Nadpisywanie** — kolejny Interdykt od tej samej (lub innej) religii nadpisuje pole. Spec 03 nie wprowadza historii — tylko *ostatnia* zniewaga się liczy.
-- **Self-Interdykt niemożliwy** — `proclaim_interdict` nie ma guard `source == target`, ale `get_or_create_relation` przy parze (X,X) tworzy zdegenerowaną relację z sortowaniem `[X,X]`. Plan 07 zakłada że self-Interdykt nie istnieje w przepływie gry (gracz/AI nie ma powodu). Jeśli zdarzy się w teście, `interdict_grievance_from_id` zostanie ustawione na własne id — co przy `available_casus_belli(self, self)` nigdy się nie wywoła (declare_war wymaga dwóch różnych religii).
+- **Self-Interdykt zabroniony** — guard `source_id == target_id` w `proclaim_interdict` zwraca `false` natychmiast (przed sprawdzeniem prestiżu, immunity, etc.). Eliminuje całą klasę degenerowanych przypadków.
 
 ### Stałe CB Rewanż
 
@@ -163,11 +180,14 @@ Po istniejącej pętli `AXIS_STRENGTH_MODIFIERS`, przed `cb_modifier`:
 
 ```
 # Bonus świętej wojny sojuszniczej (Plan 07)
-if war.casus_belli in HOLY_WAR_CBS \
+if religion.id == war.attacker_id \
+   and war.casus_belli in HOLY_WAR_CBS \
    and religion.get_axis("D") > HOLY_WAR_ALLIANCE_AXIS_D_THRESHOLD \
    and _has_holy_war_ally(religion, state):
     axis_modifier += HOLY_WAR_ALLIANCE_BONUS
 ```
+
+Guard `religion.id == war.attacker_id` jest kluczowy. `compute_army_strength` jest wywoływane też dla obrońcy — bez tego guard'a broniący w krucjacie z D>65 i sojusznikiem-krzyżowcem dostałby bonus, co jest niezgodne z regułą "bonus tylko ofensywny" (sekcja Reguły poniżej).
 
 Gdzie helper:
 
@@ -195,7 +215,7 @@ func _has_holy_war_ally(religion: Religion, state: Node) -> bool:
 - **Wymóg sojuszu aktywnego** — `rel.alliance_active == true`. Sojusz nieaktywny lub zerwany nie daje bonusu.
 - **Wymóg "atakujący w świętej wojnie"** — sojusznik musi być `war.attacker_id` w wojnie z CB krucjata/dzihad. Sojusznik *broniący* w krucjacie (jako defender_id) nie liczy się — bonus nagradza ofensywną koordynację.
 - **Defender w krucjacie NIE dostaje bonusu** — jeśli `religion.id == war.defender_id`, bonus nie aplikowany, nawet jeśli ma D>65 i sojusznika prowadzącego krucjatę. Spec 03 sek.3 ramuje to jako "świętą wojnę" — bonus dla agresorów.
-- **D > 65 ostro** — operator `>`, nie `>=`. Spójne z istniejącymi `AXIS_STRENGTH_MODIFIERS` (które używają `>=` w kodzie, ale nominalne progi w spec to "Transcendencja >65"). Plan 07: nowa stała `HOLY_WAR_ALLIANCE_AXIS_D_THRESHOLD = 65.0`, używana z operatorem `>`. To celowo *inaczej* niż istniejący `AXIS_STRENGTH_MODIFIERS["D"].min = 65` z `>=` — nie kumulujemy +25% i +15% na granicy D=65; nowy bonus aktywny dopiero przy D=66.
+- **D > 65 (strict)** — Plan 07: nowa stała `HOLY_WAR_ALLIANCE_AXIS_D_THRESHOLD = 65.0` używana z operatorem `>` (strict). Decyzja jest celowo *inna* niż istniejący `AXIS_STRENGTH_MODIFIERS["D"].min = 65` z `>=` — bonus +15% aktywuje się dopiero przy D=66, podczas gdy bazowy +25% z AXIS_STRENGTH_MODIFIERS już przy D=65. Skutek: na granicy D=65 religia dostaje tylko +25%, dopiero D=66 daje pełne +25% + +15%. Brak kumulacji na progu sprawia że granica jest jednoznaczna.
 - **Kompatybilność z `defender_id`** — funkcja `compute_army_strength` jest wywoływana zarówno dla atakującego, jak i broniącego. Guard `religion.id == war.attacker_id` zapobiega aplikowaniu bonusu broniącemu.
 
 ### Stałe HolyWar
@@ -224,6 +244,8 @@ Religion.interdict_grievance_until = 0
 GRIEVANCE_WINDOW_TURNS = 10
 GRIEVANCE_EKSKLUZYWIZM_THRESHOLD = 30.0   # C < 30 → Ekskluzywizm > 70
 ```
+
+`GRIEVANCE_EKSKLUZYWIZM_THRESHOLD` jest używany przez `WarManager.available_casus_belli` (cross-class access), analogicznie do `TurnManager` → `DiplomacyManager.PASSIVE_INCOME_PER_TURN` z Plan 06. Stała mieszka w `DiplomacyManager`, bo grievance to koncept dyplomatyczny — `WarManager` tylko konsumuje próg.
 
 ### `WarManager` — nowe stałe i wpisy
 
@@ -266,12 +288,31 @@ Wszystkie call-sites (testy + `declare_war`) zaktualizowane do nowej sygnatury.
 4. Koalicja przeciw G ma teraz patrona + N klientów → masa krytyczna do skoordynowanego nacisku
 5. Jeśli G zaprzestaje agresji (`compute_threat_index < 30`), koalicja rozpada się normalnie przez `dissolve_coalitions` — wasale wycofują się razem z patronem
 
+**Przypadek brzegowy — patron jako target_id koalicji**: jeśli patron P jest agresorem i koalicja jest skierowana przeciw niemu, jego klienci NIE są wciągani (nie atakują własnego patrona). W pseudokodzie `auto_join_vassals_to_coalitions` patron nigdy nie pojawi się w `c.members` (target i members są rozdzielne z konstrukcji `evaluate_coalitions`), więc iteracja `for member_id in snapshot` nigdy nie sparuje wasali patrona-targetu. Defensywny guard `if client.suzerain_id == c.target_id: continue` w pseudokodzie zostaje na wszelki wypadek.
+
 ### Cykl święta wojna sojusznicza
 
 1. Religie X i Y (obie z D>65, alliance_active) deklarują równolegle krucjaty (X→A, Y→B; różne defenderzy)
 2. W każdej battle obu wojen `compute_army_strength` zwraca +15% dla atakującego — bonus nawet bez wspólnego defendera
 3. Jeśli jedna ze stron sojuszu kończy krucjatę (peace lub force_loss), druga traci +15% w swojej krucjacie
 4. Asymetria z `_has_holy_war_ally`: sojusznik *broniący* w krucjacie NIE liczy się. Tylko ofensywne sprzężenia.
+
+---
+
+## Sekcja 6b: Defensywne null/lifecycle checki
+
+Plan 07 dotyka pól wskazujących na inne religie (`suzerain_id`, `interdict_grievance_from_id`) — wymaga to defensywnych guardów:
+
+| Lokalizacja | Guard | Powód |
+|-------------|-------|-------|
+| `auto_join_vassals_to_coalitions` | `state.get_religion(client.suzerain_id) == null → skip` | Patron mógł zostać usunięty z gry (np. asymilacja w przyszłości); osierocony klient nie podąża |
+| `auto_join_vassals_to_coalitions` | `client.suzerain_id == c.target_id → skip` | Defensywnie: bezpiecznik na wypadek gdyby ewolucja gry pozwoliła patronowi być w `members` (obecnie wykluczone konstrukcją) |
+| `available_casus_belli` | `state == null → skip reaktywnych CB` | Testy jednostkowe mogą wołać bez state; statyczne CB nadal zwracane |
+| `available_casus_belli` | `attacker.id == defender.id → skip "rewanz"` | Bezpiecznik na ręcznie spreparowane grievance w testach |
+| `proclaim_interdict` | `source_id == target_id → return false` | Eliminuje self-Interdykt na początku — zapobiega ustawieniu grievance własnego id |
+| `compute_army_strength` (HolyWar) | `religion.id == war.attacker_id` | Bonus tylko dla atakującego — defender w krucjacie nie dostaje +15% |
+
+Defensywne sprzątanie grievance (gdy `interdict_grievance_from_id` wskazuje na religię która została usunięta z gry) NIE jest implementowane w Plan 07 — grievance "wisi" do wygaśnięcia okna lub nadpisania. Ponieważ `available_casus_belli` sprawdza `attacker.interdict_grievance_from_id == defender.id`, martwy grievance po prostu nigdy nie zwróci `"rewanz"` (defender nie istnieje, więc nie zostanie podany jako argument). YAGNI.
 
 ---
 
