@@ -352,3 +352,36 @@ func recognize_suzerainty(state: Node, client_id: String, patron_id: String) -> 
     patron.add_prestige(SUZERAINTY_PATRON_PRESTIGE_GAIN)
     rel.economic_cooperation = clampf(rel.economic_cooperation + SUZERAINTY_ECON_GAIN, 0.0, 100.0)
     return true
+
+func vassal_council(state: Node, patron_id: String, client_id: String, axis: String, delta: float) -> bool:
+    var patron: Religion = state.get_religion(patron_id)
+    var client: Religion = state.get_religion(client_id)
+    if patron == null or client == null:
+        return false
+    # Spec 07 sek.2: bez kierunku ustępstwa akcja nic nie robi
+    if is_zero_approx(delta):
+        return false
+    # Klient musi być wasalem TEGO patrona
+    if client.suzerain_id != patron_id:
+        return false
+    # Blokada: Hierarchia patrona <=75 (spec 03 sek.3: B>75)
+    if patron.get_axis("B") <= VASSAL_COUNCIL_HIERARCHIA_THRESHOLD:
+        return false
+    var rel := get_or_create_relation(state, patron_id, client_id)
+    # Blokada: cooldown
+    if state.current_turn <= rel.vassal_council_cooldown_until:
+        return false
+    # Blokada: koszt prestiżu
+    if patron.prestige < VASSAL_COUNCIL_PRESTIGE_COST:
+        return false
+    # Delta clampowana z zachowaniem znaku (jak w ecumenical_council)
+    var sign_val := signf(delta)
+    var clamped_abs := clampf(absf(delta), VASSAL_COUNCIL_MIN_AXIS_DELTA, VASSAL_COUNCIL_MAX_AXIS_DELTA)
+    var final_delta := clamped_abs * sign_val
+    patron.add_prestige(-VASSAL_COUNCIL_PRESTIGE_COST)
+    client.shift_axis(axis, final_delta)
+    var dom := client.dominant_faction()
+    if dom != null:
+        dom.add_tension(VASSAL_COUNCIL_CLIENT_TENSION_BUMP)
+    rel.vassal_council_cooldown_until = state.current_turn + VASSAL_COUNCIL_COOLDOWN_TURNS
+    return true

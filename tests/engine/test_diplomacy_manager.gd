@@ -1283,3 +1283,144 @@ func test_vassal_revolt_skips_client_without_factions() -> void:
     tm._process_vassal_revolts(gs)
     # klient bez frakcji → dominant_faction() == null → no-op
     assert_eq(client.suzerain_id, "chr_zachodnie", "klient bez frakcji nie buntuje się")
+
+# --- vassal_council (Plan 06) ---
+
+func _setup_vassal_council(gs: Node, patron_id: String, client_id: String) -> RelationState:
+    var patron: Religion = gs.get_religion(patron_id)
+    var client: Religion = gs.get_religion(client_id)
+    _pin_axes(patron, 50.0, 80.0, 50.0, 50.0)  # B=80 → Hierarchia >75
+    patron.prestige = 100
+    client.suzerain_id = patron_id
+    # Zapewnij dominującą frakcję u klienta z czystym tension=0
+    if client.factions.is_empty():
+        var f := Faction.new()
+        f.id = "test_dom"
+        f.influence = 100.0
+        f.tension = 0.0
+        client.factions.append(f)
+    else:
+        client.dominant_faction().tension = 0.0
+    var dm := DiplomacyManager.new()
+    return dm.get_or_create_relation(gs, patron_id, client_id)
+
+func test_vassal_council_success() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    _setup_vassal_council(gs, "chr_zachodnie", "judaizm")
+    var client: Religion = gs.get_religion("judaizm")
+    var patron: Religion = gs.get_religion("chr_zachodnie")
+    var client_d_before := client.get_axis("D")
+    var ok := dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 5.0)
+    assert_true(ok)
+    assert_almost_eq(client.get_axis("D"), client_d_before + 5.0, 0.001, "klient shift +5 na osi D")
+    assert_eq(patron.prestige, 100 - DiplomacyManager.VASSAL_COUNCIL_PRESTIGE_COST)
+    assert_almost_eq(client.dominant_faction().tension, DiplomacyManager.VASSAL_COUNCIL_CLIENT_TENSION_BUMP, 0.001)
+
+func test_vassal_council_blocked_low_hierarchia() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    _setup_vassal_council(gs, "chr_zachodnie", "judaizm")
+    var patron: Religion = gs.get_religion("chr_zachodnie")
+    _pin_axes(patron, 50.0, 75.0, 50.0, 50.0)  # B=75 dokładnie — próg ostry: B>75
+    assert_false(dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 5.0), "B==75 nie wystarczy")
+
+func test_vassal_council_blocked_low_prestige() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    _setup_vassal_council(gs, "chr_zachodnie", "judaizm")
+    var patron: Religion = gs.get_religion("chr_zachodnie")
+    patron.prestige = DiplomacyManager.VASSAL_COUNCIL_PRESTIGE_COST - 1
+    assert_false(dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 5.0))
+
+func test_vassal_council_blocked_not_suzerain() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    _setup_vassal_council(gs, "chr_zachodnie", "judaizm")
+    var client: Religion = gs.get_religion("judaizm")
+    client.suzerain_id = "islam"  # patron to ktoś inny
+    assert_false(dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 5.0))
+
+func test_vassal_council_blocked_no_relation_no_suzerain() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    _setup_vassal_council(gs, "chr_zachodnie", "judaizm")
+    var client: Religion = gs.get_religion("judaizm")
+    client.suzerain_id = ""  # klient bez patrona
+    assert_false(dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 5.0))
+
+func test_vassal_council_cooldown_blocks_second_call() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    _setup_vassal_council(gs, "chr_zachodnie", "judaizm")
+    assert_true(dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 5.0))
+    assert_false(dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 5.0), "cooldown blokuje drugi raz")
+
+func test_vassal_council_cooldown_expires() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    _setup_vassal_council(gs, "chr_zachodnie", "judaizm")
+    var patron: Religion = gs.get_religion("chr_zachodnie")
+    patron.prestige = 200  # dość na 2 użycia
+    assert_true(dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 5.0))
+    # Przewińmy turę poza cooldown (5 tur)
+    for i in range(DiplomacyManager.VASSAL_COUNCIL_COOLDOWN_TURNS + 1):
+        gs.advance_turn()
+    assert_true(dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 5.0), "cooldown wygasł, akcja dostępna")
+
+func test_vassal_council_cooldown_boundary_exact_turn() -> void:
+    # Guard: current_turn <= cooldown_until → blokada. Sprawdza zachowanie DOKŁADNIE na granicy.
+    # Po pierwszym wywołaniu na turze T: cooldown_until = T + 5.
+    # Turn T+5: guard T+5 <= T+5 → true → blokada (oczekiwane).
+    # Turn T+6: guard T+6 <= T+5 → false → przejdzie (oczekiwane).
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    _setup_vassal_council(gs, "chr_zachodnie", "judaizm")
+    var patron: Religion = gs.get_religion("chr_zachodnie")
+    patron.prestige = 200
+    var t_start: int = gs.current_turn
+    assert_true(dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 5.0))
+    # przewinięcie do T+5 (cooldown_until)
+    while gs.current_turn < t_start + DiplomacyManager.VASSAL_COUNCIL_COOLDOWN_TURNS:
+        gs.advance_turn()
+    assert_eq(gs.current_turn, t_start + DiplomacyManager.VASSAL_COUNCIL_COOLDOWN_TURNS)
+    assert_false(dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 5.0), "dokładnie na cooldown_until: nadal zablokowane")
+    # przewinięcie do T+6 — pierwszy dostępny tick
+    gs.advance_turn()
+    assert_true(dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 5.0), "T+6 (cooldown+1): odblokowane")
+
+func test_vassal_council_delta_clamped() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    _setup_vassal_council(gs, "chr_zachodnie", "judaizm")
+    var client: Religion = gs.get_religion("judaizm")
+    _pin_axes(client, 50.0, 50.0, 50.0, 50.0)
+    var ok := dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 20.0)  # przekracza MAX=8
+    assert_true(ok)
+    assert_almost_eq(client.get_axis("D"), 50.0 + DiplomacyManager.VASSAL_COUNCIL_MAX_AXIS_DELTA, 0.001, "delta clampnięta do MAX=8")
+
+func test_vassal_council_negative_delta_clamped() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    _setup_vassal_council(gs, "chr_zachodnie", "judaizm")
+    var client: Religion = gs.get_religion("judaizm")
+    _pin_axes(client, 50.0, 50.0, 50.0, 50.0)
+    var ok := dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", -20.0)
+    assert_true(ok)
+    assert_almost_eq(client.get_axis("D"), 50.0 - DiplomacyManager.VASSAL_COUNCIL_MAX_AXIS_DELTA, 0.001, "delta -20 clampnięta do -8")
+
+func test_vassal_council_delta_zero_returns_false() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    _setup_vassal_council(gs, "chr_zachodnie", "judaizm")
+    assert_false(dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 0.0), "delta=0 → no-op false")
+
+func test_vassal_council_below_min_delta_clamped_up() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    _setup_vassal_council(gs, "chr_zachodnie", "judaizm")
+    var client: Religion = gs.get_religion("judaizm")
+    _pin_axes(client, 50.0, 50.0, 50.0, 50.0)
+    var ok := dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 1.0)  # poniżej MIN=3
+    assert_true(ok)
+    assert_almost_eq(client.get_axis("D"), 50.0 + DiplomacyManager.VASSAL_COUNCIL_MIN_AXIS_DELTA, 0.001, "delta 1 clampnięta do MIN=3 z zachowanym znakiem")
