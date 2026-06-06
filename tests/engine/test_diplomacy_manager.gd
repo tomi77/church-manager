@@ -1494,3 +1494,113 @@ func test_proclaim_interdict_baseline_no_immunity() -> void:
     src.prestige = 100
     assert_true(dm.proclaim_interdict(gs, "islam", "judaizm"))
     assert_eq(src.prestige, 100 - DiplomacyManager.INTERDICT_PRESTIGE_COST, "prestiż źródła powinien zostać zmniejszony o koszt Interdyktu")
+
+
+# --- Integration test (Plan 06) ---
+
+func test_integration_vassalage_lifecycle() -> void:
+    # Cykl: uznanie zwierzchnictwa → trybut (5 tur) → vassal_council × 4 z cooldownem → auto-bunt.
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var tm := TurnManagerScript.new()
+
+    var client: Religion = gs.get_religion("judaizm")
+    var patron: Religion = gs.get_religion("chr_zachodnie")
+    _pin_axes(client, 50.0, 50.0, 50.0, 50.0)
+    _pin_axes(patron, 50.0, 80.0, 50.0, 50.0)  # B=80 → uprawniony do Soboru Wasalnego
+    patron.prestige = 200
+    client.resources = 0
+
+    # Zapewnij dominującą frakcję u klienta (tension=0).
+    # Wyzeruj axis_preferences — w przeciwnym razie _update_faction_tensions w process_turn
+    # dodaje +2 tension per diverged axis per turę i scenariusz przestaje być deterministyczny
+    # (5 tur cooldownu × 4 sobory = 20+ tur naliczania, zaszumiałoby próg buntu).
+    # Workaround sprzęga test z mechaniką, ale to świadoma decyzja: testujemy cykl wasalstwa,
+    # nie napięcie frakcji z dryfu doktrynalnego (to pokrywa test_faction.gd).
+    if client.factions.is_empty():
+        var f := Faction.new()
+        f.id = "test_dom"
+        f.influence = 100.0
+        f.tension = 0.0
+        f.axis_preferences = []
+        client.factions.append(f)
+    else:
+        var dom_init := client.dominant_faction()
+        dom_init.tension = 0.0
+        dom_init.axis_preferences = []
+
+    # 1. Trust > 40 wymagany dla uznania
+    var rel := dm.get_or_create_relation(gs, "judaizm", "chr_zachodnie")
+    rel.theological_trust = 60.0
+
+    # 2. Uznanie Zwierzchnictwa
+    assert_true(dm.recognize_suzerainty(gs, "judaizm", "chr_zachodnie"), "krok 1: uznanie")
+    assert_eq(client.suzerain_id, "chr_zachodnie")
+    assert_eq(patron.prestige, 200 + DiplomacyManager.SUZERAINTY_PATRON_PRESTIGE_GAIN, "patron +20 prestiżu")
+
+    # 3. Sobór Wasalny × 4 (każdy +15 tension dominującej frakcji = 60 łącznie; nadal < 80, brak buntu na tym etapie)
+    #    Cooldown 5 tur — między każdym wywołaniem przewijamy 6 tur procesem TurnManager.
+    var dom: Faction = client.dominant_faction()
+    var tension_before := dom.tension
+    for i in range(4):
+        assert_true(dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 4.0), "sobór wasalny iteracja %d" % i)
+        # 6 tur, żeby cooldown wygasł przed następnym wywołaniem
+        for _t in range(DiplomacyManager.VASSAL_COUNCIL_COOLDOWN_TURNS + 1):
+            tm.process_turn(gs)
+    # Tension dominującej frakcji: 0 + 4*15 = 60 (poniżej progu 80)
+    assert_almost_eq(dom.tension, tension_before + 4.0 * DiplomacyManager.VASSAL_COUNCIL_CLIENT_TENSION_BUMP, 0.001, "tension dominującej frakcji = 60 po 4 soborach")
+    assert_eq(client.suzerain_id, "chr_zachodnie", "klient nadal wasalem po 4 soborach")
+
+    # 4. Pchnięcie tension na próg buntu (uproszczenie testowe).
+    #    Naturalna saturacja wymaga 6 sobórów (6×15=90), co przy cooldownie 5 daje 30+ tur.
+    #    Test integracyjny pomija to ręcznym ustawieniem tension=90 — sprawdzamy ścieżkę buntu,
+    #    nie wytrzymałość mechaniki cooldown (pokryta w unit teście test_vassal_council_cooldown_*).
+    dom.tension = 90.0
+    tm._process_vassal_revolts(gs)
+    assert_eq(client.suzerain_id, "", "krok 4: klient się buntuje przy tension>80")
+    # rel jest tym samym RelationState (klucz pary jest symetryczny)
+    assert_true(rel.military_tension >= DiplomacyManager.REVOLT_TENSION_INCREASE - 0.001, "military_tension >= 30 po buncie")
+    assert_almost_eq(dom.tension, 90.0 - DiplomacyManager.REVOLT_TENSION_RELIEF, 0.001, "ulga -40")
+
+    # 5. Sanity: trybut przestał płynąć po buncie
+    patron.resources = 0
+    client.resources = 100
+    tm._process_resources(gs)
+    # Klient: 100 + 5 passive (suzerain_id == "", brak trybutu) = 105
+    assert_eq(client.resources, 105, "po buncie brak trybutu — klient zachowuje passive income")
+    assert_eq(patron.resources, DiplomacyManager.PASSIVE_INCOME_PER_TURN, "patron: tylko passive income, brak trybutu")
+
+
+func test_integration_people_council_protects_against_interdict() -> void:
+    # Sobór Ludowy → immunity → próba Interdyktu z różnych stron, każda blokowana → wygasa po 5 turach
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var tm := TurnManagerScript.new()
+
+    var defender: Religion = gs.get_religion("judaizm")
+    _pin_axes(defender, 50.0, 20.0, 50.0, 50.0)  # B=20 → Równouprawnienie >70
+    defender.prestige = 50
+
+    var attacker_a: Religion = gs.get_religion("islam")
+    attacker_a.prestige = 100
+    var attacker_b: Religion = gs.get_religion("hinduizm")
+    attacker_b.prestige = 100
+
+    # 1. Defender wystawia Sobór Ludowy
+    assert_true(dm.people_council(gs, "judaizm"))
+    var immunity_turn := defender.interdict_immunity_until
+    assert_eq(immunity_turn, gs.current_turn + DiplomacyManager.PEOPLE_COUNCIL_IMMUNITY_TURNS)
+
+    # 2. Dwa różne aktorzy próbują Interdyktu — oba blokowane
+    assert_false(dm.proclaim_interdict(gs, "islam", "judaizm"), "atakujący A blokowany")
+    assert_false(dm.proclaim_interdict(gs, "hinduizm", "judaizm"), "atakujący B blokowany")
+    assert_eq(attacker_a.prestige, 100, "prestiż A nietknięty")
+    assert_eq(attacker_b.prestige, 100, "prestiż B nietknięty")
+
+    # 3. Przewińmy turę aż immunity wygaśnie (proclaim_interdict używa `>` więc immunity == current_turn już nie blokuje)
+    for _t in range(DiplomacyManager.PEOPLE_COUNCIL_IMMUNITY_TURNS):
+        tm.process_turn(gs)
+    assert_true(gs.current_turn >= immunity_turn, "current_turn dogonił immunity_until")
+
+    # 4. Po wygaśnięciu — Interdykt przechodzi
+    assert_true(dm.proclaim_interdict(gs, "islam", "judaizm"), "po wygaśnięciu immunity Interdykt działa")
