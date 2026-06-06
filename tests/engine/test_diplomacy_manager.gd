@@ -310,3 +310,54 @@ func test_evaluate_coalitions_excludes_agresor_and_victims() -> void:
     var c: Coalition = gs.active_coalitions[0]
     assert_eq(c.members.size(), 2)
     assert_false("chr_zachodnie" in c.members)
+
+func test_dissolve_coalition_when_threat_drops() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var c := Coalition.new()
+    c.target_id = "islam"
+    c.members = ["judaizm", "zoroastryzm"]
+    gs.active_coalitions.append(c)
+    # Brak wojen → threat=0
+    dm.dissolve_coalitions(gs)
+    assert_eq(gs.active_coalitions.size(), 0)
+
+func test_coalition_persists_when_threat_high() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    _setup_agresor_scenario(gs, "islam", ["chr_zachodnie", "hinduizm", "buddyzm"])
+    var c := Coalition.new()
+    c.target_id = "islam"
+    c.members = ["judaizm", "zoroastryzm"]
+    gs.active_coalitions.append(c)
+    dm.dissolve_coalitions(gs)
+    assert_eq(gs.active_coalitions.size(), 1)
+    assert_eq(c.turns_active, 1)
+
+func test_coalition_dissolves_after_5_turns_without_conflict() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    # Konstrukcja stanu: islam ma 1 ofensywę (threat += 20) + 5 obrony (threat += 25) = 45
+    var w1 := War.new(); w1.attacker_id = "islam"; w1.defender_id = "chr_zachodnie"; w1.state = "BATTLING"
+    gs.active_wars.append(w1)
+    for i in range(5):
+        var wd := War.new(); wd.attacker_id = "buddyzm"; wd.defender_id = "islam"; wd.state = "BATTLING"
+        gs.active_wars.append(wd)
+    # threat(islam) = 20 + 5*5 = 45 ≥ 30
+    var c := Coalition.new()
+    c.target_id = "islam"
+    c.members = ["judaizm", "zoroastryzm"]
+    gs.active_coalitions.append(c)
+    # Pierwsza iteracja: islam wciąż atakuje → reset turns_without_conflict
+    dm.dissolve_coalitions(gs)
+    assert_eq(gs.active_coalitions.size(), 1)
+    # Usuwamy ofensywną wojnę islamu (został tylko jako defender)
+    gs.active_wars.remove_at(0)
+    # threat = 25, < 30 → natychmiastowy rozpad. Aby utrzymać >30:
+    for i in range(2):
+        var wd := War.new(); wd.attacker_id = "manicheizm"; wd.defender_id = "islam"; wd.state = "BATTLING"
+        gs.active_wars.append(wd)
+    # threat(islam) = 7*5 = 35 ≥ 30, ale islam nie atakuje → turns_without_conflict++
+    for i in range(5):
+        dm.dissolve_coalitions(gs)
+    assert_eq(gs.active_coalitions.size(), 0)

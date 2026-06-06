@@ -116,3 +116,26 @@ func _has_active_coalition(state: Node, target_id: String) -> bool:
         if c.target_id == target_id:
             return true
     return false
+
+func dissolve_coalitions(state: Node) -> void:
+    var still_active: Array[Coalition] = []
+    for c: Coalition in state.active_coalitions:
+        c.turns_active += 1
+        if compute_threat_index(state, c.target_id) < COALITION_DISSOLUTION_THREAT:
+            continue
+        if _aggressor_has_offensive_war(state, c.target_id):
+            c.turns_without_conflict = 0
+        else:
+            c.turns_without_conflict += 1
+        if c.turns_without_conflict >= COALITION_DISSOLUTION_PEACE_TURNS:
+            continue
+        still_active.append(c)
+    state.active_coalitions = still_active
+
+func _aggressor_has_offensive_war(state: Node, aggressor_id: String) -> bool:
+    for war: War in state.active_wars:
+        if war.state == "ENDED":
+            continue
+        if war.attacker_id == aggressor_id:
+            return true
+    return false
