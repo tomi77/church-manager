@@ -1137,3 +1137,80 @@ func test_recognize_suzerainty_returns_false_on_null_religions() -> void:
     var dm := DiplomacyManager.new()
     assert_false(dm.recognize_suzerainty(gs, "nonexistent", "chr_zachodnie"))
     assert_false(dm.recognize_suzerainty(gs, "judaizm", "nonexistent"))
+
+# --- _process_resources (Plan 06) ---
+
+func test_process_resources_passive_income_only() -> void:
+    var gs := _make_state()
+    var tm := TurnManagerScript.new()
+    var islam: Religion = gs.get_religion("islam")
+    var chr_z: Religion = gs.get_religion("chr_zachodnie")
+    islam.resources = 0
+    chr_z.resources = 0
+    tm._process_resources(gs)
+    assert_eq(islam.resources, DiplomacyManager.PASSIVE_INCOME_PER_TURN, "islam: passive income +5")
+    assert_eq(chr_z.resources, DiplomacyManager.PASSIVE_INCOME_PER_TURN, "chr_zachodnie: passive income +5")
+
+func test_process_resources_tribute_flows_client_to_patron() -> void:
+    var gs := _make_state()
+    var tm := TurnManagerScript.new()
+    var client: Religion = gs.get_religion("judaizm")
+    var patron: Religion = gs.get_religion("chr_zachodnie")
+    client.suzerain_id = "chr_zachodnie"
+    client.resources = 10
+    patron.resources = 0
+    tm._process_resources(gs)
+    # klient: +5 passive, -3 trybut = +2 netto → 12
+    assert_eq(client.resources, 12, "klient: passive +5 minus trybut 3 = +2 netto")
+    # patron: +5 passive, +3 trybut = 8
+    assert_eq(patron.resources, 8, "patron: passive +5 plus trybut 3")
+
+func test_process_resources_tribute_floor_zero() -> void:
+    var gs := _make_state()
+    var tm := TurnManagerScript.new()
+    var client: Religion = gs.get_religion("judaizm")
+    var patron: Religion = gs.get_religion("chr_zachodnie")
+    client.suzerain_id = "chr_zachodnie"
+    # Klient ma 1 resource ZA passive income — po +5 ma 6, trybut nie zubaża <0
+    # Sprawdźmy też najgorszy przypadek: klient z 0 zasobami przed turą
+    client.resources = 0
+    patron.resources = 0
+    tm._process_resources(gs)
+    # klient: 0 + 5 passive = 5, potem -min(3,5) = 2 → patron dostaje 3
+    assert_eq(client.resources, 2)
+    assert_eq(patron.resources, 8)  # 0 + 5 passive + 3 trybut
+
+func test_process_resources_no_patron_no_tribute() -> void:
+    var gs := _make_state()
+    var tm := TurnManagerScript.new()
+    var orphan: Religion = gs.get_religion("judaizm")
+    orphan.suzerain_id = ""  # bez patrona
+    orphan.resources = 0
+    tm._process_resources(gs)
+    assert_eq(orphan.resources, DiplomacyManager.PASSIVE_INCOME_PER_TURN, "religia bez patrona: tylko passive income")
+
+func test_process_resources_dangling_patron_skipped() -> void:
+    var gs := _make_state()
+    var tm := TurnManagerScript.new()
+    var client: Religion = gs.get_religion("judaizm")
+    client.suzerain_id = "nonexistent_religion"
+    client.resources = 10
+    tm._process_resources(gs)
+    # patron==null → trybut się nie wykonuje, tylko passive
+    assert_eq(client.resources, 15, "dangling patron: klient dostaje tylko passive, brak utraty trybutu")
+
+func test_process_resources_does_not_leak_into_unrelated_state() -> void:
+    # Sanity regression: passive income nie wpływa na prestiż, war_weariness, axes innych religii.
+    # Strzeże przed pułapką polegającą na przypadkowej modyfikacji pól używanych w innych testach.
+    var gs := _make_state()
+    var tm := TurnManagerScript.new()
+    var probe: Religion = gs.get_religion("buddyzm")  # religia nieuczestnicząca w żadnym scenariuszu
+    probe.prestige = 50
+    probe.war_weariness = 12.5
+    var a_before := probe.get_axis("A")
+    for _i in range(5):
+        tm._process_resources(gs)
+    assert_eq(probe.prestige, 50, "prestiż nietknięty przez _process_resources")
+    assert_almost_eq(probe.war_weariness, 12.5, 0.001)
+    assert_almost_eq(probe.get_axis("A"), a_before, 0.001)
+    assert_eq(probe.resources, 5 * DiplomacyManager.PASSIVE_INCOME_PER_TURN, "tylko resources naliczane")

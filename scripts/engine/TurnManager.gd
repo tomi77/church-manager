@@ -15,6 +15,7 @@ func process_turn(state: Node) -> void:
     _process_active_wars(state)
     _process_missionaries(state)
     _process_diplomacy(state)
+    _process_resources(state)
     state.advance_turn()
 
 func _apply_passive_pressure(graph: ProvinceGraph) -> void:
@@ -164,3 +165,19 @@ func _process_missionaries(state: Node) -> void:
             if dom != null:
                 dom.add_tension(DiplomacyManager.EKSKLUZYWIZM_FACTION_TENSION_BUMP)
     state.missionary_missions = still_active
+
+func _process_resources(state: Node) -> void:
+    # Najpierw passive income wszystkim, potem trybut klient → patron.
+    # Spec 07 sek.3: ta kolejność gwarantuje że klient zaczyna turę z +PASSIVE-TRIBUTE netto,
+    # nie wpada w nędzę nawet jeśli zaczyna z 0 zasobami.
+    for religion: Religion in state.all_religions():
+        religion.resources += DiplomacyManager.PASSIVE_INCOME_PER_TURN
+    for client: Religion in state.all_religions():
+        if client.suzerain_id == "":
+            continue
+        var patron: Religion = state.get_religion(client.suzerain_id)
+        if patron == null:
+            continue
+        var amount: int = mini(DiplomacyManager.TRIBUTE_PER_TURN, client.resources)
+        client.resources -= amount
+        patron.resources += amount
