@@ -900,3 +900,90 @@ func test_missionary_exclusivity_bumps_faction_tension() -> void:
     # Misjonarz z chr→islam (m2) wraca: target=islam, C=50 (Eksklu 50, nie >70) → brak bumpa
     # → tylko chr_zachodnie's dominant faction (papiestwo) dostaje +10.0
     assert_almost_eq(dom_after.tension, initial_tension + 10.0, 0.001)
+
+# --- Auto-join sojuszników do koalicji ---
+
+func test_auto_join_adds_ally_of_member() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    # Koalicja przeciw "islam" z member "judaizm"
+    var c := Coalition.new()
+    c.target_id = "islam"
+    c.members = ["judaizm"]
+    gs.active_coalitions.append(c)
+    # Sojusz między judaizm a zoroastryzm
+    var rel := dm.get_or_create_relation(gs, "judaizm", "zoroastryzm")
+    rel.alliance_active = true
+    dm.auto_join_allies_to_coalitions(gs)
+    assert_eq(c.members.size(), 2)
+    assert_true("zoroastryzm" in c.members)
+
+func test_auto_join_skips_target() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var c := Coalition.new()
+    c.target_id = "islam"
+    c.members = ["judaizm"]
+    gs.active_coalitions.append(c)
+    # Sojusz judaizm z islam (sam target koalicji) — nie powinien być dodany
+    var rel := dm.get_or_create_relation(gs, "judaizm", "islam")
+    rel.alliance_active = true
+    dm.auto_join_allies_to_coalitions(gs)
+    assert_eq(c.members.size(), 1)
+    assert_false("islam" in c.members)
+
+func test_auto_join_idempotent() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var c := Coalition.new()
+    c.target_id = "islam"
+    c.members = ["judaizm", "zoroastryzm"]
+    gs.active_coalitions.append(c)
+    var rel := dm.get_or_create_relation(gs, "judaizm", "zoroastryzm")
+    rel.alliance_active = true
+    dm.auto_join_allies_to_coalitions(gs)
+    # zoroastryzm już jest członkiem — nie duplikujemy
+    assert_eq(c.members.size(), 2)
+
+func test_auto_join_skips_non_alliance() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var c := Coalition.new()
+    c.target_id = "islam"
+    c.members = ["judaizm"]
+    gs.active_coalitions.append(c)
+    # Relacja istnieje, ale alliance_active=false
+    var rel := dm.get_or_create_relation(gs, "judaizm", "zoroastryzm")
+    rel.alliance_active = false
+    rel.theological_trust = 90.0  # mimo wysokiego trust — bez sojuszu nie dołącza
+    dm.auto_join_allies_to_coalitions(gs)
+    assert_eq(c.members.size(), 1)
+
+func test_auto_join_runs_in_process_diplomacy() -> void:
+    var gs := _make_state()
+    var tm := TurnManagerScript.new()
+    var dm := DiplomacyManager.new()
+    # Setup koalicji z member judaizm, sojusz judaizm-zoroastryzm
+    var c := Coalition.new()
+    c.target_id = "islam"
+    c.members = ["judaizm"]
+    gs.active_coalitions.append(c)
+    var rel := dm.get_or_create_relation(gs, "judaizm", "zoroastryzm")
+    rel.alliance_active = true
+    # Dwie aktywne wojny atakowane przez islam → threat = 2 × 20 = 40 (>30 dissolve, <50 dla nowej koalicji,
+    # ale `_has_active_coalition` blokuje tworzenie kolejnej — istniejąca pre-built coalition zostaje
+    # nietknięta przez evaluate_coalitions, a dissolve nie usuwa jej przy threat>30).
+    var war1 := War.new()
+    war1.attacker_id = "islam"
+    war1.defender_id = "hinduizm"
+    war1.state = "BATTLING"
+    gs.active_wars.append(war1)
+    var war2 := War.new()
+    war2.attacker_id = "islam"
+    war2.defender_id = "chr_zachodnie"
+    war2.state = "BATTLING"
+    gs.active_wars.append(war2)
+    tm.process_turn(gs)
+    # Po turze: koalicja nadal aktywna i zoroastryzm dołączył przez auto-join
+    assert_eq(gs.active_coalitions.size(), 1)
+    assert_true("zoroastryzm" in gs.active_coalitions[0].members)

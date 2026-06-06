@@ -167,6 +167,24 @@ func dissolve_coalitions(state: Node) -> void:
         still_active.append(c)
     state.active_coalitions = still_active
 
+func auto_join_allies_to_coalitions(state: Node) -> void:
+    for c: Coalition in state.active_coalitions:
+        var snapshot: Array[String] = []
+        for m: String in c.members:
+            snapshot.append(m)
+        for member_id: String in snapshot:
+            for rel: RelationState in state.relations:
+                if not rel.alliance_active:
+                    continue
+                var ally_id := ""
+                if rel.religion_a_id == member_id:
+                    ally_id = rel.religion_b_id
+                elif rel.religion_b_id == member_id:
+                    ally_id = rel.religion_a_id
+                if ally_id == "" or ally_id == c.target_id or ally_id in c.members:
+                    continue
+                c.members.append(ally_id)
+
 func _aggressor_has_offensive_war(state: Node, aggressor_id: String) -> bool:
     for war: War in state.active_wars:
         if war.state == "ENDED":
