@@ -1493,3 +1493,4 @@ func test_proclaim_interdict_baseline_no_immunity() -> void:
     var src: Religion = gs.get_religion("islam")
     src.prestige = 100
     assert_true(dm.proclaim_interdict(gs, "islam", "judaizm"))
+    assert_eq(src.prestige, 100 - DiplomacyManager.INTERDICT_PRESTIGE_COST, "prestiż źródła powinien zostać zmniejszony o koszt Interdyktu")

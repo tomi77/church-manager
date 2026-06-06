@@ -86,7 +86,7 @@ const VASSAL_COUNCIL_COOLDOWN_TURNS := 5
 # --- Stałe Soboru Ludowego (Plan 06) ---
 const PEOPLE_COUNCIL_ROWNOUPRAWNIENIE_THRESHOLD := 30.0  # B<30 (Równouprawnienie >70)
 const PEOPLE_COUNCIL_PRESTIGE_COST := 15
-const PEOPLE_COUNCIL_IMMUNITY_TURNS := 5
+const PEOPLE_COUNCIL_IMMUNITY_TURNS := 5   # uwaga: proclaim_interdict używa `>` (nie `<=` jak vassal cooldown) → immunity wygasa DOKŁADNIE na turze T+5 (efektywnie 4 tury blokady)
 
 func _pair_key(a: String, b: String) -> Array:
     var pair: Array = [a, b]
