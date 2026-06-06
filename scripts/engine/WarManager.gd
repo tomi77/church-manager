@@ -105,6 +105,9 @@ func declare_war(attacker_id: String, defender_id: String, cb: String, state: No
     war.state = "MOBILIZING"
     war.turns_in_state = 0
     state.active_wars.append(war)
+    var dm := DiplomacyManager.new()
+    var rel := dm.get_or_create_relation(state, attacker_id, defender_id)
+    rel.military_tension = clampf(rel.military_tension + DiplomacyManager.DECLARE_WAR_TENSION_INCREASE, 0.0, 100.0)
     return war
 
 func compute_army_strength(religion: Religion, target_province: Province, war: War, state: Node) -> float:

@@ -665,3 +665,16 @@ func test_resolve_defeat_invalid_index_noop() -> void:
     wm.resolve_defeat(ev, 99, gs)  # invalid
     assert_almost_eq(rel.get_axis("A"), 50.0, 0.001)
     assert_eq(gs.pending_defeat_events.size(), 1, "invalid index — event NIE usunięty")
+
+const DiplomacyManagerScript := preload("res://scripts/engine/DiplomacyManager.gd")
+
+func test_declare_war_increases_military_tension() -> void:
+    var gs := _make_state()
+    _pin_axes(gs.get_religion("islam"), 50.0, 50.0, 20.0, 30.0)  # C=20 → Eksk 80; D=30 → Doczesność 70 (Krucjata wymaga >60)
+    gs.get_religion("islam").prestige = 50
+    var wm := WarManager.new()
+    var war: War = wm.declare_war("islam", "chr_zachodnie", "krucjata", gs)
+    assert_not_null(war)
+    var dm := DiplomacyManager.new()
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    assert_almost_eq(rel.military_tension, 20.0, 0.001)
