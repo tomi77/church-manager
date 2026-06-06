@@ -325,7 +325,7 @@ func _axis_trust_gain_modifier(religion: Religion) -> float:
     return 1.0
 
 # --- Akcje wasalstwa (Plan 06) ---
-
+# Klient inicjuje — kolejność: (client, patron). Asymetryczne z vassal_council.
 func recognize_suzerainty(state: Node, client_id: String, patron_id: String) -> bool:
     var client: Religion = state.get_religion(client_id)
     var patron: Religion = state.get_religion(patron_id)
@@ -353,6 +353,7 @@ func recognize_suzerainty(state: Node, client_id: String, patron_id: String) -> 
     rel.economic_cooperation = clampf(rel.economic_cooperation + SUZERAINTY_ECON_GAIN, 0.0, 100.0)
     return true
 
+# Patron inicjuje — kolejność: (patron, client). Asymetryczne z recognize_suzerainty.
 func vassal_council(state: Node, patron_id: String, client_id: String, axis: String, delta: float) -> bool:
     var patron: Religion = state.get_religion(patron_id)
     var client: Religion = state.get_religion(client_id)

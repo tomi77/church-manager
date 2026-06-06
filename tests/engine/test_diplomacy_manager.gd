@@ -1307,7 +1307,7 @@ func _setup_vassal_council(gs: Node, patron_id: String, client_id: String) -> Re
 func test_vassal_council_success() -> void:
     var gs := _make_state()
     var dm := DiplomacyManager.new()
-    _setup_vassal_council(gs, "chr_zachodnie", "judaizm")
+    var rel := _setup_vassal_council(gs, "chr_zachodnie", "judaizm")
     var client: Religion = gs.get_religion("judaizm")
     var patron: Religion = gs.get_religion("chr_zachodnie")
     var client_d_before := client.get_axis("D")
@@ -1316,6 +1316,7 @@ func test_vassal_council_success() -> void:
     assert_almost_eq(client.get_axis("D"), client_d_before + 5.0, 0.001, "klient shift +5 na osi D")
     assert_eq(patron.prestige, 100 - DiplomacyManager.VASSAL_COUNCIL_PRESTIGE_COST)
     assert_almost_eq(client.dominant_faction().tension, DiplomacyManager.VASSAL_COUNCIL_CLIENT_TENSION_BUMP, 0.001)
+    assert_eq(rel.vassal_council_cooldown_until, gs.current_turn + DiplomacyManager.VASSAL_COUNCIL_COOLDOWN_TURNS, "cooldown_until zapisany po sukcesie")
 
 func test_vassal_council_blocked_low_hierarchia() -> void:
     var gs := _make_state()
