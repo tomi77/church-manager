@@ -1119,6 +1119,7 @@ func test_recognize_suzerainty_blocked_active_war() -> void:
     war.state = "BATTLING"
     gs.active_wars.append(war)
     assert_false(dm.recognize_suzerainty(gs, "judaizm", "chr_zachodnie"))
+    assert_eq(client.suzerain_id, "", "mutacja nie powinna była zajść mimo blokady wojny")
 
 func test_recognize_suzerainty_blocked_existing_patron() -> void:
     var gs := _make_state()
@@ -1129,6 +1130,7 @@ func test_recognize_suzerainty_blocked_existing_patron() -> void:
     var rel := dm.get_or_create_relation(gs, "judaizm", "chr_zachodnie")
     rel.theological_trust = 70.0
     assert_false(dm.recognize_suzerainty(gs, "judaizm", "chr_zachodnie"), "klient z istniejącym patronem nie może uznać kolejnego")
+    assert_eq(client.suzerain_id, "islam", "istniejący patron nie powinien być nadpisany")
 
 func test_recognize_suzerainty_returns_false_on_null_religions() -> void:
     var gs := _make_state()
