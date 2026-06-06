@@ -9,7 +9,7 @@ const PEACE_COUNCIL_PRESTIGE_COST := 25
 # --- Stałe wskaźników i progów ---
 const ALLIANCE_TRUST_THRESHOLD := 50.0       # Zaufanie teologiczne >50 OR
 const ALLIANCE_ECONOMIC_THRESHOLD := 60.0    # Współpraca ekonomiczna >60
-const ALLIANCE_EXCLUSIVITY_BLOCK := 20.0     # C <20 (Ekskluzywizm >80) → blokada sojuszu
+const ALLIANCE_EXCLUSIVITY_BLOCK := 20.0     # C <20 (Ekskluzywizm >80); blokada sojuszu tylko gdy target Synkretyzm >60 (zob. ALLIANCE_PARTNER_SYNKRETYZM_BLOCK)
 const ALLIANCE_PARTNER_SYNKRETYZM_BLOCK := 60.0  # partner Synkretyzm >60 → wzmacnia blokadę Ekskluzywizmu
 const COALITION_THREAT_THRESHOLD := 50.0
 const COALITION_MEMBER_TENSION_THRESHOLD := 40.0   # NPC kwalifikuje się i akceptuje członkostwo deterministycznie powyżej tego progu
