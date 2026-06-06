@@ -3,7 +3,7 @@
 **Data:** 2026-06-06
 **Projekt:** church-manager
 **Status:** Zatwierdzony
-**Powiązane:** [system dyplomacji](03-diplomacy-system-design.md), [system doktryn](01-doctrine-system-design.md)
+**Powiązane:** [system dyplomacji](03-diplomacy-system-design.md), [system doktryn](01-doctrine-system-design.md), [system wojen](02-war-system-design.md)
 
 ---
 
@@ -54,6 +54,7 @@ Inicjuje klient. Po zaakceptowaniu klient ustawia `suzerain_id`, patron jednoraz
 | Inicjator | klient |
 | Wymagania klienta | `A < SUZERAINTY_DOGMATYZM_BLOCK` (Dogmatyzm ≤80, spec 03 sek.3), brak istniejącego patrona |
 | Wymagania pary | `theological_trust > SUZERAINTY_TRUST_THRESHOLD`, brak aktywnej wojny między stronami |
+| Koszt | brak — klient nie płaci prestiżu ani zasobów (akcja symboliczna; "danina" zaczyna płynąć od następnej tury jako trybut) |
 | Efekt na klienta | `suzerain_id = patron_id` |
 | Efekt na patrona | `prestige += SUZERAINTY_PATRON_PRESTIGE_GAIN` |
 | Efekt na relację | `economic_cooperation += SUZERAINTY_ECON_GAIN` (clamp 0..100) |
@@ -91,8 +92,10 @@ Inicjuje religia o niskiej Hierarchii (B<30, Równouprawnienie >70). Daje sobie 
 |---------|---------|
 | Inicjator | sama religia |
 | Wymagania | `B < PEOPLE_COUNCIL_ROWNOUPRAWNIENIE_THRESHOLD` (30), `prestige ≥ PEOPLE_COUNCIL_PRESTIGE_COST` |
+| Koszt | `prestige -= PEOPLE_COUNCIL_PRESTIGE_COST` (15) |
 | Efekt | `interdict_immunity_until = current_turn + PEOPLE_COUNCIL_IMMUNITY_TURNS` (5) |
-| Koszt | `prestige -= 15` |
+
+Sobór Ludowy w Plan 06 jest stricte defensywny — nie korzysta z mechaniki frakcji ani głosowania (rozbudowany system frakcji odłożony w Plan 05 footer). Trigger to wyłącznie pozycja religii na osi B (<30) i prestiż.
 
 Nie ma celu (target_id) — to akcja na sobie. Strategiczna decyzja: czy wystawić *teraz* (preemptywnie), czy poczekać aż zagrożenie się skonkretyzuje (ryzyko że Interdykt przyjdzie wcześniej).
 
@@ -122,7 +125,7 @@ for client in all_religions():
     if client.suzerain_id == "": continue
     patron = state.get_religion(client.suzerain_id)
     if patron == null: continue
-    amount = min(TRIBUTE_PER_TURN, client.resources)  # floor 0
+    amount = min(TRIBUTE_PER_TURN, client.resources)  # klient nigdy nie schodzi poniżej 0
     client.resources -= amount
     patron.resources += amount
 ```
@@ -261,6 +264,9 @@ PEOPLE_COUNCIL_IMMUNITY_TURNS = 5
 - **AI NPC inicjujący Uznanie/Sobór Wasalny** — przyszłość
 - **UI dyplomacji (akcje gracza)** — dedykowany plan UI
 - **Trybut jako zasób inny niż int** (rozszerzony katalog zasobów, np. populacja/wojsko) — Plan 06 wprowadza tylko jedno generic `resources`
+- **Transcendencja >65 → +15% siła sojuszu militarnego** (spec 03 sek.3) — brak konsumenta w obecnym kodzie, odłożone do Plan 07 (Krucjata/Dżihad)
+- **Sobór Ekumeniczny z konkretnym bonusem dla obu stron** (spec 03 sek.2: "ustępstwo doktrynalne lub trwały bonus") — Plan 05 zaimplementował tylko ustępstwo, bonus typu "trwały efekt" pozostaje odłożony
+- **Sobór Ludowy z mechaniką frakcji / głosowania** (Plan 05 footer wskazywał "wymaga rozbudowanego systemu frakcji") — Plan 06 implementuje wersję defensywną bez frakcji
 
 ---
 
