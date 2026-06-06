@@ -28,6 +28,14 @@ const THREAT_PER_ACTIVE_WAR := 20.0          # każda wojna jako atakujący
 const THREAT_PER_PASSIVE_WAR := 5.0          # każda wojna jako broniący (mniejszy wkład, bo defensywa)
 const THREAT_MAX := 100.0
 
+# --- Stałe modyfikatorów osi (Plan 05) ---
+const HIERARCHIA_COST_THRESHOLD := 60.0      # B>60 → tańsze akcje
+const HIERARCHIA_COST_MULTIPLIER := 0.8      # -20% kosztu prestiżu
+const SYNKRETYZM_TRUST_LOW_THRESHOLD := 60.0     # C>60 → +20% trust gain
+const SYNKRETYZM_TRUST_HIGH_THRESHOLD := 75.0    # C>75 → +35% trust gain
+const SYNKRETYZM_TRUST_LOW_MULTIPLIER := 1.20
+const SYNKRETYZM_TRUST_HIGH_MULTIPLIER := 1.35
+
 func _pair_key(a: String, b: String) -> Array:
     var pair: Array = [a, b]
     pair.sort()
@@ -149,3 +157,20 @@ func peace_council(state: Node, religion_id: String) -> bool:
     religion.add_prestige(-PEACE_COUNCIL_PRESTIGE_COST)
     religion.war_weariness = clampf(religion.war_weariness - PEACE_COUNCIL_WEARINESS_DROP, 0.0, 100.0)
     return true
+
+# --- Helpery modyfikatorów osi (Plan 05) ---
+
+func _axis_cost_modifier(religion: Religion) -> float:
+    # Hierarchia (oś B) >60 → -20% koszt prestiżu wszystkich akcji
+    if religion.get_axis("B") > HIERARCHIA_COST_THRESHOLD:
+        return HIERARCHIA_COST_MULTIPLIER
+    return 1.0
+
+func _axis_trust_gain_modifier(religion: Religion) -> float:
+    # Synkretyzm (oś C) >75 → +35%, >60 → +20% trust gain z akcji teologicznych
+    var c := religion.get_axis("C")
+    if c > SYNKRETYZM_TRUST_HIGH_THRESHOLD:
+        return SYNKRETYZM_TRUST_HIGH_MULTIPLIER
+    if c > SYNKRETYZM_TRUST_LOW_THRESHOLD:
+        return SYNKRETYZM_TRUST_LOW_MULTIPLIER
+    return 1.0

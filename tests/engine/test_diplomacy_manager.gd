@@ -441,3 +441,40 @@ func test_game_state_has_missionary_missions_empty() -> void:
     var gs := _make_state()
     assert_not_null(gs.missionary_missions)
     assert_eq(gs.missionary_missions.size(), 0)
+
+# --- Modyfikatory osi ---
+
+func test_axis_cost_modifier_default() -> void:
+    var dm := DiplomacyManager.new()
+    var gs := _make_state()
+    var src: Religion = gs.get_religion("islam")
+    _pin_axes(src, 50.0, 50.0, 50.0, 50.0)
+    assert_almost_eq(dm._axis_cost_modifier(src), 1.0, 0.001)
+
+func test_axis_cost_modifier_hierarchia_high() -> void:
+    var dm := DiplomacyManager.new()
+    var gs := _make_state()
+    var src: Religion = gs.get_religion("islam")
+    _pin_axes(src, 50.0, 70.0, 50.0, 50.0)  # B=70 → Hierarchia (próg 60)
+    assert_almost_eq(dm._axis_cost_modifier(src), 0.8, 0.001)
+
+func test_axis_trust_gain_modifier_default() -> void:
+    var dm := DiplomacyManager.new()
+    var gs := _make_state()
+    var src: Religion = gs.get_religion("islam")
+    _pin_axes(src, 50.0, 50.0, 50.0, 50.0)
+    assert_almost_eq(dm._axis_trust_gain_modifier(src), 1.0, 0.001)
+
+func test_axis_trust_gain_modifier_synkretyzm_mid() -> void:
+    var dm := DiplomacyManager.new()
+    var gs := _make_state()
+    var src: Religion = gs.get_religion("islam")
+    _pin_axes(src, 50.0, 50.0, 65.0, 50.0)  # C=65 → Synkretyzm średni (>60)
+    assert_almost_eq(dm._axis_trust_gain_modifier(src), 1.20, 0.001)
+
+func test_axis_trust_gain_modifier_synkretyzm_high() -> void:
+    var dm := DiplomacyManager.new()
+    var gs := _make_state()
+    var src: Religion = gs.get_religion("islam")
+    _pin_axes(src, 50.0, 50.0, 80.0, 50.0)  # C=80 → Synkretyzm wysoki (>75)
+    assert_almost_eq(dm._axis_trust_gain_modifier(src), 1.35, 0.001)
