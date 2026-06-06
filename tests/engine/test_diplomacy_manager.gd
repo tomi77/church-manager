@@ -420,6 +420,8 @@ func test_integration_coalition_lifecycle() -> void:
     var c: Coalition = gs.active_coalitions[0]
     assert_eq(c.target_id, "islam")
     assert_eq(c.members.size(), 2)
+    assert_true("judaizm" in c.members)
+    assert_true("zoroastryzm" in c.members)
 
     # 4. Wszystkie wojny się kończą (czyścimy active_wars) → threat spada do 0
     gs.active_wars.clear()
