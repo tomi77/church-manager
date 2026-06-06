@@ -4,6 +4,7 @@ const GameStateScript := preload("res://scripts/engine/GameState.gd")
 const RelationStateScript := preload("res://scripts/engine/RelationState.gd")
 const CoalitionScript := preload("res://scripts/engine/Coalition.gd")
 const DiplomacyManagerScript := preload("res://scripts/engine/DiplomacyManager.gd")
+const MissionaryMissionScript := preload("res://scripts/engine/MissionaryMission.gd")
 
 func _make_state() -> Node:
     var gs: Node = GameStateScript.new()
@@ -429,3 +430,14 @@ func test_integration_coalition_lifecycle() -> void:
     # 5. Turn 2: dissolve_coalitions widzi threat<30 → rozpad
     tm.process_turn(gs)
     assert_eq(gs.active_coalitions.size(), 0, "koalicja powinna się rozpaść")
+
+func test_missionary_mission_defaults() -> void:
+    var m: MissionaryMission = MissionaryMissionScript.new()
+    assert_eq(m.source_id, "")
+    assert_eq(m.target_id, "")
+    assert_eq(m.turns_remaining, 0)
+
+func test_game_state_has_missionary_missions_empty() -> void:
+    var gs := _make_state()
+    assert_not_null(gs.missionary_missions)
+    assert_eq(gs.missionary_missions.size(), 0)

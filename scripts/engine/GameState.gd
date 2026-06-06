@@ -11,6 +11,7 @@ var active_wars: Array[War] = []
 var pending_defeat_events: Array[DefeatEvent] = []
 var relations: Array[RelationState] = []
 var active_coalitions: Array[Coalition] = []
+var missionary_missions: Array[MissionaryMission] = []
 
 func initialize(player_id: String, religions: Array[Religion], graph: ProvinceGraph) -> void:
     player_religion_id = player_id
