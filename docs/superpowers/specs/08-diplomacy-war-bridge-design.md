@@ -66,7 +66,7 @@ for c in state.active_coalitions:
 
 - **Snapshot pierwotnych członków** — analogicznie do `auto_join_allies_to_coalitions`. Klient klienta NIE jest wciągany w tej samej turze (1 poziom propagacji per turę). Jeśli klient patrona zostanie dodany w tej iteracji, jego *wasale* dołączą dopiero w następnej turze.
 - **Patron jako target_id koalicji** — klient NIE dołącza (vetto relacji: klient nie atakuje swojego patrona). Ten przypadek występuje rzadko, ale jest możliwy: jeśli patron jest agresorem (declare_war), staje się target_id koalicji, a jego klient nie powinien być wciągany do koalicji *przeciw* patronowi.
-- **Klient atakowany przez koalicję** — niezmieniony. Klient może być agresorem (target_id) niezależnie od patrona; auto-join nie wcia patrona do koalicji wymierzonej w klienta (asymetria — wybór "Klient → patron").
+- **Klient atakowany przez koalicję** — niezmieniony. Klient może być agresorem (target_id) niezależnie od patrona; auto-join nie wciąga patrona do koalicji wymierzonej w klienta (asymetria — wybór "Klient → patron").
 - **Brak prestige cost / duplikatów** — auto-join jest mechanicznym podążaniem, nie kosztuje prestiżu klienta. Idempotentne: kolejne wywołania w tej samej turze niczego nie dodają.
 
 ### Integracja w TurnManager
