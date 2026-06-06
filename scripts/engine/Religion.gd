@@ -13,9 +13,9 @@ extends Resource
 @export var accent_color: String = "#ffffff"
 @export var war_weariness: float = 0.0
 @export var parent_religion_id: String = ""
-@export var resources: int = 0
-@export var suzerain_id: String = ""
-@export var interdict_immunity_until: int = 0
+@export var resources: int = 0                   # waluta trybutu i soborów
+@export var suzerain_id: String = ""             # "" = wolna; nie-"" = id patrona
+@export var interdict_immunity_until: int = 0    # turn numer do którego Interdykt jest blokowany
 
 func get_axis(axis: String) -> float:
     return axes.get(axis, 50.0)
