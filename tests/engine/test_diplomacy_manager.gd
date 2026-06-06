@@ -499,3 +499,148 @@ func test_axis_trust_gain_modifier_synkretyzm_at_high_threshold() -> void:
     var src: Religion = gs.get_religion("islam")
     _pin_axes(src, 50.0, 50.0, 75.0, 50.0)  # C=75 → exact threshold, only low bonus
     assert_almost_eq(dm._axis_trust_gain_modifier(src), 1.20, 0.001)
+
+# --- Sobór Ekumeniczny ---
+
+func test_ecumenical_council_success() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 50
+    _pin_axes(src, 50.0, 50.0, 50.0, 50.0)  # C=50, Synkretyzm 50 (>40)
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 65.0
+    rel.military_tension = 20.0
+    var initial_a := src.get_axis("A")
+    var ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", 5.0)
+    assert_true(ok)
+    assert_eq(src.prestige, 20)  # 50 - 30
+    assert_almost_eq(src.get_axis("A"), initial_a + 5.0, 0.001)
+    assert_almost_eq(rel.theological_trust, 80.0, 0.001)  # 65 + 15
+    assert_almost_eq(rel.military_tension, 10.0, 0.001)  # 20 - 10
+
+func test_ecumenical_council_clamps_delta_to_min() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 50
+    _pin_axes(src, 50.0, 50.0, 50.0, 50.0)
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 65.0
+    var initial_a := src.get_axis("A")
+    var ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", 1.0)
+    assert_true(ok)
+    assert_almost_eq(src.get_axis("A"), initial_a + 3.0, 0.001)  # 1.0 → 3.0 (min)
+
+func test_ecumenical_council_clamps_delta_to_max() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 50
+    _pin_axes(src, 50.0, 50.0, 50.0, 50.0)
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 65.0
+    var initial_a := src.get_axis("A")
+    var ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", 20.0)
+    assert_true(ok)
+    assert_almost_eq(src.get_axis("A"), initial_a + 8.0, 0.001)  # 20 → 8 (max)
+
+func test_ecumenical_council_negative_delta_preserves_sign() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 50
+    _pin_axes(src, 50.0, 50.0, 50.0, 50.0)
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 65.0
+    var initial_a := src.get_axis("A")
+    var ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", -5.0)
+    assert_true(ok)
+    assert_almost_eq(src.get_axis("A"), initial_a - 5.0, 0.001)
+
+func test_ecumenical_council_fails_low_trust() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 50
+    _pin_axes(src, 50.0, 50.0, 50.0, 50.0)
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 40.0  # <60
+    var ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", 5.0)
+    assert_false(ok)
+    assert_eq(src.prestige, 50)
+
+func test_ecumenical_council_fails_low_synkretyzm() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 50
+    _pin_axes(src, 50.0, 50.0, 30.0, 50.0)  # C=30 → Synkretyzm <40
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 65.0
+    var ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", 5.0)
+    assert_false(ok)
+
+func test_ecumenical_council_fails_high_tension() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 50
+    _pin_axes(src, 50.0, 50.0, 50.0, 50.0)
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 65.0
+    rel.military_tension = 90.0  # >85
+    var ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", 5.0)
+    assert_false(ok)
+
+func test_ecumenical_council_fails_active_war() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 50
+    _pin_axes(src, 50.0, 50.0, 50.0, 50.0)
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 65.0
+    var war := War.new()
+    war.attacker_id = "islam"
+    war.defender_id = "chr_zachodnie"
+    war.state = "BATTLING"
+    gs.active_wars.append(war)
+    var ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", 5.0)
+    assert_false(ok)
+
+func test_ecumenical_council_fails_insufficient_prestige() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 20  # <30
+    _pin_axes(src, 50.0, 50.0, 50.0, 50.0)
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 65.0
+    var ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", 5.0)
+    assert_false(ok)
+
+func test_ecumenical_council_hierarchia_discount() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 30
+    _pin_axes(src, 50.0, 70.0, 50.0, 50.0)  # B=70 → Hierarchia, koszt 30*0.8=24
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 65.0
+    var ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", 5.0)
+    assert_true(ok)
+    assert_eq(src.prestige, 6)  # 30 - 24
+
+func test_ecumenical_council_synkretyzm_trust_bonus() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 50
+    _pin_axes(src, 50.0, 50.0, 80.0, 50.0)  # C=80 → Synkretyzm wysoki (1.35x)
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.theological_trust = 65.0
+    var ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", 5.0)
+    assert_true(ok)
+    # trust gain = 15 * 1.35 = 20.25
+    assert_almost_eq(rel.theological_trust, 65.0 + 20.25, 0.001)

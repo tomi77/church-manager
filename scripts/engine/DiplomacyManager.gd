@@ -36,6 +36,16 @@ const SYNKRETYZM_TRUST_HIGH_THRESHOLD := 75.0    # C>75 → +35% trust gain
 const SYNKRETYZM_TRUST_LOW_MULTIPLIER := 1.20
 const SYNKRETYZM_TRUST_HIGH_MULTIPLIER := 1.35
 
+# --- Stałe Soboru Ekumenicznego (Plan 05) ---
+const COUNCIL_PRESTIGE_COST := 30
+const COUNCIL_TRUST_THRESHOLD := 60.0          # trust >60 (próg progowy)
+const COUNCIL_SYNKRETYZM_THRESHOLD := 40.0     # C>40 → Synkretyzm >40
+const COUNCIL_MIN_AXIS_DELTA := 3.0            # min |delta| ustępstwa
+const COUNCIL_MAX_AXIS_DELTA := 8.0            # max |delta| ustępstwa
+const COUNCIL_TRUST_GAIN := 15.0
+const COUNCIL_TENSION_DROP := 10.0
+const BLOCK_TENSION_FOR_DIALOGUE := 85.0       # napięcie >85 blokuje dialog
+
 func _pair_key(a: String, b: String) -> Array:
     var pair: Array = [a, b]
     pair.sort()
@@ -156,6 +166,46 @@ func peace_council(state: Node, religion_id: String) -> bool:
         return false
     religion.add_prestige(-PEACE_COUNCIL_PRESTIGE_COST)
     religion.war_weariness = clampf(religion.war_weariness - PEACE_COUNCIL_WEARINESS_DROP, 0.0, 100.0)
+    return true
+
+func ecumenical_council(state: Node, source_id: String, target_id: String, axis: String, delta: float) -> bool:
+    var source: Religion = state.get_religion(source_id)
+    var target: Religion = state.get_religion(target_id)
+    if source == null or target == null:
+        return false
+    # Spec sec.2: brak działania bez wybranego kierunku ustępstwa
+    if delta == 0.0:
+        return false
+    # Blokada: Synkretyzm source ≤40 (spec sec.2 wymaga >40)
+    if source.get_axis("C") <= COUNCIL_SYNKRETYZM_THRESHOLD:
+        return false
+    var rel := get_or_create_relation(state, source_id, target_id)
+    # Blokada: trust ≤60 (spec sec.2 wymaga >60)
+    if rel.theological_trust <= COUNCIL_TRUST_THRESHOLD:
+        return false
+    # Blokada: napięcie >85 (spec sec.1)
+    if rel.military_tension > BLOCK_TENSION_FOR_DIALOGUE:
+        return false
+    # Blokada: aktywna wojna między parą
+    for war: War in state.active_wars:
+        if war.state == "ENDED":
+            continue
+        if (war.attacker_id == source_id and war.defender_id == target_id) or \
+           (war.attacker_id == target_id and war.defender_id == source_id):
+            return false
+    # Koszt z modyfikatorem Hierarchii
+    var cost := int(round(COUNCIL_PRESTIGE_COST * _axis_cost_modifier(source)))
+    if source.prestige < cost:
+        return false
+    # Delta clampowana do [MIN, MAX], znak zachowany
+    var sign_val := signf(delta)
+    var clamped_abs := clampf(absf(delta), COUNCIL_MIN_AXIS_DELTA, COUNCIL_MAX_AXIS_DELTA)
+    var final_delta := clamped_abs * sign_val
+    source.add_prestige(-cost)
+    source.shift_axis(axis, final_delta)
+    var gain := COUNCIL_TRUST_GAIN * _axis_trust_gain_modifier(source)
+    rel.theological_trust = clampf(rel.theological_trust + gain, 0.0, 100.0)
+    rel.military_tension = clampf(rel.military_tension - COUNCIL_TENSION_DROP, 0.0, 100.0)
     return true
 
 # --- Helpery modyfikatorów osi (Plan 05) ---
