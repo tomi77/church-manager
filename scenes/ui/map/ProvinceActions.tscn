@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/map/ProvinceActions.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/ui/map/CBPicker.tscn" id="2"]
+
+[node name="ProvinceActions" type="VBoxContainer"]
+script = ExtResource("1")
+
+[node name="WarButton" type="Button" parent="."]
+unique_name_in_owner = true
+text = "⚔ Wypowiedz wojnę"
+
+[node name="MissionButton" type="Button" parent="."]
+unique_name_in_owner = true
+text = "📜 Wyślij misjonarza"
+
+[node name="DiplomacyButton" type="Button" parent="."]
+unique_name_in_owner = true
+text = "🌍 → Dyplomacja"
+
+[node name="CBPicker" parent="." instance=ExtResource("2")]
+unique_name_in_owner = true
