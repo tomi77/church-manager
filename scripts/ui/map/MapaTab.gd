@@ -12,8 +12,8 @@ var state: Node = null
 func _ready() -> void:
     _map_view.province_selected.connect(_on_province_selected)
     _detail_panel.navigate_to_diplomacy.connect(_on_navigate)
-    _detail_panel.war_declared.connect(_on_state_changed)
-    _detail_panel.missionaries_sent.connect(_on_state_changed)
+    _detail_panel.war_declared.connect(func(_defender_id: String, _cb: String): emit_signal("state_changed"))
+    _detail_panel.missionaries_sent.connect(func(_target_id: String): emit_signal("state_changed"))
 
 func bind_state(s: Node) -> void:
     state = s
@@ -33,5 +33,3 @@ func _on_province_selected(province_id: String) -> void:
 func _on_navigate(religion_id: String) -> void:
     emit_signal("navigate_to_diplomacy", religion_id)
 
-func _on_state_changed(_a = null, _b = null) -> void:
-    emit_signal("state_changed")
