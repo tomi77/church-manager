@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/world/ConflictSection.gd" id="1"]
+
+[node name="ConflictSection" type="VBoxContainer"]
+script = ExtResource("1")
+visible = false
+modulate = Color(1, 0.95, 0.95, 1)
+
+[node name="HeaderLabel" type="Label" parent="."]
+unique_name_in_owner = true
+text = "⚔ Aktywne konflikty"
+
+[node name="ListVBox" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
