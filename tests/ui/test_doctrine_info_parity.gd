@@ -53,3 +53,15 @@ func test_religion_accent_color_returns_color_for_known_id():
 func test_religion_accent_color_returns_default_for_unknown_id():
 	var c := UIConstants.religion_accent_color("nonexistent")
 	assert_eq(c, UIConstants.RELIGION_ACCENT_COLOR_DEFAULT)
+
+func test_religion_accent_colors_cover_all_historical_religions():
+	var religions := ReligionLoader.load_from_file("res://data/religions_historical.json")
+	for r: Religion in religions:
+		assert_true(UIConstants.RELIGION_ACCENT_COLORS.has(r.id),
+			"RELIGION_ACCENT_COLORS missing entry for religion_id: " + r.id)
+
+func test_religion_colors_cover_all_historical_religions():
+	var religions := ReligionLoader.load_from_file("res://data/religions_historical.json")
+	for r: Religion in religions:
+		assert_true(UIConstants.RELIGION_COLORS.has(r.id),
+			"RELIGION_COLORS missing entry for religion_id: " + r.id)

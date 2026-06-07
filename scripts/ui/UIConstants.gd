@@ -28,7 +28,7 @@ const RELIGION_COLORS: Dictionary = {
 	"hinduizm": Color("1a0808"),
 	"buddyzm": Color("001518"),
 	"religie_germanskie": Color("0d1408"),
-	"religie_slowianskie": Color("0a1210"),
+	"religie_slowianski": Color("0a1210"),
 }
 const RELIGION_COLOR_DEFAULT: Color = Color(0.3, 0.3, 0.3)
 
@@ -57,7 +57,7 @@ const RELIGION_ACCENT_COLORS: Dictionary = {
 	"hinduizm": Color("ee5533"),
 	"buddyzm": Color("33bbcc"),
 	"religie_germanskie": Color("88cc44"),
-	"religie_slowianskie": Color("55bb88"),
+	"religie_slowianski": Color("55bb88"),
 }
 const RELIGION_ACCENT_COLOR_DEFAULT: Color = Color(0.7, 0.7, 0.7)
 
