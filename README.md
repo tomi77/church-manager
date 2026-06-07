@@ -1,9 +1,10 @@
-# church-manager
+# religion-manager
 
-Manager kościoła
+Strategiczna gra o ewolucji 12 religii w VII wieku — doktryna, dyplomacja, wojna, schizmy.
 
 ## Założenia
-
-* Wybór religii (judaizm, chrześcijaństwo, islam, może inne)
-* Rozwój od początku
-* Zmiany założeń, wchłanianie idei innych religii, prowadzenie wojen
+* Wybór jednej z 12 religii startowych (m.in. islam, chrześcijaństwo zachodnie/wschodnie, koptyjski, zoroastryzm, manicheizm, judaizm, hinduizm, buddyzm)
+* Rozwój teologiczny przez 4 osie doktrynalne (Dogmatyzm, Hierarchia, Synkretyzm, Transcendencja)
+* Dyplomacja: sojusze, sobory, interdykty, misjonarze, wasalstwo, koalicje
+* Wojna: casus belli, krucjaty/dżihady, kara w przypadku porażki
+* Frakcje wewnętrzne i schizmy
