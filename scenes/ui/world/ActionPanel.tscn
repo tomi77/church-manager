@@ -1,0 +1,105 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/world/ActionPanel.gd" id="1"]
+
+[node name="ActionPanel" type="VBoxContainer"]
+script = ExtResource("1")
+theme_override_constants/separation = 8
+
+[node name="TargetNameLabel" type="Label" parent="."]
+unique_name_in_owner = true
+text = "?"
+
+[node name="SubtitleLabel" type="Label" parent="."]
+unique_name_in_owner = true
+text = "?"
+
+[node name="IndicatorsHBox" type="HBoxContainer" parent="."]
+theme_override_constants/separation = 24
+
+[node name="LeftCol" type="VBoxContainer" parent="IndicatorsHBox"]
+size_flags_horizontal = 3
+
+[node name="TrustLabel" type="Label" parent="IndicatorsHBox/LeftCol"]
+unique_name_in_owner = true
+text = "Zaufanie ?"
+
+[node name="EconLabel" type="Label" parent="IndicatorsHBox/LeftCol"]
+unique_name_in_owner = true
+text = "Ekonomia ?"
+
+[node name="TensionLabel" type="Label" parent="IndicatorsHBox/LeftCol"]
+unique_name_in_owner = true
+text = "Napięcie ?"
+
+[node name="GrievanceBox" type="PanelContainer" parent="IndicatorsHBox/LeftCol"]
+unique_name_in_owner = true
+visible = false
+
+[node name="GrievanceLabel" type="Label" parent="IndicatorsHBox/LeftCol/GrievanceBox"]
+unique_name_in_owner = true
+text = "Grievance"
+
+[node name="CoalitionBox" type="PanelContainer" parent="IndicatorsHBox/LeftCol"]
+unique_name_in_owner = true
+visible = false
+
+[node name="CoalitionLabel" type="Label" parent="IndicatorsHBox/LeftCol/CoalitionBox"]
+unique_name_in_owner = true
+text = "Koalicja"
+
+[node name="RightCol" type="VBoxContainer" parent="IndicatorsHBox"]
+size_flags_horizontal = 3
+
+[node name="ActionsLabel" type="Label" parent="IndicatorsHBox/RightCol"]
+text = "Dostępne akcje"
+
+[node name="ActionsGrid" type="GridContainer" parent="IndicatorsHBox/RightCol"]
+columns = 2
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+
+[node name="AllianceButton" type="Button" parent="IndicatorsHBox/RightCol/ActionsGrid"]
+unique_name_in_owner = true
+text = "🤝 Sojusz (20⚑)"
+
+[node name="InterdictButton" type="Button" parent="IndicatorsHBox/RightCol/ActionsGrid"]
+unique_name_in_owner = true
+text = "⛔ Interdykt (15⚑)"
+
+[node name="MissionariesButton" type="Button" parent="IndicatorsHBox/RightCol/ActionsGrid"]
+unique_name_in_owner = true
+text = "📜 Misjonarze (10⚑)"
+
+[node name="EcuCouncilButton" type="Button" parent="IndicatorsHBox/RightCol/ActionsGrid"]
+unique_name_in_owner = true
+text = "⚖ Sobór ekum. (30⚑)"
+
+[node name="VassalPatronButton" type="Button" parent="IndicatorsHBox/RightCol/ActionsGrid"]
+unique_name_in_owner = true
+text = "👑 Wasal: patron"
+
+[node name="VassalClientButton" type="Button" parent="IndicatorsHBox/RightCol/ActionsGrid"]
+unique_name_in_owner = true
+text = "⛰ Wasal: klient"
+
+[node name="VassalCouncilButton" type="Button" parent="IndicatorsHBox/RightCol/ActionsGrid"]
+unique_name_in_owner = true
+text = "⚖↓ Sobór wasalski (30⚑)"
+
+[node name="RewanzButton" type="Button" parent="IndicatorsHBox/RightCol/ActionsGrid"]
+unique_name_in_owner = true
+text = "⚔ Rewanż"
+
+[node name="PickerContainer" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+
+[node name="PickerLabel" type="Label" parent="PickerContainer"]
+unique_name_in_owner = true
+text = "Sobór — wybór:"
+
+[node name="ConfirmDialog" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+dialog_text = "?"
+title = "Potwierdź"
