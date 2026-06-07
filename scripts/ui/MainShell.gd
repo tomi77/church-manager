@@ -17,6 +17,8 @@ func _ready() -> void:
     _frakcje_tab.set_title("Frakcje (Plan 11 — w trakcie)")
     _tab_bar.tab_changed.connect(_on_tab_changed)
     _header.turn_ended.connect(_on_turn_ended)
+    if _swiat_tab.has_signal("state_changed"):
+        _swiat_tab.state_changed.connect(_on_swiat_state_changed)
     _on_tab_changed(_tab_bar.current_tab)
 
 func bind_state(s: Node) -> void:
@@ -40,4 +42,7 @@ func _on_tab_changed(tab_id: String) -> void:
     _frakcje_tab.visible = tab_id == "frakcje"
 
 func _on_turn_ended() -> void:
+    refresh()
+
+func _on_swiat_state_changed() -> void:
     refresh()
