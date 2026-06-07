@@ -1,0 +1,23 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/wiara/DoctrineRow.gd" id="1"]
+
+[node name="DoctrineRow" type="HBoxContainer"]
+script = ExtResource("1")
+
+[node name="StateIcon" type="Label" parent="."]
+unique_name_in_owner = true
+text = "○"
+custom_minimum_size = Vector2(24, 0)
+
+[node name="NameLabel" type="Label" parent="."]
+unique_name_in_owner = true
+text = ""
+custom_minimum_size = Vector2(180, 0)
+size_flags_horizontal = 3
+
+[node name="ConditionLabel" type="Label" parent="."]
+unique_name_in_owner = true
+text = ""
+modulate = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 10
