@@ -44,7 +44,12 @@ func test_node_click_emits_pressed():
 func test_node_selection_toggles_outline():
     var prov := _make_province("mekka", "islam", "Mekka", Vector2(420, 420))
     var pn := await _instance_node(prov)
+    var outline: Line2D = pn.get_node("%Outline")
     pn.set_selected(true)
     assert_true(pn.is_selected)
+    assert_eq(outline.width, UIConstants.MAP_NODE_OUTLINE_WIDTH_SELECTED)
+    assert_eq(outline.default_color, UIConstants.MAP_NODE_OUTLINE_SELECTED)
     pn.set_selected(false)
     assert_false(pn.is_selected)
+    assert_eq(outline.width, UIConstants.MAP_NODE_OUTLINE_WIDTH_DEFAULT)
+    assert_eq(outline.default_color, UIConstants.MAP_NODE_OUTLINE_DEFAULT)
