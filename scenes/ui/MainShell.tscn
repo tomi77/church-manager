@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/MainShell.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/ui/Header.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/ui/TabBar.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PlaceholderTab.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/ui/world/WorldTab.tscn" id="5"]
 
 [node name="MainShell" type="Control"]
 script = ExtResource("1")
@@ -33,13 +34,8 @@ visible = false
 unique_name_in_owner = true
 visible = false
 
-[node name="SwiatTab" type="Control" parent="VBox/ContentArea"]
+[node name="SwiatTab" parent="VBox/ContentArea" instance=ExtResource("5")]
 unique_name_in_owner = true
-anchor_right = 1.0
-anchor_bottom = 1.0
-
-[node name="SwiatStubLabel" type="Label" parent="VBox/ContentArea/SwiatTab"]
-text = "Świat (stub — wymieniony w Task 12)"
 
 [node name="FrakcjeTab" parent="VBox/ContentArea" instance=ExtResource("4")]
 unique_name_in_owner = true
