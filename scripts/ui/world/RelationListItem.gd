@@ -46,7 +46,7 @@ func _refresh() -> void:
     _refresh_selection()
 
 func _refresh_selection() -> void:
-    modulate = Color(1.1, 1.1, 1.1) if is_selected else Color(1, 1, 1)
+    modulate = UIConstants.COLOR_LIST_ITEM_SELECTED if is_selected else UIConstants.COLOR_LIST_ITEM_DEFAULT
 
 func _on_pressed() -> void:
     emit_signal("pressed", religion.id if religion != null else "")

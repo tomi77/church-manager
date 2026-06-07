@@ -48,14 +48,14 @@ func test_header_wars_label_red_when_active():
     war.state = "BATTLING"
     state.active_wars.append(war)
     var h := await _instance_header(state)
-    assert_eq(h.get_node("%WarsLabel").text, "⚔ 1 aktywna")
+    assert_eq(h.get_node("%WarsLabel").text, "⚔ 1 wojna")
     assert_almost_eq(h.get_node("%WarsLabel").modulate.r, 1.0, 0.01)
 
 func test_header_wars_label_gray_when_no_active():
     var state := _make_state()
     add_child_autofree(state)
     var h := await _instance_header(state)
-    assert_eq(h.get_node("%WarsLabel").text, "⚔ 0 aktywna")
+    assert_eq(h.get_node("%WarsLabel").text, "⚔ brak wojen")
     assert_lt(h.get_node("%WarsLabel").modulate.r, 1.0)
 
 func test_header_faction_alert_visible_when_tension_over_80():

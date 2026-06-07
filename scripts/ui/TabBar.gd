@@ -47,7 +47,7 @@ func refresh() -> void:
 func _refresh_active() -> void:
     for tab_id: String in TABS:
         var btn: Button = _buttons[tab_id]
-        btn.modulate = Color(1, 1, 1) if tab_id == current_tab else Color(0.6, 0.6, 0.6)
+        btn.modulate = UIConstants.COLOR_TAB_ACTIVE if tab_id == current_tab else UIConstants.COLOR_TAB_INACTIVE
 
 func _refresh_dots() -> void:
     for tab_id: String in TABS:
@@ -68,7 +68,7 @@ func _should_alert(tab_id: String) -> bool:
             return true
     elif tab_id == "frakcje":
         var dom: Faction = player.dominant_faction()
-        if dom != null and dom.tension > 80.0:
+        if dom != null and dom.tension > UIConstants.TENSION_ALERT_THRESHOLD:
             return true
     return false
 
