@@ -1,0 +1,53 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/world/AxisDeltaPicker.gd" id="1"]
+
+[node name="AxisDeltaPicker" type="HBoxContainer"]
+script = ExtResource("1")
+theme_override_constants/separation = 4
+
+[node name="AxisLabel" type="Label" parent="."]
+text = "Oś:"
+
+[node name="AButton" type="Button" parent="."]
+unique_name_in_owner = true
+text = "A"
+
+[node name="BButton" type="Button" parent="."]
+unique_name_in_owner = true
+text = "B"
+
+[node name="CButton" type="Button" parent="."]
+unique_name_in_owner = true
+text = "C"
+
+[node name="DButton" type="Button" parent="."]
+unique_name_in_owner = true
+text = "D"
+
+[node name="DeltaLabel" type="Label" parent="."]
+text = "Δ:"
+
+[node name="DeltaMinus8Button" type="Button" parent="."]
+unique_name_in_owner = true
+text = "−8"
+
+[node name="DeltaMinus5Button" type="Button" parent="."]
+unique_name_in_owner = true
+text = "−5"
+
+[node name="DeltaPlus5Button" type="Button" parent="."]
+unique_name_in_owner = true
+text = "+5"
+
+[node name="DeltaPlus8Button" type="Button" parent="."]
+unique_name_in_owner = true
+text = "+8"
+
+[node name="Spacer" type="Control" parent="."]
+size_flags_horizontal = 3
+
+[node name="ExecuteButton" type="Button" parent="."]
+unique_name_in_owner = true
+text = "Wykonaj"
+disabled = true
