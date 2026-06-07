@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/world/RelationList.gd" id="1"]
+
+[node name="RelationList" type="ScrollContainer"]
+script = ExtResource("1")
+custom_minimum_size = Vector2(260, 0)
+
+[node name="ItemsVBox" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 3
