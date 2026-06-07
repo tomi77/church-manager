@@ -59,7 +59,7 @@ func test_dialog_shifts_axis_toward_faction_preference() -> void:
 	var sm := SchismManagerScript.new()
 	var gs := _make_state()
 	var rel: Religion = gs.get_religion("islam")
-	var faction := rel.factions[0]  # ulema: axis_preferences = [{axis: A, direction: 1}, {axis: B, direction: 1}]
+	var faction := rel.factions[0]	# ulema: axis_preferences = [{axis: A, direction: 1}, {axis: B, direction: 1}]
 	faction.tension = 60.0
 	assert_true(faction.axis_preferences.size() > 0, "Test wymaga frakcji z axis_preferences — ulema powinno je mieć")
 	var pref: Dictionary = faction.axis_preferences[0]
@@ -139,7 +139,7 @@ func test_trigger_schism_new_religion_has_offset_axes() -> void:
 	var sm := SchismManagerScript.new()
 	var gs := _make_state()
 	var rel: Religion = gs.get_religion("islam")
-	var faction := rel.factions[0]  # ulema: axis_preferences = [{axis: A, direction: 1}, {axis: B, direction: 1}]
+	var faction := rel.factions[0]	# ulema: axis_preferences = [{axis: A, direction: 1}, {axis: B, direction: 1}]
 	assert_true(faction.axis_preferences.size() > 0, "Test wymaga frakcji z axis_preferences")
 	rel.axes["A"] = 60.0  # Pin: 60 + 15 (SCHISM_AXIS_OFFSET) = 75, in range
 	faction.tension = 90.0

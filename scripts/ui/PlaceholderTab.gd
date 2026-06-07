@@ -6,12 +6,12 @@ extends Control
 @onready var _label: Label = %TitleLabel
 
 func _ready() -> void:
-    _refresh()
+	_refresh()
 
 func set_title(new_title: String) -> void:
-    title = new_title
-    if is_inside_tree():
-        _refresh()
+	title = new_title
+	if is_inside_tree():
+		_refresh()
 
 func _refresh() -> void:
-    _label.text = title
+	_label.text = title

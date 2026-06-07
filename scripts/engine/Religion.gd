@@ -13,32 +13,32 @@ extends Resource
 @export var accent_color: String = "#ffffff"
 @export var war_weariness: float = 0.0
 @export var parent_religion_id: String = ""
-@export var resources: int = 0                   # waluta trybutu i soborów
-@export var suzerain_id: String = ""             # "" = wolna; nie-"" = id patrona
-@export var interdict_immunity_until: int = 0    # turn numer do którego Interdykt jest blokowany
-@export var interdict_grievance_from_id: String = ""    # ostatnia religia która rzuciła na nas Interdykt (Plan 07)
-@export var interdict_grievance_until: int = 0          # tura do której (wyłącznie) CB Rewanż jest dostępny
+@export var resources: int = 0					 # waluta trybutu i soborów
+@export var suzerain_id: String = ""			 # "" = wolna; nie-"" = id patrona
+@export var interdict_immunity_until: int = 0	 # turn numer do którego Interdykt jest blokowany
+@export var interdict_grievance_from_id: String = ""	# ostatnia religia która rzuciła na nas Interdykt (Plan 07)
+@export var interdict_grievance_until: int = 0			# tura do której (wyłącznie) CB Rewanż jest dostępny
 
 func get_axis(axis: String) -> float:
-    return axes.get(axis, 50.0)
+	return axes.get(axis, 50.0)
 
 func shift_axis(axis: String, delta: float) -> void:
-    if not axes.has(axis):
-        return
-    axes[axis] = clampf(get_axis(axis) + delta, 0.0, 100.0)
+	if not axes.has(axis):
+		return
+	axes[axis] = clampf(get_axis(axis) + delta, 0.0, 100.0)
 
 func get_faction(faction_id: String) -> Faction:
-    for f: Faction in factions:
-        if f.id == faction_id:
-            return f
-    return null
+	for f: Faction in factions:
+		if f.id == faction_id:
+			return f
+	return null
 
 func dominant_faction() -> Faction:
-    var best: Faction = null
-    for f: Faction in factions:
-        if best == null or f.influence > best.influence:
-            best = f
-    return best
+	var best: Faction = null
+	for f: Faction in factions:
+		if best == null or f.influence > best.influence:
+			best = f
+	return best
 
 func add_prestige(delta: int) -> void:
-    prestige = maxi(0, prestige + delta)
+	prestige = maxi(0, prestige + delta)

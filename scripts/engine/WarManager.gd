@@ -13,12 +13,12 @@ const BASE_POPULATION_FACTOR := 0.1
 const BASE_PRESTIGE_FACTOR := 2.0
 
 const CB_BONUS: Dictionary = {
-    "krucjata": 0.30,
-    "dzihad": 0.40,
-    "wojna_sprawiedliwa": 0.20,
-    "nawrocenie_mieczem": 0.10,
-    "stlumienie_herezji": 0.15,
-    "rewanz": 0.15,
+	"krucjata": 0.30,
+	"dzihad": 0.40,
+	"wojna_sprawiedliwa": 0.20,
+	"nawrocenie_mieczem": 0.10,
+	"stlumienie_herezji": 0.15,
+	"rewanz": 0.15,
 }
 
 # --- Stałe pokoju ---
@@ -27,27 +27,27 @@ const ASYMILACJA_AXIS_C_DELTA := 5.0   # Zasymiluj → atakujący przesuwa C w s
 # --- Modyfikatory osi (sumowane) ---
 # Każda reguła: {"axis": X, "min": Y} = X >= Y → bonus; {"axis": X, "max": Y} = X <= Y → bonus
 const AXIS_STRENGTH_MODIFIERS: Array = [
-    {"axis": "A", "min": 60.0, "bonus": 0.15},    # Dogmatyzm >60
-    {"axis": "B", "min": 60.0, "bonus": 0.20},    # Hierarchia >60
-    {"axis": "D", "min": 65.0, "bonus": 0.25},    # Transcendencja >65
-    {"axis": "D", "max": 35.0, "bonus": 0.15},    # Doczesność >65 → D <35
-    {"axis": "C", "min": 60.0, "bonus": 0.10},    # Synkretyzm >60
+	{"axis": "A", "min": 60.0, "bonus": 0.15},	  # Dogmatyzm >60
+	{"axis": "B", "min": 60.0, "bonus": 0.20},	  # Hierarchia >60
+	{"axis": "D", "min": 65.0, "bonus": 0.25},	  # Transcendencja >65
+	{"axis": "D", "max": 35.0, "bonus": 0.15},	  # Doczesność >65 → D <35
+	{"axis": "C", "min": 60.0, "bonus": 0.10},	  # Synkretyzm >60
 ]
 
 # --- Modyfikatory terenu (broniący prowincji) ---
 const TERRAIN_DEFENDER_MODIFIERS: Dictionary = {
-    "mountains": 0.15,
-    "desert": 0.10,
-    "fertile": 0.05,
-    "plains": 0.0,
-    "coast": 0.0,
+	"mountains": 0.15,
+	"desert": 0.10,
+	"fertile": 0.05,
+	"plains": 0.0,
+	"coast": 0.0,
 }
 
 # --- Kara za zmęczenie wojenne ---
 const WEARINESS_PENALTIES: Array = [
-    {"min": 75.0, "penalty": 0.30},
-    {"min": 55.0, "penalty": 0.20},
-    {"min": 30.0, "penalty": 0.10},
+	{"min": 75.0, "penalty": 0.30},
+	{"min": 55.0, "penalty": 0.20},
+	{"min": 30.0, "penalty": 0.10},
 ]
 
 # --- Bonus świętej wojny sojuszniczej (Plan 07) ---
@@ -59,9 +59,9 @@ const HOLY_WAR_CBS: Array = ["krucjata", "dzihad"]
 
 # --- 3 opcje Teologii klęski ---
 const DEFEAT_OPTIONS: Array = [
-    {"label": "Kara za grzechy", "axis": "A", "delta": 5.0},      # Dogmatyzm
-    {"label": "Wola niezbadana", "axis": "A", "delta": -8.0},     # Mistycyzm
-    {"label": "Reformujemy się", "axis": "B", "delta": -6.0},     # Równouprawnienie
+	{"label": "Kara za grzechy", "axis": "A", "delta": 5.0},	  # Dogmatyzm
+	{"label": "Wola niezbadana", "axis": "A", "delta": -8.0},	  # Mistycyzm
+	{"label": "Reformujemy się", "axis": "B", "delta": -6.0},	  # Równouprawnienie
 ]
 
 # --- CB z osi: każde CB wymaga zestawu reguł osi (wszystkie muszą być spełnione) ---
@@ -70,225 +70,225 @@ const DEFEAT_OPTIONS: Array = [
 # Spec używa strict ">" ("Ekskluzywizm >75"), ale konwencja repo (DoctrineManager.AXIS_THRESHOLDS)
 # jest inclusive — celowo zachowujemy spójność.
 const CB_AXIS_REQUIREMENTS: Dictionary = {
-    "krucjata":           [{"axis": "C", "max": 25.0}, {"axis": "D", "max": 40.0}],   # Ekskl >75 + Doczesność >60
-    "dzihad":             [{"axis": "C", "max": 25.0}, {"axis": "D", "min": 70.0}],   # Ekskl >75 + Transcendencja >70
-    "wojna_sprawiedliwa": [{"axis": "B", "min": 60.0}, {"axis": "D", "max": 50.0}],   # Hierarchia >60 + Doczesność >50
-    "nawrocenie_mieczem": [{"axis": "C", "max": 40.0}, {"axis": "A", "min": 65.0}],   # Ekskl >60 + Dogmatyzm >65
+	"krucjata":			  [{"axis": "C", "max": 25.0}, {"axis": "D", "max": 40.0}],	  # Ekskl >75 + Doczesność >60
+	"dzihad":			  [{"axis": "C", "max": 25.0}, {"axis": "D", "min": 70.0}],	  # Ekskl >75 + Transcendencja >70
+	"wojna_sprawiedliwa": [{"axis": "B", "min": 60.0}, {"axis": "D", "max": 50.0}],	  # Hierarchia >60 + Doczesność >50
+	"nawrocenie_mieczem": [{"axis": "C", "max": 40.0}, {"axis": "A", "min": 65.0}],	  # Ekskl >60 + Dogmatyzm >65
 }
 
 func available_casus_belli(attacker: Religion, defender: Religion, state: Node) -> Array[String]:
-    var result: Array[String] = []
-    for cb_id: String in CB_AXIS_REQUIREMENTS.keys():
-        var rules: Array = CB_AXIS_REQUIREMENTS[cb_id]
-        if _religion_matches_axis_rules(attacker, rules):
-            result.append(cb_id)
-    if defender.parent_religion_id == attacker.id and attacker.id != "":
-        result.append("stlumienie_herezji")
-    # Reaktywne CB Rewanż za zniewagę (Plan 07).
-    # Defensywne guardy: state==null (testy bez state), attacker==defender (zdegenerowane grievance).
-    if state != null \
-       and attacker.id != defender.id \
-       and attacker.interdict_grievance_from_id != "" \
-       and attacker.interdict_grievance_from_id == defender.id \
-       and attacker.interdict_grievance_until > state.current_turn \
-       and attacker.get_axis("C") < DiplomacyManager.GRIEVANCE_EKSKLUZYWIZM_THRESHOLD:
-        result.append("rewanz")
-    return result
+	var result: Array[String] = []
+	for cb_id: String in CB_AXIS_REQUIREMENTS.keys():
+		var rules: Array = CB_AXIS_REQUIREMENTS[cb_id]
+		if _religion_matches_axis_rules(attacker, rules):
+			result.append(cb_id)
+	if defender.parent_religion_id == attacker.id and attacker.id != "":
+		result.append("stlumienie_herezji")
+	# Reaktywne CB Rewanż za zniewagę (Plan 07).
+	# Defensywne guardy: state==null (testy bez state), attacker==defender (zdegenerowane grievance).
+	if state != null \
+	   and attacker.id != defender.id \
+	   and attacker.interdict_grievance_from_id != "" \
+	   and attacker.interdict_grievance_from_id == defender.id \
+	   and attacker.interdict_grievance_until > state.current_turn \
+	   and attacker.get_axis("C") < DiplomacyManager.GRIEVANCE_EKSKLUZYWIZM_THRESHOLD:
+		result.append("rewanz")
+	return result
 
 func _religion_matches_axis_rules(religion: Religion, rules: Array) -> bool:
-    for rule: Dictionary in rules:
-        var axis: String = rule.get("axis", "")
-        var value := religion.get_axis(axis)
-        if rule.has("min") and value < rule["min"]:
-            return false
-        if rule.has("max") and value > rule["max"]:
-            return false
-    return true
+	for rule: Dictionary in rules:
+		var axis: String = rule.get("axis", "")
+		var value := religion.get_axis(axis)
+		if rule.has("min") and value < rule["min"]:
+			return false
+		if rule.has("max") and value > rule["max"]:
+			return false
+	return true
 
 func declare_war(attacker_id: String, defender_id: String, cb: String, state: Node) -> War:
-    var attacker: Religion = state.get_religion(attacker_id)
-    var defender: Religion = state.get_religion(defender_id)
-    if attacker == null or defender == null:
-        return null
-    if not available_casus_belli(attacker, defender, state).has(cb):
-        return null
-    if attacker.prestige < DECLARE_WAR_PRESTIGE:
-        return null
-    attacker.add_prestige(-DECLARE_WAR_PRESTIGE)
-    var war := War.new()
-    war.attacker_id = attacker_id
-    war.defender_id = defender_id
-    war.casus_belli = cb
-    war.state = "MOBILIZING"
-    war.turns_in_state = 0
-    state.active_wars.append(war)
-    # Plan 07: Rewanż jest jednorazowy — wyzeruj grievance po deklaracji.
-    if cb == "rewanz":
-        attacker.interdict_grievance_from_id = ""
-        attacker.interdict_grievance_until = 0
-    var dm := DiplomacyManager.new()
-    var rel := dm.get_or_create_relation(state, attacker_id, defender_id)
-    rel.military_tension = clampf(rel.military_tension + DiplomacyManager.DECLARE_WAR_TENSION_INCREASE, 0.0, 100.0)
-    return war
+	var attacker: Religion = state.get_religion(attacker_id)
+	var defender: Religion = state.get_religion(defender_id)
+	if attacker == null or defender == null:
+		return null
+	if not available_casus_belli(attacker, defender, state).has(cb):
+		return null
+	if attacker.prestige < DECLARE_WAR_PRESTIGE:
+		return null
+	attacker.add_prestige(-DECLARE_WAR_PRESTIGE)
+	var war := War.new()
+	war.attacker_id = attacker_id
+	war.defender_id = defender_id
+	war.casus_belli = cb
+	war.state = "MOBILIZING"
+	war.turns_in_state = 0
+	state.active_wars.append(war)
+	# Plan 07: Rewanż jest jednorazowy — wyzeruj grievance po deklaracji.
+	if cb == "rewanz":
+		attacker.interdict_grievance_from_id = ""
+		attacker.interdict_grievance_until = 0
+	var dm := DiplomacyManager.new()
+	var rel := dm.get_or_create_relation(state, attacker_id, defender_id)
+	rel.military_tension = clampf(rel.military_tension + DiplomacyManager.DECLARE_WAR_TENSION_INCREASE, 0.0, 100.0)
+	return war
 
 func compute_army_strength(religion: Religion, target_province: Province, war: War, state: Node) -> float:
-    var owned: Array[Province] = state.province_graph.provinces_with_owner(religion.id)
-    var pop_total := 0
-    for p: Province in owned:
-        pop_total += p.population
-    var base := float(pop_total) * BASE_POPULATION_FACTOR + float(religion.prestige) * BASE_PRESTIGE_FACTOR
-    var axis_modifier := 0.0
-    for rule: Dictionary in AXIS_STRENGTH_MODIFIERS:
-        var axis: String = rule["axis"]
-        var value := religion.get_axis(axis)
-        if rule.has("min") and value >= rule["min"]:
-            axis_modifier += rule["bonus"]
-        elif rule.has("max") and value <= rule["max"]:
-            axis_modifier += rule["bonus"]
-    # Bonus świętej wojny sojuszniczej (Plan 07).
-    # Tylko atakujący w krucjacie/dzihadzie, z D>65 (strict), mający sojusznika również w świętej wojnie.
-    if religion.id == war.attacker_id \
-       and war.casus_belli in HOLY_WAR_CBS \
-       and religion.get_axis("D") > HOLY_WAR_ALLIANCE_AXIS_D_THRESHOLD \
-       and _has_holy_war_ally(religion, state):
-        axis_modifier += HOLY_WAR_ALLIANCE_BONUS
-    var cb_modifier: float = CB_BONUS.get(war.casus_belli, 0.0)
-    var weariness_penalty := 0.0
-    for rule: Dictionary in WEARINESS_PENALTIES:
-        if religion.war_weariness >= rule["min"]:
-            weariness_penalty = rule["penalty"]
-            break  # WEARINESS_PENALTIES posortowane od max do min
-    var strength := base * (1.0 + axis_modifier) * (1.0 + cb_modifier) * (1.0 - weariness_penalty)
-    # Modyfikator terenu tylko dla broniącego
-    if religion.id == war.defender_id and target_province != null:
-        var terrain_bonus: float = TERRAIN_DEFENDER_MODIFIERS.get(target_province.terrain, 0.0)
-        strength *= (1.0 + terrain_bonus)
-    return strength
+	var owned: Array[Province] = state.province_graph.provinces_with_owner(religion.id)
+	var pop_total := 0
+	for p: Province in owned:
+		pop_total += p.population
+	var base := float(pop_total) * BASE_POPULATION_FACTOR + float(religion.prestige) * BASE_PRESTIGE_FACTOR
+	var axis_modifier := 0.0
+	for rule: Dictionary in AXIS_STRENGTH_MODIFIERS:
+		var axis: String = rule["axis"]
+		var value := religion.get_axis(axis)
+		if rule.has("min") and value >= rule["min"]:
+			axis_modifier += rule["bonus"]
+		elif rule.has("max") and value <= rule["max"]:
+			axis_modifier += rule["bonus"]
+	# Bonus świętej wojny sojuszniczej (Plan 07).
+	# Tylko atakujący w krucjacie/dzihadzie, z D>65 (strict), mający sojusznika również w świętej wojnie.
+	if religion.id == war.attacker_id \
+	   and war.casus_belli in HOLY_WAR_CBS \
+	   and religion.get_axis("D") > HOLY_WAR_ALLIANCE_AXIS_D_THRESHOLD \
+	   and _has_holy_war_ally(religion, state):
+		axis_modifier += HOLY_WAR_ALLIANCE_BONUS
+	var cb_modifier: float = CB_BONUS.get(war.casus_belli, 0.0)
+	var weariness_penalty := 0.0
+	for rule: Dictionary in WEARINESS_PENALTIES:
+		if religion.war_weariness >= rule["min"]:
+			weariness_penalty = rule["penalty"]
+			break  # WEARINESS_PENALTIES posortowane od max do min
+	var strength := base * (1.0 + axis_modifier) * (1.0 + cb_modifier) * (1.0 - weariness_penalty)
+	# Modyfikator terenu tylko dla broniącego
+	if religion.id == war.defender_id and target_province != null:
+		var terrain_bonus: float = TERRAIN_DEFENDER_MODIFIERS.get(target_province.terrain, 0.0)
+		strength *= (1.0 + terrain_bonus)
+	return strength
 
 func offer_peace(war: War, terms: Dictionary, state: Node) -> bool:
-    if war.state == "ENDED":
-        return false
-    if terms.has("annexation"):
-        var ann: Dictionary = terms["annexation"]
-        var provinces: Array = ann.get("provinces", [])
-        var policy: String = ann.get("policy", "nawracaj")
-        _apply_annexation(war, provinces, policy, state)
-    if terms.has("forced_council"):
-        var fc: Dictionary = terms["forced_council"]
-        var axis: String = fc.get("axis", "")
-        var delta: float = fc.get("delta", 0.0)
-        _apply_forced_council(war, axis, delta, state)
-    if terms.has("clergy_extermination"):
-        var ce: Dictionary = terms["clergy_extermination"]
-        var faction_id: String = ce.get("faction_id", "")
-        _apply_clergy_extermination(war, faction_id, state)
-    war.state = "ENDED"
-    war.outcome = "WIN" if war.contested_provinces.size() > 0 else "DRAW"
-    state.active_wars.erase(war)
-    return true
+	if war.state == "ENDED":
+		return false
+	if terms.has("annexation"):
+		var ann: Dictionary = terms["annexation"]
+		var provinces: Array = ann.get("provinces", [])
+		var policy: String = ann.get("policy", "nawracaj")
+		_apply_annexation(war, provinces, policy, state)
+	if terms.has("forced_council"):
+		var fc: Dictionary = terms["forced_council"]
+		var axis: String = fc.get("axis", "")
+		var delta: float = fc.get("delta", 0.0)
+		_apply_forced_council(war, axis, delta, state)
+	if terms.has("clergy_extermination"):
+		var ce: Dictionary = terms["clergy_extermination"]
+		var faction_id: String = ce.get("faction_id", "")
+		_apply_clergy_extermination(war, faction_id, state)
+	war.state = "ENDED"
+	war.outcome = "WIN" if war.contested_provinces.size() > 0 else "DRAW"
+	state.active_wars.erase(war)
+	return true
 
 func _apply_annexation(war: War, province_ids: Array, policy: String, state: Node) -> void:
-    var attacker: Religion = state.get_religion(war.attacker_id)
-    for province_id in province_ids:
-        if not war.contested_provinces.has(province_id):
-            continue  # tylko prowincje faktycznie okupowane
-        var province: Province = state.province_graph.get_province(province_id)
-        if province == null:
-            continue
-        province.owner = war.attacker_id
-        match policy:
-            "wypedz":
-                province.population = 0
-            "nawracaj":
-                pass  # zostaje populacja i pressure
-            "zasymiluj":
-                if attacker != null:
-                    attacker.shift_axis("C", ASYMILACJA_AXIS_C_DELTA)
+	var attacker: Religion = state.get_religion(war.attacker_id)
+	for province_id in province_ids:
+		if not war.contested_provinces.has(province_id):
+			continue  # tylko prowincje faktycznie okupowane
+		var province: Province = state.province_graph.get_province(province_id)
+		if province == null:
+			continue
+		province.owner = war.attacker_id
+		match policy:
+			"wypedz":
+				province.population = 0
+			"nawracaj":
+				pass  # zostaje populacja i pressure
+			"zasymiluj":
+				if attacker != null:
+					attacker.shift_axis("C", ASYMILACJA_AXIS_C_DELTA)
 
 func _apply_forced_council(war: War, axis: String, delta: float, state: Node) -> void:
-    var defender: Religion = state.get_religion(war.defender_id)
-    if defender == null or axis == "":
-        return
-    defender.shift_axis(axis, delta)
+	var defender: Religion = state.get_religion(war.defender_id)
+	if defender == null or axis == "":
+		return
+	defender.shift_axis(axis, delta)
 
 func _apply_clergy_extermination(war: War, faction_id: String, state: Node) -> void:
-    var defender: Religion = state.get_religion(war.defender_id)
-    if defender == null or faction_id == "":
-        return
-    var target: Faction = defender.get_faction(faction_id)
-    if target == null:
-        return
-    var redistributed := target.influence
-    defender.factions.erase(target)
-    if defender.factions.size() > 0:
-        var share := redistributed / float(defender.factions.size())
-        for f: Faction in defender.factions:
-            f.influence += share
+	var defender: Religion = state.get_religion(war.defender_id)
+	if defender == null or faction_id == "":
+		return
+	var target: Faction = defender.get_faction(faction_id)
+	if target == null:
+		return
+	var redistributed := target.influence
+	defender.factions.erase(target)
+	if defender.factions.size() > 0:
+		var share := redistributed / float(defender.factions.size())
+		for f: Faction in defender.factions:
+			f.influence += share
 
 func force_loss(war: War, loser_id: String, state: Node) -> void:
-    if war.state == "ENDED":
-        return
-    war.state = "ENDED"
-    war.outcome = "LOSS"
-    state.active_wars.erase(war)
-    var winner_id: String = war.defender_id if loser_id == war.attacker_id else war.attacker_id
-    var ev := DefeatEvent.new()
-    ev.religion_id = loser_id
-    ev.opponent_id = winner_id
-    ev.cb = war.casus_belli
-    ev.options = DEFEAT_OPTIONS.duplicate(true)
-    state.pending_defeat_events.append(ev)
+	if war.state == "ENDED":
+		return
+	war.state = "ENDED"
+	war.outcome = "LOSS"
+	state.active_wars.erase(war)
+	var winner_id: String = war.defender_id if loser_id == war.attacker_id else war.attacker_id
+	var ev := DefeatEvent.new()
+	ev.religion_id = loser_id
+	ev.opponent_id = winner_id
+	ev.cb = war.casus_belli
+	ev.options = DEFEAT_OPTIONS.duplicate(true)
+	state.pending_defeat_events.append(ev)
 
 func resolve_defeat(event: DefeatEvent, option_index: int, state: Node) -> void:
-    if option_index < 0 or option_index >= event.options.size():
-        return
-    var option: Dictionary = event.options[option_index]
-    var religion: Religion = state.get_religion(event.religion_id)
-    if religion == null:
-        return
-    religion.shift_axis(option.get("axis", ""), option.get("delta", 0.0))
-    state.pending_defeat_events.erase(event)
+	if option_index < 0 or option_index >= event.options.size():
+		return
+	var option: Dictionary = event.options[option_index]
+	var religion: Religion = state.get_religion(event.religion_id)
+	if religion == null:
+		return
+	religion.shift_axis(option.get("axis", ""), option.get("delta", 0.0))
+	state.pending_defeat_events.erase(event)
 
 func attack_province(war: War, province_id: String, state: Node) -> Dictionary:
-    if war.state != "BATTLING":
-        return {"victory": false, "atk_str": 0.0, "def_str": 0.0, "p_win": 0.0, "error": "not_battling"}
-    var attacker: Religion = state.get_religion(war.attacker_id)
-    var defender: Religion = state.get_religion(war.defender_id)
-    var target: Province = state.province_graph.get_province(province_id)
-    if attacker == null or defender == null or target == null:
-        return {"victory": false, "atk_str": 0.0, "def_str": 0.0, "p_win": 0.0, "error": "invalid_target"}
-    var atk_str := compute_army_strength(attacker, target, war, state)
-    var def_str := compute_army_strength(defender, target, war, state)
-    var total := atk_str + def_str
-    var p_win := 0.5 if total <= 0.0 else atk_str / total
-    var roll := randf()
-    var victory := roll < p_win
-    if victory:
-        war.battles_won += 1
-        if not war.contested_provinces.has(province_id):
-            war.contested_provinces.append(province_id)
-        war.state = "OCCUPYING"
-        war.turns_in_state = 0
-    else:
-        war.battles_lost += 1
-    return {"victory": victory, "atk_str": atk_str, "def_str": def_str, "p_win": p_win}
+	if war.state != "BATTLING":
+		return {"victory": false, "atk_str": 0.0, "def_str": 0.0, "p_win": 0.0, "error": "not_battling"}
+	var attacker: Religion = state.get_religion(war.attacker_id)
+	var defender: Religion = state.get_religion(war.defender_id)
+	var target: Province = state.province_graph.get_province(province_id)
+	if attacker == null or defender == null or target == null:
+		return {"victory": false, "atk_str": 0.0, "def_str": 0.0, "p_win": 0.0, "error": "invalid_target"}
+	var atk_str := compute_army_strength(attacker, target, war, state)
+	var def_str := compute_army_strength(defender, target, war, state)
+	var total := atk_str + def_str
+	var p_win := 0.5 if total <= 0.0 else atk_str / total
+	var roll := randf()
+	var victory := roll < p_win
+	if victory:
+		war.battles_won += 1
+		if not war.contested_provinces.has(province_id):
+			war.contested_provinces.append(province_id)
+		war.state = "OCCUPYING"
+		war.turns_in_state = 0
+	else:
+		war.battles_lost += 1
+	return {"victory": victory, "atk_str": atk_str, "def_str": def_str, "p_win": p_win}
 
 func _has_holy_war_ally(religion: Religion, state: Node) -> bool:
-    # Plan 07: sprawdza czy religia ma aktywny sojusz z inną religią prowadzącą krucjatę/dżihad jako atakujący.
-    # Sojusznik broniący w krucjacie NIE liczy się — wymagany jest atak.
-    for rel: RelationState in state.relations:
-        if not rel.alliance_active:
-            continue
-        var ally_id := ""
-        if rel.religion_a_id == religion.id:
-            ally_id = rel.religion_b_id
-        elif rel.religion_b_id == religion.id:
-            ally_id = rel.religion_a_id
-        else:
-            continue
-        for war: War in state.active_wars:
-            if war.state == "ENDED":
-                continue
-            if war.attacker_id == ally_id and war.casus_belli in HOLY_WAR_CBS:
-                return true
-    return false
+	# Plan 07: sprawdza czy religia ma aktywny sojusz z inną religią prowadzącą krucjatę/dżihad jako atakujący.
+	# Sojusznik broniący w krucjacie NIE liczy się — wymagany jest atak.
+	for rel: RelationState in state.relations:
+		if not rel.alliance_active:
+			continue
+		var ally_id := ""
+		if rel.religion_a_id == religion.id:
+			ally_id = rel.religion_b_id
+		elif rel.religion_b_id == religion.id:
+			ally_id = rel.religion_a_id
+		else:
+			continue
+		for war: War in state.active_wars:
+			if war.state == "ENDED":
+				continue
+			if war.attacker_id == ally_id and war.casus_belli in HOLY_WAR_CBS:
+				return true
+	return false

@@ -14,26 +14,26 @@ var active_coalitions: Array[Coalition] = []
 var missionary_missions: Array[MissionaryMission] = []
 
 func initialize(player_id: String, religions: Array[Religion], graph: ProvinceGraph) -> void:
-    player_religion_id = player_id
-    province_graph = graph
-    _religions.clear()
-    for r: Religion in religions:
-        _religions[r.id] = r
+	player_religion_id = player_id
+	province_graph = graph
+	_religions.clear()
+	for r: Religion in religions:
+		_religions[r.id] = r
 
 func get_player_religion() -> Religion:
-    return get_religion(player_religion_id)
+	return get_religion(player_religion_id)
 
 func get_religion(religion_id: String) -> Religion:
-    return _religions.get(religion_id, null)
+	return _religions.get(religion_id, null)
 
 func all_religions() -> Array[Religion]:
-    var result: Array[Religion] = []
-    for r: Religion in _religions.values():
-        result.append(r)
-    return result
+	var result: Array[Religion] = []
+	for r: Religion in _religions.values():
+		result.append(r)
+	return result
 
 func add_religion(religion: Religion) -> void:
-    _religions[religion.id] = religion
+	_religions[religion.id] = religion
 
 func advance_turn() -> void:
-    current_turn += 1
+	current_turn += 1
