@@ -1,0 +1,48 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/Header.gd" id="1"]
+
+[node name="Header" type="HBoxContainer"]
+script = ExtResource("1")
+theme_override_constants/separation = 12
+custom_minimum_size = Vector2(0, 32)
+
+[node name="IconLabel" type="Label" parent="."]
+unique_name_in_owner = true
+text = "?"
+
+[node name="NameLabel" type="Label" parent="."]
+unique_name_in_owner = true
+text = "Religia"
+
+[node name="TurnLabel" type="Label" parent="."]
+unique_name_in_owner = true
+text = "Tura ?"
+
+[node name="PrestigeLabel" type="Label" parent="."]
+unique_name_in_owner = true
+text = "⚑ ?"
+
+[node name="ResourcesLabel" type="Label" parent="."]
+unique_name_in_owner = true
+text = "📦 ?"
+
+[node name="FoodLabel" type="Label" parent="."]
+unique_name_in_owner = true
+text = "🌾 ?"
+
+[node name="WarsLabel" type="Label" parent="."]
+unique_name_in_owner = true
+text = "⚔ ?"
+
+[node name="FactionAlertLabel" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+text = "⚠ Frakcja"
+
+[node name="Spacer" type="Control" parent="."]
+size_flags_horizontal = 3
+
+[node name="EndTurnButton" type="Button" parent="."]
+unique_name_in_owner = true
+text = "Zakończ turę →"
