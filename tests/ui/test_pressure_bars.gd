@@ -47,3 +47,9 @@ func test_bars_render_pressure_value():
     var pb := await _instance(state, "lewant")
     var first := pb.get_row(0)
     assert_eq(first.get_node("%ValueLabel").text, "60")
+
+func test_bars_zero_rows_for_unknown_province():
+    var state := _make_state()
+    add_child_autofree(state)
+    var pb := await _instance(state, "nonexistent_province_id")
+    assert_eq(pb.row_count(), 0)
