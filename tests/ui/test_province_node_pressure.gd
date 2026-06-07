@@ -37,3 +37,18 @@ func test_owner_pressure_ignored_for_tint():
     var p := _make_province_with_pressure("test", "islam", {"islam": 95.0})
     var pn := await _instance(p)
     assert_eq(pn.pressure_alert_state(), "none")
+
+func test_boundary_at_exactly_85_is_subtle():
+    var p := _make_province_with_pressure("test", "islam", {"chr_wschodnie": 85.0})
+    var pn := await _instance(p)
+    assert_eq(pn.pressure_alert_state(), "subtle")
+
+func test_boundary_just_above_85_is_alert():
+    var p := _make_province_with_pressure("test", "islam", {"chr_wschodnie": 85.01})
+    var pn := await _instance(p)
+    assert_eq(pn.pressure_alert_state(), "alert")
+
+func test_empty_pressure_dict_yields_none():
+    var p := _make_province_with_pressure("test", "islam", {})
+    var pn := await _instance(p)
+    assert_eq(pn.pressure_alert_state(), "none")
