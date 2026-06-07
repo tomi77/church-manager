@@ -1,0 +1,36 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/world/RelationListItem.gd" id="1"]
+
+[node name="RelationListItem" type="PanelContainer"]
+script = ExtResource("1")
+
+[node name="RowButton" type="Button" parent="."]
+unique_name_in_owner = true
+flat = true
+
+[node name="HBox" type="HBoxContainer" parent="RowButton"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/separation = 8
+
+[node name="NameLabel" type="Label" parent="RowButton/HBox"]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+text = "?"
+
+[node name="ZLabel" type="Label" parent="RowButton/HBox"]
+unique_name_in_owner = true
+text = "Z ?"
+
+[node name="ELabel" type="Label" parent="RowButton/HBox"]
+unique_name_in_owner = true
+text = "E ?"
+
+[node name="NLabel" type="Label" parent="RowButton/HBox"]
+unique_name_in_owner = true
+text = "N ?"
+
+[node name="MarkerLabel" type="Label" parent="RowButton/HBox"]
+unique_name_in_owner = true
+text = ""
