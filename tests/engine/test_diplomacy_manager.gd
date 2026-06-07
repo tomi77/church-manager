@@ -1664,3 +1664,94 @@ func test_proclaim_interdict_does_not_set_grievance_on_immunity_block() -> void:
     assert_false(dm.proclaim_interdict(gs, "islam", "judaizm"))
     assert_eq(target.interdict_grievance_from_id, "", "grievance NIE ustawione gdy Interdykt zablokowany przez immunity")
     assert_eq(target.interdict_grievance_until, 0)
+
+# --- auto_join_vassals_to_coalitions (Plan 07) ---
+
+func _make_coalition_against(gs: Node, target_id: String, members: Array[String]) -> Coalition:
+    var c := Coalition.new()
+    c.target_id = target_id
+    c.members = members.duplicate()
+    gs.active_coalitions.append(c)
+    return c
+
+func test_vassal_auto_join_client_follows_patron_in_members() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var client: Religion = gs.get_religion("judaizm")
+    client.suzerain_id = "chr_zachodnie"  # patron = chr_zachodnie
+    var c := _make_coalition_against(gs, "islam", ["chr_zachodnie", "hinduizm"] as Array[String])
+    dm.auto_join_vassals_to_coalitions(gs)
+    assert_true("judaizm" in c.members, "klient dołączył bo patron jest w members")
+    assert_eq(c.members.size(), 3, "dokładnie 3 członków (poprzedni + klient)")
+
+func test_vassal_auto_join_skips_when_patron_not_in_members() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var client: Religion = gs.get_religion("judaizm")
+    client.suzerain_id = "chr_zachodnie"
+    var c := _make_coalition_against(gs, "islam", ["hinduizm", "buddyzm"] as Array[String])
+    dm.auto_join_vassals_to_coalitions(gs)
+    assert_false("judaizm" in c.members, "patron nie jest w koalicji → klient nie dołącza")
+
+func test_vassal_auto_join_skips_when_client_already_member() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var client: Religion = gs.get_religion("judaizm")
+    client.suzerain_id = "chr_zachodnie"
+    var c := _make_coalition_against(gs, "islam", ["chr_zachodnie", "judaizm"] as Array[String])  # klient już jest
+    var members_before: int = c.members.size()
+    dm.auto_join_vassals_to_coalitions(gs)
+    assert_eq(c.members.size(), members_before, "idempotentne — bez duplikatów")
+
+func test_vassal_auto_join_skips_when_client_is_coalition_target() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var client: Religion = gs.get_religion("judaizm")
+    client.suzerain_id = "chr_zachodnie"
+    var c := _make_coalition_against(gs, "judaizm", ["chr_zachodnie", "hinduizm"] as Array[String])  # klient JEST target
+    dm.auto_join_vassals_to_coalitions(gs)
+    assert_false("judaizm" in c.members, "klient nie może być w members swojej własnej koalicji-target")
+
+func test_vassal_auto_join_skips_when_patron_is_coalition_target() -> void:
+    # Brzegowy przypadek z spec sek.2: jeśli patron jest target_id (poza members),
+    # klient nie zostaje wciągany do members.
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var client: Religion = gs.get_religion("judaizm")
+    client.suzerain_id = "chr_zachodnie"
+    # Patologiczna konfiguracja (normalnie evaluate_coalitions tego nie tworzy):
+    var c := _make_coalition_against(gs, "chr_zachodnie", ["chr_zachodnie", "hinduizm"] as Array[String])
+    dm.auto_join_vassals_to_coalitions(gs)
+    assert_false("judaizm" in c.members, "klient nie atakuje swojego patrona")
+
+func test_vassal_auto_join_skips_when_patron_null() -> void:
+    # Jeśli suzerain_id wskazuje na nieistniejącą religię, klient nie podąża.
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var client: Religion = gs.get_religion("judaizm")
+    client.suzerain_id = "nieistniejacy_patron"
+    var c := _make_coalition_against(gs, "islam", ["nieistniejacy_patron", "hinduizm"] as Array[String])
+    dm.auto_join_vassals_to_coalitions(gs)
+    assert_false("judaizm" in c.members, "klient z null patron nie dołącza")
+
+func test_vassal_auto_join_one_level_propagation_only() -> void:
+    # Klient klienta NIE jest dodawany w tej samej turze.
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var a: Religion = gs.get_religion("judaizm")
+    a.suzerain_id = "chr_zachodnie"
+    var b: Religion = gs.get_religion("zoroastryzm")
+    b.suzerain_id = "judaizm"
+    var c := _make_coalition_against(gs, "islam", ["chr_zachodnie", "hinduizm"] as Array[String])
+    dm.auto_join_vassals_to_coalitions(gs)
+    assert_true("judaizm" in c.members, "klient pierwszego poziomu (A) dołącza")
+    assert_false("zoroastryzm" in c.members, "klient drugiego poziomu (B) NIE dołącza w tej samej turze")
+
+func test_vassal_auto_join_no_active_coalitions_noop() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var client: Religion = gs.get_religion("judaizm")
+    client.suzerain_id = "chr_zachodnie"
+    # Brak koalicji w state.active_coalitions
+    dm.auto_join_vassals_to_coalitions(gs)
+    assert_eq(gs.active_coalitions.size(), 0, "no-op gdy brak koalicji")

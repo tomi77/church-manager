@@ -236,6 +236,30 @@ func auto_join_allies_to_coalitions(state: Node) -> void:
                     continue
                 c.members.append(ally_id)
 
+func auto_join_vassals_to_coalitions(state: Node) -> void:
+    # Plan 07 sek.2: klient z `suzerain_id` automatycznie dołącza do koalicji, w której jest jego patron.
+    # Snapshot zapobiega kaskadzie: tylko obecni członkowie z momentu wywołania mogą wciągać wasali
+    # (1 poziom propagacji per tura).
+    for c: Coalition in state.active_coalitions:
+        var snapshot: Array[String] = []
+        for m: String in c.members:
+            snapshot.append(m)
+        for member_id: String in snapshot:
+            if member_id == c.target_id:
+                continue
+            for client: Religion in state.all_religions():
+                if client.suzerain_id != member_id:
+                    continue
+                if state.get_religion(client.suzerain_id) == null:
+                    continue  # patron usunięty z gry — klient osierocony nie podąża
+                if client.suzerain_id == c.target_id:
+                    continue  # vetto: klient nie atakuje swojego patrona
+                if client.id == c.target_id:
+                    continue  # klient nie jest członkiem swojej własnej koalicji
+                if client.id in c.members:
+                    continue  # idempotentność — brak duplikatów
+                c.members.append(client.id)
+
 func _aggressor_has_offensive_war(state: Node, aggressor_id: String) -> bool:
     for war: War in state.active_wars:
         if war.state == "ENDED":

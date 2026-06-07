@@ -132,6 +132,7 @@ func _process_diplomacy(state: Node) -> void:
             rel.military_tension = clampf(rel.military_tension - DiplomacyManager.PEACE_TENSION_DECAY_PER_TURN, 0.0, 100.0)
     dm.evaluate_coalitions(state)
     dm.auto_join_allies_to_coalitions(state)
+    dm.auto_join_vassals_to_coalitions(state)
     dm.dissolve_coalitions(state)
 
 func _pair_in_active_war(state: Node, a: String, b: String) -> bool:
