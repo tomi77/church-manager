@@ -91,6 +91,12 @@ const PEOPLE_COUNCIL_ROWNOUPRAWNIENIE_THRESHOLD := 30.0  # B<30 (Równouprawnien
 const PEOPLE_COUNCIL_PRESTIGE_COST := 15
 const PEOPLE_COUNCIL_IMMUNITY_TURNS := 5   # uwaga: proclaim_interdict używa `>` (nie `<=` jak vassal cooldown) → immunity wygasa DOKŁADNIE na turze T+5 (efektywnie 4 tury blokady)
 
+# --- Stałe Grievance po Interdykcie (Plan 07) ---
+# Operator `>` (strict) — analogicznie do interdict_immunity_until z Plan 06.
+# Skutek: jeśli grievance_until = T+10, CB Rewanż dostępne w turach T+1..T+9 (efektywnie 9 tur okna).
+const GRIEVANCE_WINDOW_TURNS := 10
+const GRIEVANCE_EKSKLUZYWIZM_THRESHOLD := 30.0   # C<30 (Ekskluzywizm>70) — konsumowane przez WarManager.available_casus_belli
+
 func _pair_key(a: String, b: String) -> Array:
     var pair: Array = [a, b]
     pair.sort()
@@ -139,6 +145,10 @@ func declare_alliance(state: Node, source_id: String, target_id: String) -> bool
     return true
 
 func proclaim_interdict(state: Node, source_id: String, target_id: String) -> bool:
+    # Guard self-Interdykt (Plan 07): religia nie może rzucić Interdyktu na samą siebie.
+    # Eliminuje degenerowany przypadek attacker.interdict_grievance_from_id == attacker.id.
+    if source_id == target_id:
+        return false
     var source: Religion = state.get_religion(source_id)
     if source == null:
         return false
@@ -152,6 +162,11 @@ func proclaim_interdict(state: Node, source_id: String, target_id: String) -> bo
     source.add_prestige(-INTERDICT_PRESTIGE_COST)
     rel.military_tension = clampf(rel.military_tension + INTERDICT_TENSION_INCREASE, 0.0, 100.0)
     rel.theological_trust = clampf(rel.theological_trust - INTERDICT_TRUST_DECREASE, 0.0, 100.0)
+    # Zapis grievance (Plan 07): target zapamiętuje sprawcę i okno czasu na CB Rewanż.
+    # Wykonywane przed `return true`, więc tylko gdy wszystkie wcześniejsze guardy przeszły.
+    if target != null:
+        target.interdict_grievance_from_id = source_id
+        target.interdict_grievance_until = state.current_turn + GRIEVANCE_WINDOW_TURNS
     return true
 
 func evaluate_coalitions(state: Node) -> void:

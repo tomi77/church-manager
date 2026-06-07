@@ -1614,3 +1614,53 @@ func test_recognize_suzerainty_blocked_self_suzerainty() -> void:
     assert_false(dm.recognize_suzerainty(gs, "judaizm", "judaizm"), "religia nie może być własnym patronem")
     assert_eq(solo.suzerain_id, "", "suzerain_id nie zmienia się")
     assert_eq(gs.relations.size(), relations_before, "brak self-relation w state.relations")
+
+# --- proclaim_interdict + grievance (Plan 07) ---
+
+func test_proclaim_interdict_blocked_when_source_equals_target() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 100
+    var ok := dm.proclaim_interdict(gs, "islam", "islam")
+    assert_false(ok, "self-Interdykt zabroniony")
+    assert_eq(src.prestige, 100, "prestiż nie pobrany")
+    assert_eq(src.interdict_grievance_from_id, "", "własna grievance nie ustawiona")
+
+func test_proclaim_interdict_records_grievance_on_target() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 100
+    var target: Religion = gs.get_religion("judaizm")
+    var t_before: int = gs.current_turn
+    var ok := dm.proclaim_interdict(gs, "islam", "judaizm")
+    assert_true(ok, "Interdykt przeszedł")
+    assert_eq(target.interdict_grievance_from_id, "islam", "grievance ustawione na sprawcę")
+    assert_eq(target.interdict_grievance_until, t_before + DiplomacyManager.GRIEVANCE_WINDOW_TURNS)
+
+func test_proclaim_interdict_overwrites_previous_grievance() -> void:
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var target: Religion = gs.get_religion("judaizm")
+    # Symulacja: poprzednia zniewaga od hinduizmu, zapisana 5 tur wcześniej (już ustabilizowana)
+    target.interdict_grievance_from_id = "hinduizm"
+    target.interdict_grievance_until = gs.current_turn + 2
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 100
+    assert_true(dm.proclaim_interdict(gs, "islam", "judaizm"), "nowy Interdykt przechodzi")
+    assert_eq(target.interdict_grievance_from_id, "islam", "nowy źródło nadpisuje stary")
+    assert_eq(target.interdict_grievance_until, gs.current_turn + DiplomacyManager.GRIEVANCE_WINDOW_TURNS, "okno zresetowane")
+
+func test_proclaim_interdict_does_not_set_grievance_on_immunity_block() -> void:
+    # Spec sek.3: grievance jest zapisywane PRZED 'return true' — czyli tylko gdy akcja przeszła.
+    # Immunity z Plan 06 blokuje akcję wcześniej, więc grievance NIE jest zapisywane.
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var src: Religion = gs.get_religion("islam")
+    src.prestige = 100
+    var target: Religion = gs.get_religion("judaizm")
+    target.interdict_immunity_until = gs.current_turn + 3
+    assert_false(dm.proclaim_interdict(gs, "islam", "judaizm"))
+    assert_eq(target.interdict_grievance_from_id, "", "grievance NIE ustawione gdy Interdykt zablokowany przez immunity")
+    assert_eq(target.interdict_grievance_until, 0)
