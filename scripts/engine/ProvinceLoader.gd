@@ -37,6 +37,7 @@ static func _parse_province(pd: Dictionary) -> Province:
 	p.terrain = pd.get("terrain", "plains")
 	var neighbors_raw: Array = pd.get("neighbors", [])
 	p.neighbors.assign(neighbors_raw)
+	p.display_name = pd.get("display_name", pd.get("id", ""))
 	p.is_holy_site = pd.get("is_holy_site", false)
 	var pos_raw: Dictionary = pd.get("position", {})
 	p.position = Vector2(

@@ -2,6 +2,7 @@ class_name Province
 extends Resource
 
 @export var id: String = ""
+@export var display_name: String = ""
 @export var owner: String = ""
 @export var pressure: Dictionary = {}
 @export var population: int = 0
