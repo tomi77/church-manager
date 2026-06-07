@@ -1,0 +1,23 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/map/PressureRow.gd" id="1"]
+
+[node name="PressureRow" type="HBoxContainer"]
+script = ExtResource("1")
+
+[node name="IconLabel" type="Label" parent="."]
+unique_name_in_owner = true
+
+[node name="NameLabel" type="Label" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 0)
+
+[node name="Bar" type="ProgressBar" parent="."]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+min_value = 0.0
+max_value = 100.0
+show_percentage = false
+
+[node name="ValueLabel" type="Label" parent="."]
+unique_name_in_owner = true
