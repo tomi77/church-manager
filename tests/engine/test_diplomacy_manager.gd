@@ -1755,3 +1755,63 @@ func test_vassal_auto_join_no_active_coalitions_noop() -> void:
     # Brak koalicji w state.active_coalitions
     dm.auto_join_vassals_to_coalitions(gs)
     assert_eq(gs.active_coalitions.size(), 0, "no-op gdy brak koalicji")
+
+# --- INTEGRATION TEST: Vassal auto-join przez TurnManager (Plan 07) ---
+
+func test_integration_vassal_auto_join_in_turn_manager_pipeline() -> void:
+    # Spec sek.6 (Cykl wasalskie auto-join):
+    # 1. Agresor G atakuje victim V — tworzy się tension, ale koalicja jeszcze nie powstaje (potrzebne threat>=50).
+    # 2. G atakuje też drugą religię — threat=40 (atak)+? Plus military_tension ofiar.
+    # Setup: aggressor "islam" prowadzi 3 ofensywne wojny → threat_index >= 50 (3*20 = 60).
+    # Patron "chr_zachodnie" ma tension >= 40 (ręcznie ustawione) → kwalifikuje się jako member.
+    # Klient "judaizm" ma suzerain_id="chr_zachodnie".
+    # Po process_turn, auto_join_vassals_to_coalitions powinno dodać judaizm do koalicji wraz z patronem.
+    var gs := _make_state()
+    var tm := TurnManagerScript.new()
+    var dm := DiplomacyManager.new()
+    var wm := WarManager.new()
+
+    var aggressor: Religion = gs.get_religion("islam")
+    var victim1: Religion = gs.get_religion("hinduizm")
+    var victim2: Religion = gs.get_religion("buddyzm")
+    var victim3: Religion = gs.get_religion("religie_arabskie")
+    var patron: Religion = gs.get_religion("chr_zachodnie")
+    var client: Religion = gs.get_religion("judaizm")
+
+    aggressor.prestige = 1000
+    _pin_axes(aggressor, 50.0, 50.0, 20.0, 30.0)  # Ekskluzywizm + Doczesność → krucjata
+
+    # 3 ofensywne wojny — threat_index = 60 >= COALITION_THREAT_THRESHOLD (50)
+    var w1 := wm.declare_war("islam", "hinduizm", "krucjata", gs)
+    var w2 := wm.declare_war("islam", "buddyzm", "krucjata", gs)
+    var w3 := wm.declare_war("islam", "religie_arabskie", "krucjata", gs)
+    assert_not_null(w1)
+    assert_not_null(w2)
+    assert_not_null(w3)
+
+    # Patron ma tension >= 40 (kwalifikuje się jako member)
+    var rel_patron_aggressor := dm.get_or_create_relation(gs, "chr_zachodnie", "islam")
+    rel_patron_aggressor.military_tension = 45.0
+
+    # Druga religia spoza wasalstwa ma tension >= 40 (żeby members.size() >= 2 wymagane w evaluate_coalitions)
+    var rel_other_aggressor := dm.get_or_create_relation(gs, "zoroastryzm", "islam")
+    rel_other_aggressor.military_tension = 45.0
+
+    # Klient ma patrona, ale sam ma niskie tension (więc nie kwalifikuje się jako "naturalny" member)
+    var rel_client_aggressor := dm.get_or_create_relation(gs, "judaizm", "islam")
+    rel_client_aggressor.military_tension = 10.0  # poniżej progu 40
+    client.suzerain_id = "chr_zachodnie"
+
+    # Process turn — evaluate_coalitions tworzy koalicję, auto_join_vassals dołącza klienta
+    tm.process_turn(gs)
+
+    assert_eq(gs.active_coalitions.size(), 1, "powstała 1 koalicja przeciw islam")
+    var c: Coalition = gs.active_coalitions[0]
+    assert_eq(c.target_id, "islam")
+    assert_true("chr_zachodnie" in c.members, "patron w members (przez tension)")
+    assert_true("judaizm" in c.members, "klient w members (przez auto-join wasala)")
+    # Sanity: klient nadal ma niskie własne tension (auto-join działa niezależnie od tego).
+    # Po process_turn military_tension JEST modyfikowany (PEACE_TENSION_DECAY_PER_TURN -1 gdy nie ma wojny pary).
+    # Klient w teście nie ma wojny z aggressorem, więc tension spadnie z 10 do 9 (>= 0, < COALITION_MEMBER_TENSION_THRESHOLD=40).
+    assert_lt(rel_client_aggressor.military_tension, DiplomacyManager.COALITION_MEMBER_TENSION_THRESHOLD,
+              "klient ma niskie tension — nie wszedłby do koalicji przez własne napięcie")

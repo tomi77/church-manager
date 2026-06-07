@@ -928,3 +928,94 @@ func test_holy_war_constants() -> void:
     assert_true("krucjata" in WarManager.HOLY_WAR_CBS)
     assert_true("dzihad" in WarManager.HOLY_WAR_CBS)
     assert_eq(WarManager.HOLY_WAR_CBS.size(), 2, "tylko krucjata i dzihad")
+
+# --- INTEGRATION TESTS (Plan 07) ---
+
+const TurnManagerScript := preload("res://scripts/engine/TurnManager.gd")
+
+func test_integration_interdict_to_rewanz_cycle() -> void:
+    # Spec sek.6 (Cykl Interdykt → Rewanż):
+    # 1. islam rzuca Interdykt na judaizm (judaizm ma C<30 → kwalifikuje się do Rewanżu)
+    # 2. Grievance ustawione na judaizm
+    # 3. Przewijamy 5 tur — grievance nadal aktywne
+    # 4. judaizm deklaruje wojnę Rewanż przeciw islam — sukces
+    # 5. Grievance zerowane
+    # 6. Kolejna próba Rewanżu blokowana (jednorazowy)
+    var gs := _make_state()
+    var dm := DiplomacyManager.new()
+    var wm := WarManager.new()
+    var tm := TurnManagerScript.new()
+
+    var attacker: Religion = gs.get_religion("islam")
+    var victim: Religion = gs.get_religion("judaizm")
+    _pin_axes(victim, 50.0, 50.0, 20.0, 50.0)  # C=20 → Ekskluzywizm 80
+    attacker.prestige = 100
+    victim.prestige = 100
+
+    # 1. Interdykt
+    assert_true(dm.proclaim_interdict(gs, "islam", "judaizm"))
+    var grievance_turn: int = victim.interdict_grievance_until
+    assert_eq(victim.interdict_grievance_from_id, "islam")
+    assert_eq(grievance_turn, gs.current_turn + DiplomacyManager.GRIEVANCE_WINDOW_TURNS)
+
+    # 2. Po 5 turach grievance nadal aktywne (10 - 5 = 5 tur do końca)
+    for _t in range(5):
+        tm.process_turn(gs)
+    assert_true(victim.interdict_grievance_until > gs.current_turn, "grievance nadal aktywne po 5 turach")
+
+    # 3. Rewanż dostępny
+    var cbs := wm.available_casus_belli(victim, attacker, gs)
+    assert_true("rewanz" in cbs, "Rewanż dostępny jako CB")
+
+    # 4. Deklaracja wojny Rewanż
+    var war := wm.declare_war("judaizm", "islam", "rewanz", gs)
+    assert_not_null(war, "wojna Rewanż utworzona")
+    assert_eq(war.casus_belli, "rewanz")
+
+    # 5. Grievance zerowane
+    assert_eq(victim.interdict_grievance_from_id, "", "grievance from zużyte")
+    assert_eq(victim.interdict_grievance_until, 0, "grievance until zużyte")
+
+    # 6. Kolejny Rewanż blokowany
+    var cbs2 := wm.available_casus_belli(victim, attacker, gs)
+    assert_false("rewanz" in cbs2, "jednorazowy — drugiej próby nie ma")
+
+func test_integration_two_allies_in_parallel_holy_wars_both_get_bonus() -> void:
+    # Spec sek.6 (Cykl święta wojna sojusznicza):
+    # Dwie religie X i Y, obie D=70 (HolyWar D>65 + dzihad D>=70 OK), alliance_active,
+    # deklarują dżihady przeciw różnym defenderom. Obie powinny dostać bonus +15% w swoich battles.
+    # Defenderzy: chr_wschodnie (owns 5 prowincji) i koptyjski (owns egipt).
+    var gs := _make_state()
+    var wm := WarManager.new()
+    var dm := DiplomacyManager.new()
+
+    var x: Religion = gs.get_religion("islam")
+    var y: Religion = gs.get_religion("zoroastryzm")
+    _pin_axes(x, 50.0, 50.0, 20.0, 70.0)   # D=70, C=20 (Ekskluzywizm 80) → dzihad OK + HolyWar OK
+    _pin_axes(y, 50.0, 50.0, 20.0, 70.0)   # D=70 → dzihad OK + HolyWar OK
+
+    x.prestige = 100
+    y.prestige = 100
+    var rel := dm.get_or_create_relation(gs, "islam", "zoroastryzm")
+    rel.alliance_active = true
+
+    var warX := wm.declare_war("islam", "chr_wschodnie", "dzihad", gs)
+    var warY := wm.declare_war("zoroastryzm", "koptyjski", "dzihad", gs)
+    assert_not_null(warX)
+    assert_not_null(warY)
+
+    # Bonus dla X — atakuje province chr_wschodnie (armenia, mountains)
+    var provX: Province = gs.province_graph.get_province("armenia")
+    var strX_with := wm.compute_army_strength(x, provX, warX, gs)
+
+    # Bonus dla Y — atakuje province koptyjski (egipt)
+    var provY: Province = gs.province_graph.get_province("egipt")
+    var strY_with := wm.compute_army_strength(y, provY, warY, gs)
+
+    # Zerwij sojusz — siła powinna spaść dla obu
+    rel.alliance_active = false
+    var strX_without := wm.compute_army_strength(x, provX, warX, gs)
+    var strY_without := wm.compute_army_strength(y, provY, warY, gs)
+
+    assert_gt(strX_with, strX_without, "X dostaje bonus przy sojuszu w dzihad")
+    assert_gt(strY_with, strY_without, "Y dostaje bonus przy sojuszu w dzihad")
