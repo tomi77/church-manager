@@ -1,0 +1,56 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/TabBar.gd" id="1"]
+
+[node name="TabBar" type="HBoxContainer"]
+script = ExtResource("1")
+theme_override_constants/separation = 0
+custom_minimum_size = Vector2(0, 36)
+
+[node name="MapaContainer" type="HBoxContainer" parent="."]
+
+[node name="MapaButton" type="Button" parent="MapaContainer"]
+unique_name_in_owner = true
+text = "🗺 Mapa"
+
+[node name="MapaDot" type="ColorRect" parent="MapaContainer"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(6, 6)
+color = Color(1, 0.4, 0.4, 1)
+
+[node name="WiaraContainer" type="HBoxContainer" parent="."]
+
+[node name="WiaraButton" type="Button" parent="WiaraContainer"]
+unique_name_in_owner = true
+text = "🕌 Wiara"
+
+[node name="WiaraDot" type="ColorRect" parent="WiaraContainer"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(6, 6)
+color = Color(1, 0.4, 0.4, 1)
+
+[node name="SwiatContainer" type="HBoxContainer" parent="."]
+
+[node name="SwiatButton" type="Button" parent="SwiatContainer"]
+unique_name_in_owner = true
+text = "🌍 Świat"
+
+[node name="SwiatDot" type="ColorRect" parent="SwiatContainer"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(6, 6)
+color = Color(1, 0.4, 0.4, 1)
+
+[node name="FrakcjeContainer" type="HBoxContainer" parent="."]
+
+[node name="FrakcjeButton" type="Button" parent="FrakcjeContainer"]
+unique_name_in_owner = true
+text = "👥 Frakcje"
+
+[node name="FrakcjeDot" type="ColorRect" parent="FrakcjeContainer"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(6, 6)
+color = Color(1, 0.4, 0.4, 1)
