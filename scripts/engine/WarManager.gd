@@ -115,6 +115,10 @@ func declare_war(attacker_id: String, defender_id: String, cb: String, state: No
     war.state = "MOBILIZING"
     war.turns_in_state = 0
     state.active_wars.append(war)
+    # Plan 07: Rewanż jest jednorazowy — wyzeruj grievance po deklaracji.
+    if cb == "rewanz":
+        attacker.interdict_grievance_from_id = ""
+        attacker.interdict_grievance_until = 0
     var dm := DiplomacyManager.new()
     var rel := dm.get_or_create_relation(state, attacker_id, defender_id)
     rel.military_tension = clampf(rel.military_tension + DiplomacyManager.DECLARE_WAR_TENSION_INCREASE, 0.0, 100.0)

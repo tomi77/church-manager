@@ -761,3 +761,50 @@ func test_cb_rewanz_blocked_when_grievance_id_empty() -> void:
     var empty_def := Religion.new()                  # nowa religia bez id (id == "")
     var cbs := wm.available_casus_belli(att, empty_def, gs)
     assert_false("rewanz" in cbs, "puste grievance_from_id nie aktywuje Rewanżu nawet gdy defender.id też pusty")
+
+# --- declare_war zużywa grievance (Plan 07) ---
+
+func test_declare_war_rewanz_consumes_grievance() -> void:
+    var gs := _make_state()
+    var wm := WarManager.new()
+    var att: Religion = gs.get_religion("islam")
+    var def: Religion = gs.get_religion("chr_zachodnie")
+    _pin_axes(att, 50.0, 50.0, 20.0, 50.0)  # Ekskluzywizm
+    att.prestige = 50
+    att.interdict_grievance_from_id = "chr_zachodnie"
+    att.interdict_grievance_until = gs.current_turn + 5
+    var war := wm.declare_war("islam", "chr_zachodnie", "rewanz", gs)
+    assert_not_null(war, "wojna Rewanż utworzona")
+    assert_eq(att.interdict_grievance_from_id, "", "grievance from_id wyzerowane po deklaracji")
+    assert_eq(att.interdict_grievance_until, 0, "grievance until wyzerowane po deklaracji")
+
+func test_declare_war_non_rewanz_does_not_consume_grievance() -> void:
+    var gs := _make_state()
+    var wm := WarManager.new()
+    var att: Religion = gs.get_religion("islam")
+    var def: Religion = gs.get_religion("chr_zachodnie")
+    _pin_axes(att, 50.0, 50.0, 20.0, 30.0)  # Ekskluzywizm + Doczesność → krucjata
+    att.prestige = 50
+    att.interdict_grievance_from_id = "chr_zachodnie"
+    var grievance_turn: int = gs.current_turn + 5
+    att.interdict_grievance_until = grievance_turn
+    var war := wm.declare_war("islam", "chr_zachodnie", "krucjata", gs)
+    assert_not_null(war, "wojna krucjata utworzona")
+    assert_eq(att.interdict_grievance_from_id, "chr_zachodnie", "grievance NIE wyzerowane przy CB != rewanz")
+    assert_eq(att.interdict_grievance_until, grievance_turn, "okno grievance nietknięte")
+
+func test_declare_war_rewanz_jednorazowy_second_attempt_fails() -> void:
+    # Po pierwszej wojnie Rewanż, kolejna nie powinna być możliwa (grievance zużyte).
+    var gs := _make_state()
+    var wm := WarManager.new()
+    var att: Religion = gs.get_religion("islam")
+    var def: Religion = gs.get_religion("chr_zachodnie")
+    _pin_axes(att, 50.0, 50.0, 20.0, 50.0)
+    att.prestige = 100
+    att.interdict_grievance_from_id = "chr_zachodnie"
+    att.interdict_grievance_until = gs.current_turn + 5
+    # Pierwsza wojna — sukces
+    assert_not_null(wm.declare_war("islam", "chr_zachodnie", "rewanz", gs))
+    # Druga próba — fail (grievance puste, więc Rewanż nie dostępny)
+    var war2 := wm.declare_war("islam", "chr_zachodnie", "rewanz", gs)
+    assert_null(war2, "kolejna wojna Rewanż blokowana — grievance jednorazowe")
