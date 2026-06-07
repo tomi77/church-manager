@@ -19,6 +19,8 @@ func _ready() -> void:
     _diplomacy_btn.pressed.connect(_on_diplomacy_pressed)
     if _cb_picker.has_signal("cb_chosen"):
         _cb_picker.cb_chosen.connect(_on_cb_chosen)
+    if _cb_picker.has_signal("cancelled"):
+        _cb_picker.cancelled.connect(_on_cb_cancelled)
     if state != null and province_id != "":
         refresh()
 
@@ -109,6 +111,10 @@ func _on_war_pressed() -> void:
 
 func _on_cb_chosen(cb: String, defender_id: String) -> void:
     _execute_war(defender_id, cb)
+
+func _on_cb_cancelled() -> void:
+    if state != null and province_id != "":
+        refresh()
 
 func _execute_war(defender_id: String, cb: String) -> void:
     var wm := WarManager.new()

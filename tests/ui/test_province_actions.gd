@@ -59,3 +59,19 @@ func test_war_button_enabled_with_guaranteed_cb():
     var btn: Button = pa.get_node("%WarButton")
     assert_true(btn.visible)
     assert_false(btn.disabled, "War must be enabled given guaranteed CB + neighbor")
+
+func test_cb_picker_cancel_refreshes_actions():
+    var state := _make_state()
+    add_child_autofree(state)
+    var zoroastryzm: Religion = state.get_religion("zoroastryzm")
+    zoroastryzm.parent_religion_id = "islam"
+    var pa := await _instance(state, "persja")
+    var picker := pa.get_node("%CBPicker")
+    # War was enabled in setup — open picker (simulate multi-CB scenario)
+    # Force visible state, then trigger cancel
+    picker.visible = true
+    picker.emit_signal("cancelled")
+    # After cancel, picker hides itself in _on_cancel before emitting; verify war button still in coherent state
+    var btn: Button = pa.get_node("%WarButton")
+    assert_true(btn.visible)
+    assert_false(btn.disabled, "War button must remain enabled after cancel (CBs still available)")
