@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/TabBar.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PlaceholderTab.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/ui/world/WorldTab.tscn" id="5"]
-[ext_resource type="PackedScene" path="res://scenes/ui/map/MapView.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/ui/map/MapaTab.tscn" id="6"]
 
 [node name="MainShell" type="Control"]
 script = ExtResource("1")

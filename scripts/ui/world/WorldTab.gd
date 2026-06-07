@@ -42,6 +42,14 @@ func _on_religion_selected(id: String) -> void:
     _list.set_selected(id)
     _action_panel.set_target(id)
 
+func preselect_religion(religion_id: String) -> void:
+    if state == null:
+        return
+    if state.get_religion(religion_id) == null:
+        return
+    _list.set_selected(religion_id)
+    _action_panel.set_target(religion_id)
+
 func _on_state_changed() -> void:
     refresh()
     emit_signal("state_changed")

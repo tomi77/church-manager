@@ -48,10 +48,10 @@ func test_main_shell_renders_map_view_in_mapa_tab():
     add_child_autofree(state)
     var shell := await _instance_shell(state)
     shell.get_node("%TabBar").set_current_tab("mapa")
-    var map_view: MapView = shell.get_node("%MapaTab")
-    assert_not_null(map_view)
-    assert_true(map_view.visible)
-    assert_eq(map_view.get_node_count(), 12)
+    var mapa_tab: MapaTab = shell.get_node("%MapaTab")
+    assert_not_null(mapa_tab)
+    assert_true(mapa_tab.visible)
+    assert_eq(mapa_tab.get_node("%MapView").get_node_count(), 12)
 
 func test_main_shell_hides_map_view_in_other_tabs():
     var state := _make_state()

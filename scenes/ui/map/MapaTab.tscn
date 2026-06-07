@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/map/MapaTab.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/ui/map/MapView.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/ui/map/ProvinceDetailPanel.tscn" id="3"]
+
+[node name="MapaTab" type="HBoxContainer"]
+script = ExtResource("1")
+
+[node name="MapView" parent="." instance=ExtResource("2")]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+
+[node name="DetailPanel" parent="." instance=ExtResource("3")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 0)
