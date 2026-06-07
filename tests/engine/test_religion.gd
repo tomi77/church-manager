@@ -62,3 +62,8 @@ func test_religion_vassal_fields_defaults() -> void:
     assert_eq(r.resources, 0)
     assert_eq(r.suzerain_id, "")
     assert_eq(r.interdict_immunity_until, 0)
+
+func test_religion_grievance_fields_defaults() -> void:
+    var r := Religion.new()
+    assert_eq(r.interdict_grievance_from_id, "")
+    assert_eq(r.interdict_grievance_until, 0)

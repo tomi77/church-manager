@@ -16,6 +16,8 @@ extends Resource
 @export var resources: int = 0                   # waluta trybutu i soborów
 @export var suzerain_id: String = ""             # "" = wolna; nie-"" = id patrona
 @export var interdict_immunity_until: int = 0    # turn numer do którego Interdykt jest blokowany
+@export var interdict_grievance_from_id: String = ""    # ostatnia religia która rzuciła na nas Interdykt (Plan 07)
+@export var interdict_grievance_until: int = 0          # tura do której (wyłącznie) CB Rewanż jest dostępny
 
 func get_axis(axis: String) -> float:
     return axes.get(axis, 50.0)
