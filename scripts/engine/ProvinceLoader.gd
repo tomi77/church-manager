@@ -40,7 +40,7 @@ static func _parse_province(pd: Dictionary) -> Province:
 	p.is_holy_site = pd.get("is_holy_site", false)
 	var pos_raw: Dictionary = pd.get("position", {})
 	p.position = Vector2(
-	    float(pos_raw.get("x", 0.0)),
-	    float(pos_raw.get("y", 0.0))
+		float(pos_raw.get("x", 0.0)),
+		float(pos_raw.get("y", 0.0))
 	)
 	return p
