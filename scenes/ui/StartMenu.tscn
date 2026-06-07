@@ -1,0 +1,45 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/StartMenu.gd" id="1"]
+
+[node name="StartMenu" type="Control"]
+script = ExtResource("1")
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="VBox" type="VBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 32.0
+offset_top = 32.0
+offset_right = -32.0
+offset_bottom = -32.0
+theme_override_constants/separation = 16
+
+[node name="TitleLabel" type="Label" parent="VBox"]
+text = "Religion Manager"
+horizontal_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="VBox"]
+text = "Wybierz religię, którą poprowadzisz przez VII wiek"
+horizontal_alignment = 1
+
+[node name="ReligionGrid" type="GridContainer" parent="VBox"]
+unique_name_in_owner = true
+columns = 4
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
+
+[node name="BottomRow" type="HBoxContainer" parent="VBox"]
+
+[node name="SelectedInfoLabel" type="Label" parent="VBox/BottomRow"]
+unique_name_in_owner = true
+text = "Wybierz religię…"
+size_flags_horizontal = 3
+
+[node name="StartButton" type="Button" parent="VBox/BottomRow"]
+unique_name_in_owner = true
+text = "Rozpocznij grę →"
+disabled = true
