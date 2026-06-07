@@ -13,9 +13,14 @@ var _selected_id: String = ""
 @onready var _edges_layer: Control = %EdgesLayer
 @onready var _nodes_layer: Control = %NodesLayer
 
+func _ready() -> void:
+    if state != null:
+        refresh()
+
 func bind_state(s: Node) -> void:
     state = s
-    refresh()
+    if is_inside_tree():
+        refresh()
 
 func refresh() -> void:
     _clear_all()

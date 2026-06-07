@@ -39,6 +39,7 @@ func test_view_emits_province_selected_on_node_click():
     var mekka_node: ProvinceNode = mv.get_node_for_id("mekka")
     mekka_node.get_node("%ClickArea").emit_signal("pressed")
     assert_signal_emitted_with_parameters(mv, "province_selected", ["mekka"])
+    assert_true(mekka_node.is_selected)
 
 func test_view_selection_clears_previous():
     var state := _make_state()
