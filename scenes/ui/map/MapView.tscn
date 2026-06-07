@@ -1,0 +1,21 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/map/MapView.gd" id="1"]
+
+[node name="MapView" type="Control"]
+custom_minimum_size = Vector2(800, 500)
+script = ExtResource("1")
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="EdgesLayer" type="Control" parent="."]
+unique_name_in_owner = true
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="NodesLayer" type="Control" parent="."]
+unique_name_in_owner = true
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 1
