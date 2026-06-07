@@ -805,6 +805,10 @@ func test_declare_war_rewanz_jednorazowy_second_attempt_fails() -> void:
     att.interdict_grievance_until = gs.current_turn + 5
     # Pierwsza wojna — sukces
     assert_not_null(wm.declare_war("islam", "chr_zachodnie", "rewanz", gs))
+    # Sanity: grievance zostało zerowane przez declare_war (Task 4),
+    # więc kolejny Rewanż wpada na guard CB, NIE na guard prestiżu/wojny.
+    assert_eq(att.interdict_grievance_from_id, "", "grievance from_id zerowane po 1. wojnie")
+    assert_eq(att.interdict_grievance_until, 0, "grievance until zerowane po 1. wojnie")
     # Druga próba — fail (grievance puste, więc Rewanż nie dostępny)
     var war2 := wm.declare_war("islam", "chr_zachodnie", "rewanz", gs)
     assert_null(war2, "kolejna wojna Rewanż blokowana — grievance jednorazowe")
