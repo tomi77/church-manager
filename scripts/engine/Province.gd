@@ -9,6 +9,7 @@ extends Resource
 @export var terrain: String = "plains"
 @export var neighbors: Array[String] = []
 @export var is_holy_site: bool = false
+@export var position: Vector2 = Vector2.ZERO
 
 func get_pressure(religion_id: String) -> float:
     return pressure.get(religion_id, 0.0)
