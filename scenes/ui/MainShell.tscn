@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/MainShell.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/ui/Header.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/ui/TabBar.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PlaceholderTab.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/ui/world/WorldTab.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/ui/map/MapView.tscn" id="6"]
 
 [node name="MainShell" type="Control"]
 script = ExtResource("1")
@@ -26,7 +27,7 @@ unique_name_in_owner = true
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="MapaTab" parent="VBox/ContentArea" instance=ExtResource("4")]
+[node name="MapaTab" parent="VBox/ContentArea" instance=ExtResource("6")]
 unique_name_in_owner = true
 visible = false
 
