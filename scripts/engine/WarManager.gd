@@ -81,6 +81,7 @@ func available_casus_belli(attacker: Religion, defender: Religion, state: Node) 
     # Defensywne guardy: state==null (testy bez state), attacker==defender (zdegenerowane grievance).
     if state != null \
        and attacker.id != defender.id \
+       and attacker.interdict_grievance_from_id != "" \
        and attacker.interdict_grievance_from_id == defender.id \
        and attacker.interdict_grievance_until > state.current_turn \
        and attacker.get_axis("C") < DiplomacyManager.GRIEVANCE_EKSKLUZYWIZM_THRESHOLD:

@@ -748,3 +748,16 @@ func test_cb_rewanz_blocked_when_attacker_equals_defender() -> void:
 
 func test_cb_rewanz_bonus_value() -> void:
     assert_almost_eq(WarManager.CB_BONUS.get("rewanz", -1.0), 0.15, 0.001)
+
+func test_cb_rewanz_blocked_when_grievance_id_empty() -> void:
+    # Guard symmetryczny do stlumienie_herezji (attacker.id != ""): puste grievance_from_id
+    # NIE może trywialnie sparować z pustym defender.id (np. Religion.new() bez ustawionego id).
+    var gs := _make_state()
+    var wm := WarManager.new()
+    var att: Religion = gs.get_religion("islam")
+    _pin_axes(att, 50.0, 50.0, 20.0, 50.0)
+    att.interdict_grievance_from_id = ""             # puste (default)
+    att.interdict_grievance_until = gs.current_turn + 5
+    var empty_def := Religion.new()                  # nowa religia bez id (id == "")
+    var cbs := wm.available_casus_belli(att, empty_def, gs)
+    assert_false("rewanz" in cbs, "puste grievance_from_id nie aktywuje Rewanżu nawet gdy defender.id też pusty")
