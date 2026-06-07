@@ -18,6 +18,7 @@ const CB_BONUS: Dictionary = {
     "wojna_sprawiedliwa": 0.20,
     "nawrocenie_mieczem": 0.10,
     "stlumienie_herezji": 0.15,
+    "rewanz": 0.15,
 }
 
 # --- Stałe pokoju ---
@@ -68,7 +69,7 @@ const CB_AXIS_REQUIREMENTS: Dictionary = {
     "nawrocenie_mieczem": [{"axis": "C", "max": 40.0}, {"axis": "A", "min": 65.0}],   # Ekskl >60 + Dogmatyzm >65
 }
 
-func available_casus_belli(attacker: Religion, defender: Religion) -> Array[String]:
+func available_casus_belli(attacker: Religion, defender: Religion, state: Node) -> Array[String]:
     var result: Array[String] = []
     for cb_id: String in CB_AXIS_REQUIREMENTS.keys():
         var rules: Array = CB_AXIS_REQUIREMENTS[cb_id]
@@ -76,6 +77,14 @@ func available_casus_belli(attacker: Religion, defender: Religion) -> Array[Stri
             result.append(cb_id)
     if defender.parent_religion_id == attacker.id and attacker.id != "":
         result.append("stlumienie_herezji")
+    # Reaktywne CB Rewanż za zniewagę (Plan 07).
+    # Defensywne guardy: state==null (testy bez state), attacker==defender (zdegenerowane grievance).
+    if state != null \
+       and attacker.id != defender.id \
+       and attacker.interdict_grievance_from_id == defender.id \
+       and attacker.interdict_grievance_until > state.current_turn \
+       and attacker.get_axis("C") < DiplomacyManager.GRIEVANCE_EKSKLUZYWIZM_THRESHOLD:
+        result.append("rewanz")
     return result
 
 func _religion_matches_axis_rules(religion: Religion, rules: Array) -> bool:
@@ -93,7 +102,7 @@ func declare_war(attacker_id: String, defender_id: String, cb: String, state: No
     var defender: Religion = state.get_religion(defender_id)
     if attacker == null or defender == null:
         return null
-    if not available_casus_belli(attacker, defender).has(cb):
+    if not available_casus_belli(attacker, defender, state).has(cb):
         return null
     if attacker.prestige < DECLARE_WAR_PRESTIGE:
         return null

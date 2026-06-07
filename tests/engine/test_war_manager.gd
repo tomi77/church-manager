@@ -98,7 +98,7 @@ func test_cb_krucjata_unlocked_when_exclusivism_high_and_doczesnosc_high() -> vo
     var def: Religion = gs.get_religion("chr_wschodnie")
     _pin_axes(att, 50.0, 50.0, 20.0, 30.0)
     _pin_axes(def, 50.0, 50.0, 50.0, 50.0)
-    var cbs := wm.available_casus_belli(att, def)
+    var cbs := wm.available_casus_belli(att, def, gs)
     assert_true(cbs.has("krucjata"), "Ekskl. 80 + Doczesność 70 powinno odblokować Krucjatę")
 
 func test_cb_dzihad_unlocked_when_exclusivism_high_and_transcendencja_high() -> void:
@@ -109,7 +109,7 @@ func test_cb_dzihad_unlocked_when_exclusivism_high_and_transcendencja_high() -> 
     var def: Religion = gs.get_religion("chr_wschodnie")
     _pin_axes(att, 50.0, 50.0, 20.0, 75.0)
     _pin_axes(def, 50.0, 50.0, 50.0, 50.0)
-    var cbs := wm.available_casus_belli(att, def)
+    var cbs := wm.available_casus_belli(att, def, gs)
     assert_true(cbs.has("dzihad"), "Ekskl. 80 + Transcendencja 75 powinno odblokować Dżihad")
 
 func test_cb_wojna_sprawiedliwa_unlocked_when_hierarchia_high_and_doczesnosc_high() -> void:
@@ -120,7 +120,7 @@ func test_cb_wojna_sprawiedliwa_unlocked_when_hierarchia_high_and_doczesnosc_hig
     var def: Religion = gs.get_religion("chr_wschodnie")
     _pin_axes(att, 50.0, 70.0, 50.0, 40.0)
     _pin_axes(def, 50.0, 50.0, 50.0, 50.0)
-    var cbs := wm.available_casus_belli(att, def)
+    var cbs := wm.available_casus_belli(att, def, gs)
     assert_true(cbs.has("wojna_sprawiedliwa"))
 
 func test_cb_nawrocenie_mieczem_unlocked_when_exclusivism_high_and_dogmatyzm_high() -> void:
@@ -131,7 +131,7 @@ func test_cb_nawrocenie_mieczem_unlocked_when_exclusivism_high_and_dogmatyzm_hig
     var def: Religion = gs.get_religion("chr_wschodnie")
     _pin_axes(att, 70.0, 50.0, 30.0, 50.0)
     _pin_axes(def, 50.0, 50.0, 50.0, 50.0)
-    var cbs := wm.available_casus_belli(att, def)
+    var cbs := wm.available_casus_belli(att, def, gs)
     assert_true(cbs.has("nawrocenie_mieczem"))
 
 func test_cb_stlumienie_herezji_when_defender_is_schismatic_child() -> void:
@@ -142,7 +142,7 @@ func test_cb_stlumienie_herezji_when_defender_is_schismatic_child() -> void:
     _pin_axes(att, 50.0, 50.0, 50.0, 50.0)
     _pin_axes(def, 50.0, 50.0, 50.0, 50.0)
     def.parent_religion_id = "islam"  # symulujemy że defender to schizma islamu
-    var cbs := wm.available_casus_belli(att, def)
+    var cbs := wm.available_casus_belli(att, def, gs)
     assert_true(cbs.has("stlumienie_herezji"))
 
 func test_cb_stlumienie_herezji_NOT_when_defender_is_not_child() -> void:
@@ -153,7 +153,7 @@ func test_cb_stlumienie_herezji_NOT_when_defender_is_not_child() -> void:
     _pin_axes(att, 50.0, 50.0, 50.0, 50.0)
     _pin_axes(def, 50.0, 50.0, 50.0, 50.0)
     # def.parent_religion_id == "" — nie jest schizmą islamu
-    var cbs := wm.available_casus_belli(att, def)
+    var cbs := wm.available_casus_belli(att, def, gs)
     assert_false(cbs.has("stlumienie_herezji"))
 
 func test_cb_empty_when_all_axes_neutral() -> void:
@@ -163,7 +163,7 @@ func test_cb_empty_when_all_axes_neutral() -> void:
     var def: Religion = gs.get_religion("chr_wschodnie")
     _pin_axes(att, 50.0, 50.0, 50.0, 50.0)
     _pin_axes(def, 50.0, 50.0, 50.0, 50.0)
-    var cbs := wm.available_casus_belli(att, def)
+    var cbs := wm.available_casus_belli(att, def, gs)
     assert_eq(cbs.size(), 0, "Religia ze wszystkimi osiami w środku nie powinna mieć CB")
 
 func test_declare_war_succeeds_when_cb_available_and_prestige_enough() -> void:
@@ -678,3 +678,73 @@ func test_declare_war_increases_military_tension() -> void:
     var dm := DiplomacyManager.new()
     var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
     assert_almost_eq(rel.military_tension, 20.0, 0.001)
+
+# --- CB Rewanż za zniewagę (Plan 07) ---
+
+func test_cb_rewanz_unlocked_when_grievance_active_and_exclusivism_high() -> void:
+    var gs := _make_state()
+    var wm := WarManager.new()
+    var att: Religion = gs.get_religion("islam")
+    var def: Religion = gs.get_religion("chr_zachodnie")
+    _pin_axes(att, 50.0, 50.0, 20.0, 50.0)  # C=20 → Ekskluzywizm 80
+    att.interdict_grievance_from_id = "chr_zachodnie"
+    att.interdict_grievance_until = gs.current_turn + 5
+    var cbs := wm.available_casus_belli(att, def, gs)
+    assert_true("rewanz" in cbs, "Rewanż dostępny przy C<30 + grievance aktywne")
+
+func test_cb_rewanz_blocked_when_exclusivism_too_low() -> void:
+    var gs := _make_state()
+    var wm := WarManager.new()
+    var att: Religion = gs.get_religion("islam")
+    var def: Religion = gs.get_religion("chr_zachodnie")
+    _pin_axes(att, 50.0, 50.0, 50.0, 50.0)  # C=50 → tolerancyjny
+    att.interdict_grievance_from_id = "chr_zachodnie"
+    att.interdict_grievance_until = gs.current_turn + 5
+    var cbs := wm.available_casus_belli(att, def, gs)
+    assert_false("rewanz" in cbs, "Rewanż NIE dostępny przy C>=30")
+
+func test_cb_rewanz_blocked_when_grievance_expired() -> void:
+    var gs := _make_state()
+    var wm := WarManager.new()
+    var att: Religion = gs.get_religion("islam")
+    var def: Religion = gs.get_religion("chr_zachodnie")
+    _pin_axes(att, 50.0, 50.0, 20.0, 50.0)
+    att.interdict_grievance_from_id = "chr_zachodnie"
+    att.interdict_grievance_until = gs.current_turn  # > operator strict → equal nie wystarcza
+    var cbs := wm.available_casus_belli(att, def, gs)
+    assert_false("rewanz" in cbs, "Rewanż NIE dostępny gdy grievance_until == current_turn (operator > strict)")
+
+func test_cb_rewanz_blocked_when_defender_is_not_grievance_source() -> void:
+    var gs := _make_state()
+    var wm := WarManager.new()
+    var att: Religion = gs.get_religion("islam")
+    var other: Religion = gs.get_religion("hinduizm")
+    _pin_axes(att, 50.0, 50.0, 20.0, 50.0)
+    att.interdict_grievance_from_id = "chr_zachodnie"
+    att.interdict_grievance_until = gs.current_turn + 5
+    var cbs := wm.available_casus_belli(att, other, gs)
+    assert_false("rewanz" in cbs, "Rewanż musi być przeciw konkretnemu sprawcy")
+
+func test_cb_rewanz_handles_null_state() -> void:
+    var gs := _make_state()
+    var wm := WarManager.new()
+    var att: Religion = gs.get_religion("islam")
+    var def: Religion = gs.get_religion("chr_zachodnie")
+    _pin_axes(att, 50.0, 50.0, 20.0, 50.0)
+    att.interdict_grievance_from_id = "chr_zachodnie"
+    att.interdict_grievance_until = 9999
+    var cbs := wm.available_casus_belli(att, def, null)
+    assert_false("rewanz" in cbs, "bez state nie ma reaktywnych CB")
+
+func test_cb_rewanz_blocked_when_attacker_equals_defender() -> void:
+    var gs := _make_state()
+    var wm := WarManager.new()
+    var rel: Religion = gs.get_religion("islam")
+    _pin_axes(rel, 50.0, 50.0, 20.0, 50.0)
+    rel.interdict_grievance_from_id = "islam"
+    rel.interdict_grievance_until = gs.current_turn + 5
+    var cbs := wm.available_casus_belli(rel, rel, gs)
+    assert_false("rewanz" in cbs, "self-Rewanż zablokowany przez guard attacker.id != defender.id")
+
+func test_cb_rewanz_bonus_value() -> void:
+    assert_almost_eq(WarManager.CB_BONUS.get("rewanz", -1.0), 0.15, 0.001)
