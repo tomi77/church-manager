@@ -50,6 +50,13 @@ const WEARINESS_PENALTIES: Array = [
     {"min": 30.0, "penalty": 0.10},
 ]
 
+# --- Bonus świętej wojny sojuszniczej (Plan 07) ---
+# Operator `>` strict, świadomie inny niż AXIS_STRENGTH_MODIFIERS["D"].min=65 z `>=` —
+# bonus aktywny dopiero przy D=66, by nie kumulował się z bazowym +25% na samej granicy.
+const HOLY_WAR_ALLIANCE_AXIS_D_THRESHOLD := 65.0
+const HOLY_WAR_ALLIANCE_BONUS := 0.15
+const HOLY_WAR_CBS: Array = ["krucjata", "dzihad"]
+
 # --- 3 opcje Teologii klęski ---
 const DEFEAT_OPTIONS: Array = [
     {"label": "Kara za grzechy", "axis": "A", "delta": 5.0},      # Dogmatyzm
@@ -138,6 +145,13 @@ func compute_army_strength(religion: Religion, target_province: Province, war: W
             axis_modifier += rule["bonus"]
         elif rule.has("max") and value <= rule["max"]:
             axis_modifier += rule["bonus"]
+    # Bonus świętej wojny sojuszniczej (Plan 07).
+    # Tylko atakujący w krucjacie/dzihadzie, z D>65 (strict), mający sojusznika również w świętej wojnie.
+    if religion.id == war.attacker_id \
+       and war.casus_belli in HOLY_WAR_CBS \
+       and religion.get_axis("D") > HOLY_WAR_ALLIANCE_AXIS_D_THRESHOLD \
+       and _has_holy_war_ally(religion, state):
+        axis_modifier += HOLY_WAR_ALLIANCE_BONUS
     var cb_modifier: float = CB_BONUS.get(war.casus_belli, 0.0)
     var weariness_penalty := 0.0
     for rule: Dictionary in WEARINESS_PENALTIES:
@@ -258,3 +272,23 @@ func attack_province(war: War, province_id: String, state: Node) -> Dictionary:
     else:
         war.battles_lost += 1
     return {"victory": victory, "atk_str": atk_str, "def_str": def_str, "p_win": p_win}
+
+func _has_holy_war_ally(religion: Religion, state: Node) -> bool:
+    # Plan 07: sprawdza czy religia ma aktywny sojusz z inną religią prowadzącą krucjatę/dżihad jako atakujący.
+    # Sojusznik broniący w krucjacie NIE liczy się — wymagany jest atak.
+    for rel: RelationState in state.relations:
+        if not rel.alliance_active:
+            continue
+        var ally_id := ""
+        if rel.religion_a_id == religion.id:
+            ally_id = rel.religion_b_id
+        elif rel.religion_b_id == religion.id:
+            ally_id = rel.religion_a_id
+        else:
+            continue
+        for war: War in state.active_wars:
+            if war.state == "ENDED":
+                continue
+            if war.attacker_id == ally_id and war.casus_belli in HOLY_WAR_CBS:
+                return true
+    return false

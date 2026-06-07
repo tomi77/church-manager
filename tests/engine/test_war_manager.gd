@@ -812,3 +812,119 @@ func test_declare_war_rewanz_jednorazowy_second_attempt_fails() -> void:
     # Druga próba — fail (grievance puste, więc Rewanż nie dostępny)
     var war2 := wm.declare_war("islam", "chr_zachodnie", "rewanz", gs)
     assert_null(war2, "kolejna wojna Rewanż blokowana — grievance jednorazowe")
+
+# --- Bonus HolyWar w święta wojna sojusznicza (Plan 07) ---
+#
+# UWAGA: testy używają CB "dzihad" (D>=70), bo bonus HolyWar wymaga D>65 —
+# CB "krucjata" wymaga D<=40, więc gameplay-owo nigdy nie aktywuje bonusu HolyWar.
+# Defenderzy: "chr_wschodnie" (5 prowincji m.in. armenia/lewant) i "zoroastryzm" (persja/persepolis)
+# — religie WŁAŚCICIELE prowincji w danych historycznych. judaizm/hinduizm/buddyzm NIE mają prowincji,
+# więc `provinces_with_owner("judaizm")` zwraca []. Target province wybieramy przez get_province("armenia")
+# (mountains, owned by chr_wschodnie) — wzorzec z istniejących testów compute_strength_terrain_*.
+
+func _setup_holy_war_alliance(gs: Node, att_id: String, ally_id: String, target_id: String, ally_target_id: String) -> Dictionary:
+    # Tworzy sojusz + 2 wojny dzihad APPENDOWANE do gs.active_wars (wymóg `_has_holy_war_ally`).
+    var dm := DiplomacyManager.new()
+    var rel := dm.get_or_create_relation(gs, att_id, ally_id)
+    rel.alliance_active = true
+    var att_war := _make_war_for(att_id, target_id, "dzihad", gs)
+    var ally_war := _make_war_for(ally_id, ally_target_id, "dzihad", gs)
+    gs.active_wars.append(att_war)
+    gs.active_wars.append(ally_war)
+    return {"att_war": att_war, "ally_war": ally_war}
+
+func test_holy_war_bonus_applies_when_attacker_has_d_high_and_ally_in_dzihad() -> void:
+    var gs := _make_state()
+    var wm := WarManager.new()
+    var att: Religion = gs.get_religion("islam")
+    _pin_axes(att, 50.0, 50.0, 20.0, 70.0)   # D=70 > 65 → bonus
+    var wars := _setup_holy_war_alliance(gs, "islam", "chr_zachodnie", "chr_wschodnie", "zoroastryzm")
+    var att_war: War = wars["att_war"]
+    var target_prov: Province = gs.province_graph.get_province("armenia")  # owned by chr_wschodnie
+    var strength_with := wm.compute_army_strength(att, target_prov, att_war, gs)
+    # Sanity baseline: usuń bonus przez zerwanie sojuszu, ponownie zmierz.
+    for rel: RelationState in gs.relations:
+        rel.alliance_active = false
+    var strength_without := wm.compute_army_strength(att, target_prov, att_war, gs)
+    assert_gt(strength_with, strength_without, "bonus HolyWar zwiększa siłę armii")
+
+func test_holy_war_bonus_blocked_when_d_below_threshold() -> void:
+    var gs := _make_state()
+    var wm := WarManager.new()
+    var att: Religion = gs.get_religion("islam")
+    _pin_axes(att, 50.0, 50.0, 20.0, 65.0)  # D=65 → operator > strict, NIE aktywuje +15% (równe progowi)
+    var wars := _setup_holy_war_alliance(gs, "islam", "chr_zachodnie", "chr_wschodnie", "zoroastryzm")
+    var target_prov: Province = gs.province_graph.get_province("armenia")
+    var strength_with_d65 := wm.compute_army_strength(att, target_prov, wars["att_war"], gs)
+    _pin_axes(att, 50.0, 50.0, 20.0, 66.0)  # D=66 → bonus aktywny
+    var strength_with_d66 := wm.compute_army_strength(att, target_prov, wars["att_war"], gs)
+    assert_gt(strength_with_d66, strength_with_d65, "bonus tylko przy D>65 (strict, nie >=)")
+
+func test_holy_war_bonus_blocked_without_alliance() -> void:
+    var gs := _make_state()
+    var wm := WarManager.new()
+    var att: Religion = gs.get_religion("islam")
+    _pin_axes(att, 50.0, 50.0, 20.0, 70.0)
+    # Brak alliance_active — wojny istnieją, ale sojusz NIE
+    var att_war := _make_war_for("islam", "chr_wschodnie", "dzihad", gs)
+    var ally_war := _make_war_for("chr_zachodnie", "zoroastryzm", "dzihad", gs)
+    gs.active_wars.append(att_war)
+    gs.active_wars.append(ally_war)
+    var target_prov: Province = gs.province_graph.get_province("armenia")
+    var strength_no_alliance := wm.compute_army_strength(att, target_prov, att_war, gs)
+    # Włącz sojusz — siła powinna wzrosnąć
+    var dm := DiplomacyManager.new()
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.alliance_active = true
+    var strength_with_alliance := wm.compute_army_strength(att, target_prov, att_war, gs)
+    assert_gt(strength_with_alliance, strength_no_alliance, "bonus wymaga aktywnego sojuszu")
+
+func test_holy_war_bonus_blocked_when_ally_not_in_holy_war() -> void:
+    var gs := _make_state()
+    var wm := WarManager.new()
+    var att: Religion = gs.get_religion("islam")
+    _pin_axes(att, 50.0, 50.0, 20.0, 70.0)
+    var dm := DiplomacyManager.new()
+    var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+    rel.alliance_active = true
+    var att_war := _make_war_for("islam", "chr_wschodnie", "dzihad", gs)
+    var ally_war := _make_war_for("chr_zachodnie", "zoroastryzm", "wojna_sprawiedliwa", gs)  # NIE krucjata/dzihad
+    gs.active_wars.append(att_war)
+    gs.active_wars.append(ally_war)
+    var target_prov: Province = gs.province_graph.get_province("armenia")
+    var strength_ally_not_holy := wm.compute_army_strength(att, target_prov, att_war, gs)
+    # Zmień wojnę sojusznika na święta wojnę (przez bezpośrednią referencję, nie indeks)
+    ally_war.casus_belli = "dzihad"
+    var strength_ally_holy := wm.compute_army_strength(att, target_prov, att_war, gs)
+    assert_gt(strength_ally_holy, strength_ally_not_holy, "sojusznik MUSI prowadzić krucjatę/dzihad")
+
+func test_holy_war_bonus_blocked_for_defender_in_holy_war() -> void:
+    # Spec sek.4: bonus tylko dla atakującego. Defender w krucjacie/dzihadzie z D>65 NIE dostaje bonusu.
+    var gs := _make_state()
+    var wm := WarManager.new()
+    var att: Religion = gs.get_religion("islam")
+    var def_with_d_high: Religion = gs.get_religion("chr_wschodnie")  # owns provinces — potrzebne dla base
+    _pin_axes(att, 50.0, 50.0, 50.0, 50.0)
+    _pin_axes(def_with_d_high, 50.0, 50.0, 20.0, 70.0)
+    var dm := DiplomacyManager.new()
+    # Sojusz defendera z trzecią religią prowadzącą dzihad
+    var rel := dm.get_or_create_relation(gs, "chr_wschodnie", "chr_zachodnie")
+    rel.alliance_active = true
+    var att_war := _make_war_for("islam", "chr_wschodnie", "dzihad", gs)
+    var ally_war := _make_war_for("chr_zachodnie", "zoroastryzm", "dzihad", gs)
+    gs.active_wars.append(att_war)
+    gs.active_wars.append(ally_war)
+    var target_prov: Province = gs.province_graph.get_province("armenia")
+    # Mierzymy siłę DEFENDERA (chr_wschodnie). Bonus nie powinien aktywować się mimo D=70 i sojusznika w dzihadzie.
+    var def_strength_with_ally := wm.compute_army_strength(def_with_d_high, target_prov, att_war, gs)
+    # Zerwij sojusz i ponownie zmierz — powinno być identyczne (bonus nigdy nie aplikowany)
+    rel.alliance_active = false
+    var def_strength_no_ally := wm.compute_army_strength(def_with_d_high, target_prov, att_war, gs)
+    assert_almost_eq(def_strength_with_ally, def_strength_no_ally, 0.001, "defender nie dostaje bonusu HolyWar")
+
+func test_holy_war_constants() -> void:
+    assert_almost_eq(WarManager.HOLY_WAR_ALLIANCE_AXIS_D_THRESHOLD, 65.0, 0.001)
+    assert_almost_eq(WarManager.HOLY_WAR_ALLIANCE_BONUS, 0.15, 0.001)
+    assert_true("krucjata" in WarManager.HOLY_WAR_CBS)
+    assert_true("dzihad" in WarManager.HOLY_WAR_CBS)
+    assert_eq(WarManager.HOLY_WAR_CBS.size(), 2, "tylko krucjata i dzihad")
