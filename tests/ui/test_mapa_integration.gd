@@ -50,12 +50,12 @@ func test_missionaries_action_advances_engine_state():
     add_child_autofree(state)
     var dm := DiplomacyManager.new()
     var rel := dm.get_or_create_relation(state, "islam", "chr_wschodnie")
-    rel.theological_trust = 50.0
+    rel.theological_trust = DiplomacyManager.MISSIONARIES_TRUST_THRESHOLD + 20.0
     rel.military_tension = 20.0
     var islam: Religion = state.get_religion("islam")
-    islam.prestige = 200
+    islam.prestige = DiplomacyManager.MISSIONARIES_PRESTIGE_COST + 100
     # Force ekskluzywizm OK: shift_axis przesuwa o delta od bieżącej wartości
-    islam.shift_axis("C", 30.0 - islam.get_axis("C"))
+    islam.shift_axis("C", DiplomacyManager.MISSIONARIES_EXCLUSIVITY_BLOCK + 10.0 - islam.get_axis("C"))
 
     var shell := await _instance_shell(state)
     var mapa_tab = shell.get_node("%MapaTab")
