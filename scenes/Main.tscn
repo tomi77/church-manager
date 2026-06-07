@@ -1,3 +1,9 @@
-[gd_scene format=3]
+[gd_scene load_steps=2 format=3]
 
-[node name="Main" type="Node2D"]
+[ext_resource type="PackedScene" path="res://scenes/ui/StartMenu.tscn" id="1"]
+
+[node name="Main" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="StartMenu" parent="." instance=ExtResource("1")]
