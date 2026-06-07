@@ -62,3 +62,32 @@ func test_header_renders_resources():
     var h := await _instance(state, "mekka")  # food=1, gold=3
     assert_eq(h.get_node("%GoldLabel").text, "💰 +3/turę")
     assert_eq(h.get_node("%FoodLabel").text, "🌾 +1/turę")
+
+func test_header_terrain_labels_for_all_terrain_types():
+    var state := _make_state()
+    add_child_autofree(state)
+    var expected_substrings := {
+        "plains": "równina",
+        "mountains": "góry",
+        "desert": "pustynia",
+        "coast": "wybrzeże",
+        "fertile": "żyzne",
+    }
+    for terrain_key in expected_substrings.keys():
+        var prov: Province = state.province_graph.get_province("mekka")
+        var saved_terrain: String = prov.terrain
+        prov.terrain = terrain_key
+        var h := await _instance(state, "mekka")
+        var label_text: String = h.get_node("%TerrainLabel").text
+        assert_string_contains(label_text, expected_substrings[terrain_key])
+        prov.terrain = saved_terrain
+
+func test_header_falls_back_to_raw_owner_id_when_religion_missing():
+    var state := _make_state()
+    add_child_autofree(state)
+    var prov: Province = state.province_graph.get_province("mekka")
+    var saved_owner: String = prov.owner
+    prov.owner = "nieistniejaca_religia"
+    var h := await _instance(state, "mekka")
+    assert_eq(h.get_node("%OwnerLabel").text, "nieistniejaca_religia")
+    prov.owner = saved_owner
