@@ -1,0 +1,119 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/wiara/AxisRadar.gd" id="1"]
+
+[node name="AxisRadar" type="Control"]
+script = ExtResource("1")
+custom_minimum_size = Vector2(400, 480)
+
+[node name="RadarArea" type="Control" parent="."]
+custom_minimum_size = Vector2(400, 400)
+mouse_filter = 2
+
+[node name="GridPolygon25" type="Line2D" parent="RadarArea"]
+unique_name_in_owner = true
+points = PackedVector2Array(200, 160, 240, 200, 200, 240, 160, 200, 200, 160)
+default_color = Color(0.27, 0.27, 0.27, 1)
+width = 1.0
+
+[node name="GridPolygon50" type="Line2D" parent="RadarArea"]
+unique_name_in_owner = true
+points = PackedVector2Array(200, 120, 280, 200, 200, 280, 120, 200, 200, 120)
+default_color = Color(0.27, 0.27, 0.27, 1)
+width = 1.0
+
+[node name="GridPolygon75" type="Line2D" parent="RadarArea"]
+unique_name_in_owner = true
+points = PackedVector2Array(200, 80, 320, 200, 200, 320, 80, 200, 200, 80)
+default_color = Color(0.27, 0.27, 0.27, 1)
+width = 1.0
+
+[node name="AxisLineA" type="Line2D" parent="RadarArea"]
+points = PackedVector2Array(200, 200, 200, 40)
+default_color = Color(0.4, 0.4, 0.4, 1)
+width = 1.0
+
+[node name="AxisLineB" type="Line2D" parent="RadarArea"]
+points = PackedVector2Array(200, 200, 360, 200)
+default_color = Color(0.4, 0.4, 0.4, 1)
+width = 1.0
+
+[node name="AxisLineC" type="Line2D" parent="RadarArea"]
+points = PackedVector2Array(200, 200, 200, 360)
+default_color = Color(0.4, 0.4, 0.4, 1)
+width = 1.0
+
+[node name="AxisLineD" type="Line2D" parent="RadarArea"]
+points = PackedVector2Array(200, 200, 40, 200)
+default_color = Color(0.4, 0.4, 0.4, 1)
+width = 1.0
+
+[node name="ValuePolygon" type="Polygon2D" parent="RadarArea"]
+unique_name_in_owner = true
+color = Color(1, 1, 1, 0.4)
+
+[node name="ValueOutline" type="Line2D" parent="RadarArea"]
+unique_name_in_owner = true
+default_color = Color(1, 1, 1, 1)
+width = 2.0
+
+[node name="AxisLabelA" type="Label" parent="RadarArea"]
+offset_left = 175.0
+offset_top = 10.0
+offset_right = 225.0
+offset_bottom = 30.0
+text = "Dogmatyzm"
+horizontal_alignment = 1
+
+[node name="AxisLabelB" type="Label" parent="RadarArea"]
+offset_left = 365.0
+offset_top = 190.0
+offset_right = 405.0
+offset_bottom = 210.0
+text = "Hierarchia"
+
+[node name="AxisLabelC" type="Label" parent="RadarArea"]
+offset_left = 170.0
+offset_top = 370.0
+offset_right = 230.0
+offset_bottom = 390.0
+text = "Synkretyzm"
+horizontal_alignment = 1
+
+[node name="AxisLabelD" type="Label" parent="RadarArea"]
+offset_left = 0.0
+offset_top = 190.0
+offset_right = 40.0
+offset_bottom = 210.0
+text = "Transcendencja"
+
+[node name="ValueTable" type="HBoxContainer" parent="."]
+offset_top = 410.0
+offset_right = 400.0
+offset_bottom = 460.0
+alignment = 1
+
+[node name="ValueLabelA" type="Label" parent="ValueTable"]
+unique_name_in_owner = true
+text = "A: 0"
+
+[node name="Sep1" type="Label" parent="ValueTable"]
+text = "  ·  "
+
+[node name="ValueLabelB" type="Label" parent="ValueTable"]
+unique_name_in_owner = true
+text = "B: 0"
+
+[node name="Sep2" type="Label" parent="ValueTable"]
+text = "  ·  "
+
+[node name="ValueLabelC" type="Label" parent="ValueTable"]
+unique_name_in_owner = true
+text = "C: 0"
+
+[node name="Sep3" type="Label" parent="ValueTable"]
+text = "  ·  "
+
+[node name="ValueLabelD" type="Label" parent="ValueTable"]
+unique_name_in_owner = true
+text = "D: 0"
