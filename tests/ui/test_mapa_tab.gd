@@ -45,5 +45,5 @@ func test_navigate_signal_propagates():
 	watch_signals(t)
 	var panel: ProvinceDetailPanel = t.get_node("%DetailPanel")
 	var actions := panel.get_node("%Actions")
-	actions.emit_signal("navigate_to_diplomacy", "chr_wschodnie")
-	assert_signal_emitted_with_parameters(t, "navigate_to_diplomacy", ["chr_wschodnie"])
+	actions.emit_signal("navigate_to_diplomacy", "eastern_christianity")
+	assert_signal_emitted_with_parameters(t, "navigate_to_diplomacy", ["eastern_christianity"])

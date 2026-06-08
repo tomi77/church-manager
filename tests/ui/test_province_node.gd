@@ -19,12 +19,12 @@ func _instance_node(prov: Province) -> ProvinceNode:
 	return pn
 
 func test_node_renders_display_name():
-	var prov := _make_province("mekka", "religie_arabskie", "Mekka", Vector2(420, 420))
+	var prov := _make_province("mekka", "arabian_paganism", "Mekka", Vector2(420, 420))
 	var pn := await _instance_node(prov)
 	assert_eq(pn.get_node("%NameLabel").text, "Mekka")
 
 func test_node_position_set_from_province():
-	var prov := _make_province("mekka", "religie_arabskie", "Mekka", Vector2(420, 420))
+	var prov := _make_province("mekka", "arabian_paganism", "Mekka", Vector2(420, 420))
 	var pn := await _instance_node(prov)
 	assert_eq(pn.position, Vector2(420, 420))
 

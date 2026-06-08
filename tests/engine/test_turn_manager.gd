@@ -20,20 +20,20 @@ func test_passive_pressure_increases_on_adjacent_foreign_province() -> void:
 	var gs := _make_state()
 	var graph: ProvinceGraph = gs.province_graph
 	var mezopotamia := graph.get_province("mezopotamia")
-	var initial_zoroastr := mezopotamia.get_pressure("zoroastryzm")
+	var initial_zoroastr := mezopotamia.get_pressure("zoroastrianism")
 	tm.process_turn(gs)
-	assert_gt(mezopotamia.get_pressure("zoroastryzm"), initial_zoroastr)
+	assert_gt(mezopotamia.get_pressure("zoroastrianism"), initial_zoroastr)
 
 func test_no_pressure_from_same_owner_neighbor() -> void:
-	# persepolis (owner=zoroastryzm) sąsiaduje z persja (owner=zoroastryzm)
-	# persepolis NIE powinna dostawać presji "zoroastryzm" — sąsiad to ta sama religia
+	# persepolis (owner=zoroastrianism) sąsiaduje z persja (owner=zoroastrianism)
+	# persepolis NIE powinna dostawać presji "zoroastrianism" — sąsiad to ta sama religia
 	var tm := TurnManager.new()
 	var gs := _make_state()
 	var graph: ProvinceGraph = gs.province_graph
 	var persepolis := graph.get_province("persepolis")
-	var initial_zor := persepolis.get_pressure("zoroastryzm")
+	var initial_zor := persepolis.get_pressure("zoroastrianism")
 	tm.process_turn(gs)
-	assert_eq(persepolis.get_pressure("zoroastryzm"), initial_zor)
+	assert_eq(persepolis.get_pressure("zoroastrianism"), initial_zor)
 
 func test_passive_pressure_foreign_religion_increases_on_border_province() -> void:
 	var tm := TurnManager.new()
@@ -47,7 +47,7 @@ func test_passive_pressure_foreign_religion_increases_on_border_province() -> vo
 func test_holy_site_owner_gains_prestige() -> void:
 	var tm := TurnManager.new()
 	var gs := _make_state()
-	var islam: Religion = gs.get_religion("religie_arabskie")
+	var islam: Religion = gs.get_religion("arabian_paganism")
 	var initial_prestige := islam.prestige
 	tm.process_turn(gs)
 	assert_gt(islam.prestige, initial_prestige)
@@ -67,7 +67,7 @@ func test_process_turn_decrements_scholar_mission_turns() -> void:
 	var gs := _make_state()
 	gs.scholar_missions.append({
 		"from_religion_id": "islam",
-		"to_religion_id": "chr_zachodnie",
+		"to_religion_id": "western_christianity",
 		"turns_remaining": 2,
 	})
 	tm.process_turn(gs)
@@ -78,7 +78,7 @@ func test_process_turn_generates_idea_when_mission_completes() -> void:
 	var tm := TurnManager.new()
 	var gs := _make_state()
 	var islam: Religion = gs.get_religion("islam")
-	var chr: Religion = gs.get_religion("chr_zachodnie")
+	var chr: Religion = gs.get_religion("western_christianity")
 	# Pinuj wszystkie osie żeby A miała największą różnicę
 	islam.axes["A"] = 20.0
 	islam.axes["B"] = 50.0
@@ -90,7 +90,7 @@ func test_process_turn_generates_idea_when_mission_completes() -> void:
 	chr.axes["D"] = 50.0
 	gs.scholar_missions.append({
 		"from_religion_id": "islam",
-		"to_religion_id": "chr_zachodnie",
+		"to_religion_id": "western_christianity",
 		"turns_remaining": 1,
 	})
 	tm.process_turn(gs)
@@ -154,7 +154,7 @@ func test_process_turn_mobilizing_war_transitions_to_battling_after_2_turns() ->
 	var att: Religion = gs.get_religion("islam")
 	_pin_axes_tm(att, 50.0, 50.0, 20.0, 75.0)
 	att.prestige = 100
-	var war := wm.declare_war("islam", "chr_wschodnie", "dzihad", gs)
+	var war := wm.declare_war("islam", "eastern_christianity", "dzihad", gs)
 	assert_eq(war.state, "MOBILIZING")
 	tm.process_turn(gs)
 	assert_eq(war.state, "MOBILIZING")
@@ -168,7 +168,7 @@ func test_process_turn_occupying_war_returns_to_battling_after_2_turns() -> void
 	var gs := _make_state()
 	var war := War.new()
 	war.attacker_id = "islam"
-	war.defender_id = "chr_wschodnie"
+	war.defender_id = "eastern_christianity"
 	war.casus_belli = "dzihad"
 	war.state = "OCCUPYING"
 	war.turns_in_state = 0
@@ -184,12 +184,12 @@ func test_process_turn_increments_war_weariness_for_both_sides() -> void:
 	var tm := TurnManager.new()
 	var gs := _make_state()
 	var att: Religion = gs.get_religion("islam")
-	var def: Religion = gs.get_religion("chr_wschodnie")
+	var def: Religion = gs.get_religion("eastern_christianity")
 	att.war_weariness = 10.0
 	def.war_weariness = 5.0
 	var war := War.new()
 	war.attacker_id = "islam"
-	war.defender_id = "chr_wschodnie"
+	war.defender_id = "eastern_christianity"
 	war.state = "BATTLING"
 	gs.active_wars.append(war)
 	tm.process_turn(gs)
@@ -203,7 +203,7 @@ func test_process_turn_force_peace_at_weariness_90_creates_defeat_event() -> voi
 	att.war_weariness = 88.0  # po +3 → 91, próg 90 przekroczony
 	var war := War.new()
 	war.attacker_id = "islam"
-	war.defender_id = "chr_wschodnie"
+	war.defender_id = "eastern_christianity"
 	war.casus_belli = "dzihad"
 	war.state = "BATTLING"
 	gs.active_wars.append(war)
@@ -214,7 +214,7 @@ func test_process_turn_force_peace_at_weariness_90_creates_defeat_event() -> voi
 	assert_eq(gs.pending_defeat_events.size(), 1)
 	var ev: DefeatEvent = gs.pending_defeat_events[0]
 	assert_eq(ev.religion_id, "islam")
-	assert_eq(ev.opponent_id, "chr_wschodnie")
+	assert_eq(ev.opponent_id, "eastern_christianity")
 
 const DiplomacyManagerScript := preload("res://scripts/engine/DiplomacyManager.gd")
 
@@ -222,7 +222,7 @@ func test_turn_decays_tension_in_peace() -> void:
 	var state := _make_state()
 	var tm := TurnManager.new()
 	var dm := DiplomacyManager.new()
-	var rel := dm.get_or_create_relation(state, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(state, "islam", "western_christianity")
 	rel.military_tension = 20.0
 	tm.process_turn(state)
 	assert_almost_eq(rel.military_tension, 19.0, 0.001)
@@ -231,11 +231,11 @@ func test_turn_does_not_decay_tension_during_war() -> void:
 	var state := _make_state()
 	var tm := TurnManager.new()
 	var dm := DiplomacyManager.new()
-	var rel := dm.get_or_create_relation(state, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(state, "islam", "western_christianity")
 	rel.military_tension = 20.0
 	var w := War.new()
 	w.attacker_id = "islam"
-	w.defender_id = "chr_zachodnie"
+	w.defender_id = "western_christianity"
 	w.state = "BATTLING"
 	state.active_wars.append(w)
 	tm.process_turn(state)
@@ -246,13 +246,13 @@ func test_turn_evaluates_coalitions() -> void:
 	var tm := TurnManager.new()
 	var dm := DiplomacyManager.new()
 	# 3 wojny islamu → threat=60, próg pokonany
-	for ofiara: String in ["chr_zachodnie", "hinduizm", "buddyzm"]:
+	for ofiara: String in ["western_christianity", "hinduism", "buddhism"]:
 		var w := War.new()
 		w.attacker_id = "islam"
 		w.defender_id = ofiara
 		w.state = "BATTLING"
 		state.active_wars.append(w)
-	for member: String in ["judaizm", "zoroastryzm"]:
+	for member: String in ["judaism", "zoroastrianism"]:
 		var rel := dm.get_or_create_relation(state, member, "islam")
 		rel.military_tension = 50.0
 	tm.process_turn(state)

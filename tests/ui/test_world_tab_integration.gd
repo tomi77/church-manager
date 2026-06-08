@@ -23,18 +23,18 @@ func test_full_loop_alliance():
 	add_child_autofree(state)
 	state.get_player_religion().prestige = 100
 	var dm := DiplomacyManager.new()
-	var rel := dm.get_or_create_relation(state, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(state, "islam", "western_christianity")
 	rel.theological_trust = 70.0
 
 	var shell := await _shell(state)
 	var world: WorldTab = shell.get_node("%SwiatTab")
-	world._on_religion_selected("chr_zachodnie")
+	world._on_religion_selected("western_christianity")
 
 	var panel: ActionPanel = world.get_node("%ActionPanel")
 	panel.get_node("%AllianceButton").emit_signal("pressed")
 
 	# Sojusz aktywny
-	var rel_after := dm.get_or_create_relation(state, "islam", "chr_zachodnie")
+	var rel_after := dm.get_or_create_relation(state, "islam", "western_christianity")
 	assert_true(rel_after.alliance_active)
 	# Prestiż spadł
 	assert_eq(state.get_player_religion().prestige, 80)
@@ -42,19 +42,19 @@ func test_full_loop_alliance():
 	assert_eq(shell.get_node("%Header").get_node("%PrestigeLabel").text, "⚑ 80")
 	# Marker w liście (po refreshu)
 	var list: RelationList = world.get_node("%RelationList")
-	assert_eq(list._items["chr_zachodnie"].marker, "🤝")
+	assert_eq(list._items["western_christianity"].marker, "🤝")
 
 func test_full_loop_rewanz():
 	var state := _make_state()
 	add_child_autofree(state)
 	var player: Religion = state.get_player_religion()
-	player.interdict_grievance_from_id = "chr_zachodnie"
+	player.interdict_grievance_from_id = "western_christianity"
 	player.interdict_grievance_until = state.current_turn + 5
 	player.axes["C"] = 20.0
 
 	var shell := await _shell(state)
 	var world: WorldTab = shell.get_node("%SwiatTab")
-	world._on_religion_selected("chr_zachodnie")
+	world._on_religion_selected("western_christianity")
 
 	var panel: ActionPanel = world.get_node("%ActionPanel")
 	var rewanz_btn: Button = panel.get_node("%RewanzButton")
@@ -66,14 +66,14 @@ func test_full_loop_rewanz():
 	# Wojna utworzona
 	var has_war: bool = false
 	for war: War in state.active_wars:
-		if war.attacker_id == "islam" and war.defender_id == "chr_zachodnie" and war.casus_belli == "rewanz":
+		if war.attacker_id == "islam" and war.defender_id == "western_christianity" and war.casus_belli == "rewanz":
 			has_war = true
 	assert_true(has_war)
 	# Grievance wyzerowany
 	assert_eq(player.interdict_grievance_from_id, "")
 	# Marker w liście zmienił się na ⚔
 	var list: RelationList = world.get_node("%RelationList")
-	assert_eq(list._items["chr_zachodnie"].marker, "⚔")
+	assert_eq(list._items["western_christianity"].marker, "⚔")
 
 func test_full_loop_peace_council_ends_war():
 	var state := _make_state()
@@ -83,7 +83,7 @@ func test_full_loop_peace_council_ends_war():
 	player.war_weariness = 60.0
 	var war: War = WarScript.new()
 	war.attacker_id = "islam"
-	war.defender_id = "zoroastryzm"
+	war.defender_id = "zoroastrianism"
 	war.state = "BATTLING"
 	war.casus_belli = "stlumienie_herezji"
 	state.active_wars.append(war)

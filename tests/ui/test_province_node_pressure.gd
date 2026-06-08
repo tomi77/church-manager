@@ -19,17 +19,17 @@ func _instance(prov: Province) -> ProvinceNode:
 	return pn
 
 func test_no_tint_when_max_foreign_pressure_below_60():
-	var p := _make_province_with_pressure("test", "islam", {"chr_wschodnie": 50.0})
+	var p := _make_province_with_pressure("test", "islam", {"eastern_christianity": 50.0})
 	var pn := await _instance(p)
 	assert_eq(pn.pressure_alert_state(), "none")
 
 func test_subtle_tint_when_foreign_pressure_61_to_85():
-	var p := _make_province_with_pressure("test", "islam", {"chr_wschodnie": 75.0})
+	var p := _make_province_with_pressure("test", "islam", {"eastern_christianity": 75.0})
 	var pn := await _instance(p)
 	assert_eq(pn.pressure_alert_state(), "subtle")
 
 func test_alert_pulse_when_foreign_pressure_over_85():
-	var p := _make_province_with_pressure("test", "islam", {"chr_wschodnie": 90.0})
+	var p := _make_province_with_pressure("test", "islam", {"eastern_christianity": 90.0})
 	var pn := await _instance(p)
 	assert_eq(pn.pressure_alert_state(), "alert")
 
@@ -39,12 +39,12 @@ func test_owner_pressure_ignored_for_tint():
 	assert_eq(pn.pressure_alert_state(), "none")
 
 func test_boundary_at_exactly_85_is_subtle():
-	var p := _make_province_with_pressure("test", "islam", {"chr_wschodnie": 85.0})
+	var p := _make_province_with_pressure("test", "islam", {"eastern_christianity": 85.0})
 	var pn := await _instance(p)
 	assert_eq(pn.pressure_alert_state(), "subtle")
 
 func test_boundary_just_above_85_is_alert():
-	var p := _make_province_with_pressure("test", "islam", {"chr_wschodnie": 85.01})
+	var p := _make_province_with_pressure("test", "islam", {"eastern_christianity": 85.01})
 	var pn := await _instance(p)
 	assert_eq(pn.pressure_alert_state(), "alert")
 

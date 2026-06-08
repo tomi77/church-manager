@@ -49,7 +49,7 @@ func test_missionaries_action_advances_engine_state():
 	var state := _make_state()
 	add_child_autofree(state)
 	var dm := DiplomacyManager.new()
-	var rel := dm.get_or_create_relation(state, "islam", "chr_wschodnie")
+	var rel := dm.get_or_create_relation(state, "islam", "eastern_christianity")
 	rel.theological_trust = DiplomacyManager.MISSIONARIES_TRUST_THRESHOLD + 20.0
 	rel.military_tension = 20.0
 	var islam: Religion = state.get_religion("islam")

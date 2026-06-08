@@ -47,8 +47,8 @@ func test_panel_relays_navigate_signal():
 	p.set_province("lewant")
 	watch_signals(p)
 	var actions := p.get_node("%Actions")
-	actions.emit_signal("navigate_to_diplomacy", "chr_wschodnie")
-	assert_signal_emitted_with_parameters(p, "navigate_to_diplomacy", ["chr_wschodnie"])
+	actions.emit_signal("navigate_to_diplomacy", "eastern_christianity")
+	assert_signal_emitted_with_parameters(p, "navigate_to_diplomacy", ["eastern_christianity"])
 
 func test_panel_relays_war_declared_signal():
 	var state := _make_state()
@@ -57,8 +57,8 @@ func test_panel_relays_war_declared_signal():
 	p.set_province("lewant")
 	watch_signals(p)
 	var actions := p.get_node("%Actions")
-	actions.emit_signal("war_declared", "chr_wschodnie", "krucjata")
-	assert_signal_emitted_with_parameters(p, "war_declared", ["chr_wschodnie", "krucjata"])
+	actions.emit_signal("war_declared", "eastern_christianity", "krucjata")
+	assert_signal_emitted_with_parameters(p, "war_declared", ["eastern_christianity", "krucjata"])
 
 func test_panel_relays_missionaries_sent_signal():
 	var state := _make_state()
@@ -67,8 +67,8 @@ func test_panel_relays_missionaries_sent_signal():
 	p.set_province("lewant")
 	watch_signals(p)
 	var actions := p.get_node("%Actions")
-	actions.emit_signal("missionaries_sent", "chr_wschodnie")
-	assert_signal_emitted_with_parameters(p, "missionaries_sent", ["chr_wschodnie"])
+	actions.emit_signal("missionaries_sent", "eastern_christianity")
+	assert_signal_emitted_with_parameters(p, "missionaries_sent", ["eastern_christianity"])
 
 func test_panel_refresh_noop_when_no_province():
 	var state := _make_state()

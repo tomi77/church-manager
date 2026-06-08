@@ -44,7 +44,7 @@ func test_header_wars_label_red_when_active():
 	add_child_autofree(state)
 	var war := War.new()
 	war.attacker_id = "islam"
-	war.defender_id = "zoroastryzm"
+	war.defender_id = "zoroastrianism"
 	war.state = "BATTLING"
 	state.active_wars.append(war)
 	var h := await _instance_header(state)

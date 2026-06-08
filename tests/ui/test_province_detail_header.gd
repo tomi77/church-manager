@@ -27,7 +27,7 @@ func test_header_renders_owner_religion():
 	var state := _make_state()
 	add_child_autofree(state)
 	var h := await _instance(state, "mekka")
-	var owner: Religion = state.get_religion("religie_arabskie")
+	var owner: Religion = state.get_religion("arabian_paganism")
 	var expected: String = "%s %s" % [owner.icon, owner.display_name]
 	assert_eq(h.get_node("%OwnerLabel").text, expected)
 

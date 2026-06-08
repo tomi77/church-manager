@@ -30,8 +30,8 @@ func test_card_shows_islam_umma_trait():
 	assert_eq(c.get_node("%NameLabel").text, "Umma")
 	assert_string_contains(c.get_node("%DescriptionLabel").text, "Dżihadu")
 
-func test_card_shows_chr_zachodnie_sukcesja_trait():
-	var state := _make_state("chr_zachodnie")
+func test_card_shows_western_christianity_sukcesja_trait():
+	var state := _make_state("western_christianity")
 	add_child_autofree(state)
 	var c := await _instance_card(state)
 	assert_eq(c.get_node("%NameLabel").text, "Sukcesja Apostolska")

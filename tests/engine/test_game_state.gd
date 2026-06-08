@@ -24,9 +24,9 @@ func test_game_state_get_player_religion_returns_correct() -> void:
 
 func test_game_state_get_religion_by_id() -> void:
 	var gs := _make_state()
-	var r: Religion = gs.get_religion("chr_zachodnie")
+	var r: Religion = gs.get_religion("western_christianity")
 	assert_not_null(r)
-	assert_eq(r.id, "chr_zachodnie")
+	assert_eq(r.id, "western_christianity")
 
 func test_game_state_provinces_graph_accessible() -> void:
 	var gs := _make_state()

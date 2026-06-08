@@ -18,17 +18,17 @@ const COLOR_PICKER_UNSELECTED: Color = Color(0.7, 0.7, 0.7)
 # Paleta religii (per spec 06 sekcja 3 — kolor wielokąta na mapie)
 const RELIGION_COLORS: Dictionary = {
 	"islam": Color("0d3a1a"),
-	"chr_zachodnie": Color("0a0a2a"),
-	"chr_wschodnie": Color("0a0a22"),
-	"judaizm": Color("1a1600"),
-	"zoroastryzm": Color("1a0d00"),
-	"koptyjski": Color("0d1a10"),
-	"manicheizm": Color("180818"),
-	"religie_arabskie": Color("1a1000"),
-	"hinduizm": Color("1a0808"),
-	"buddyzm": Color("001518"),
-	"religie_germanskie": Color("0d1408"),
-	"religie_slowianski": Color("0a1210"),
+	"western_christianity": Color("0a0a2a"),
+	"eastern_christianity": Color("0a0a22"),
+	"judaism": Color("1a1600"),
+	"zoroastrianism": Color("1a0d00"),
+	"coptic_christianity": Color("0d1a10"),
+	"manichaeism": Color("180818"),
+	"arabian_paganism": Color("1a1000"),
+	"hinduism": Color("1a0808"),
+	"buddhism": Color("001518"),
+	"germanic_paganism": Color("0d1408"),
+	"slavic_paganism": Color("0a1210"),
 }
 const RELIGION_COLOR_DEFAULT: Color = Color(0.3, 0.3, 0.3)
 
@@ -47,17 +47,17 @@ static func religion_color(religion_id: String) -> Color:
 # Kolory akcentu religii (per spec 06 sekcja 3 — outline radaru, obrysy, akcenty)
 const RELIGION_ACCENT_COLORS: Dictionary = {
 	"islam": Color("5aaa5a"),
-	"chr_zachodnie": Color("7a7aff"),
-	"chr_wschodnie": Color("6a6aee"),
-	"judaizm": Color("bbaa00"),
-	"zoroastryzm": Color("cc7a1a"),
-	"koptyjski": Color("4aaa6a"),
-	"manicheizm": Color("cc55cc"),
-	"religie_arabskie": Color("dd9922"),
-	"hinduizm": Color("ee5533"),
-	"buddyzm": Color("33bbcc"),
-	"religie_germanskie": Color("88cc44"),
-	"religie_slowianski": Color("55bb88"),
+	"western_christianity": Color("7a7aff"),
+	"eastern_christianity": Color("6a6aee"),
+	"judaism": Color("bbaa00"),
+	"zoroastrianism": Color("cc7a1a"),
+	"coptic_christianity": Color("4aaa6a"),
+	"manichaeism": Color("cc55cc"),
+	"arabian_paganism": Color("dd9922"),
+	"hinduism": Color("ee5533"),
+	"buddhism": Color("33bbcc"),
+	"germanic_paganism": Color("88cc44"),
+	"slavic_paganism": Color("55bb88"),
 }
 const RELIGION_ACCENT_COLOR_DEFAULT: Color = Color(0.7, 0.7, 0.7)
 

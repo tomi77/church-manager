@@ -29,7 +29,7 @@ func test_actions_hidden_when_player_owns_province():
 func test_diplomacy_button_always_visible_for_foreign_province():
 	var state := _make_state()
 	add_child_autofree(state)
-	var pa := await _instance(state, "lewant")	# owner=chr_wschodnie
+	var pa := await _instance(state, "lewant")	# owner=eastern_christianity
 	assert_true(pa.get_node("%DiplomacyButton").visible)
 
 func test_diplomacy_button_emits_navigate_signal():
@@ -38,7 +38,7 @@ func test_diplomacy_button_emits_navigate_signal():
 	var pa := await _instance(state, "lewant")
 	watch_signals(pa)
 	pa.get_node("%DiplomacyButton").emit_signal("pressed")
-	assert_signal_emitted_with_parameters(pa, "navigate_to_diplomacy", ["chr_wschodnie"])
+	assert_signal_emitted_with_parameters(pa, "navigate_to_diplomacy", ["eastern_christianity"])
 
 func test_war_button_disabled_without_neighbor_province():
 	var state := _make_state()
@@ -52,9 +52,9 @@ func test_war_button_disabled_without_neighbor_province():
 func test_war_button_enabled_with_guaranteed_cb():
 	var state := _make_state()
 	add_child_autofree(state)
-	var zoroastryzm: Religion = state.get_religion("zoroastryzm")
-	zoroastryzm.parent_religion_id = "islam"
-	# mezopotamia (islam) sąsiaduje z persja (zoroastryzm) — check first
+	var zoroastrianism: Religion = state.get_religion("zoroastrianism")
+	zoroastrianism.parent_religion_id = "islam"
+	# mezopotamia (islam) sąsiaduje z persja (zoroastrianism) — check first
 	var pa := await _instance(state, "persja")
 	var btn: Button = pa.get_node("%WarButton")
 	assert_true(btn.visible)
@@ -63,8 +63,8 @@ func test_war_button_enabled_with_guaranteed_cb():
 func test_cb_picker_cancel_refreshes_actions():
 	var state := _make_state()
 	add_child_autofree(state)
-	var zoroastryzm: Religion = state.get_religion("zoroastryzm")
-	zoroastryzm.parent_religion_id = "islam"
+	var zoroastrianism: Religion = state.get_religion("zoroastrianism")
+	zoroastrianism.parent_religion_id = "islam"
 	var pa := await _instance(state, "persja")
 	var picker := pa.get_node("%CBPicker")
 	# War was enabled in setup — open picker (simulate multi-CB scenario)

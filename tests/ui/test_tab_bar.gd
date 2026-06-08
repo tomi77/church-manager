@@ -46,7 +46,7 @@ func test_swiat_alert_dot_when_coalition_against_player():
 	add_child_autofree(state)
 	var c: Coalition = CoalitionScript.new()
 	c.target_id = state.player_religion_id
-	c.members = ["chr_zachodnie"]
+	c.members = ["western_christianity"]
 	state.active_coalitions.append(c)
 	var tb := await _instance_tab_bar(state)
 	assert_true(tb.get_node("%SwiatDot").visible)
@@ -55,7 +55,7 @@ func test_swiat_alert_dot_when_grievance_active():
 	var state := _make_state()
 	add_child_autofree(state)
 	var player: Religion = state.get_player_religion()
-	player.interdict_grievance_from_id = "chr_zachodnie"
+	player.interdict_grievance_from_id = "western_christianity"
 	player.interdict_grievance_until = state.current_turn + 5
 	var tb := await _instance_tab_bar(state)
 	assert_true(tb.get_node("%SwiatDot").visible)

@@ -28,18 +28,18 @@ func test_list_selection_updates_action_panel():
 	var state := _make_state()
 	add_child_autofree(state)
 	var t := await _instance(state)
-	t._on_religion_selected("chr_zachodnie")
-	assert_eq(t.get_node("%ActionPanel").target_id, "chr_zachodnie")
+	t._on_religion_selected("western_christianity")
+	assert_eq(t.get_node("%ActionPanel").target_id, "western_christianity")
 
 func test_action_state_change_emits_state_changed_up():
 	var state := _make_state()
 	add_child_autofree(state)
 	state.get_player_religion().prestige = 100
 	var dm := DiplomacyManager.new()
-	var rel := dm.get_or_create_relation(state, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(state, "islam", "western_christianity")
 	rel.theological_trust = 70.0
 	var t := await _instance(state)
-	t._on_religion_selected("chr_zachodnie")
+	t._on_religion_selected("western_christianity")
 	watch_signals(t)
 	t.get_node("%ActionPanel").get_node("%AllianceButton").emit_signal("pressed")
 	assert_signal_emitted(t, "state_changed")

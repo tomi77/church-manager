@@ -20,7 +20,7 @@
       ]
     },
     {
-      "id": "chr_zachodnie",
+      "id": "western_christianity",
       "display_name": "Chrześcijaństwo Zachodnie",
       "icon": "✝",
       "axes": {"A": 65.0, "B": 80.0, "C": 35.0, "D": 55.0},
@@ -39,7 +39,7 @@
       ]
     },
     {
-      "id": "chr_wschodnie",
+      "id": "eastern_christianity",
       "display_name": "Chrześcijaństwo Wschodnie",
       "icon": "✝",
       "axes": {"A": 60.0, "B": 75.0, "C": 40.0, "D": 60.0},
@@ -58,7 +58,7 @@
       ]
     },
     {
-      "id": "judaizm",
+      "id": "judaism",
       "display_name": "Judaizm",
       "icon": "✡",
       "axes": {"A": 75.0, "B": 45.0, "C": 20.0, "D": 65.0},
@@ -77,7 +77,7 @@
       ]
     },
     {
-      "id": "zoroastryzm",
+      "id": "zoroastrianism",
       "display_name": "Zoroastryzm",
       "icon": "🔥",
       "axes": {"A": 60.0, "B": 70.0, "C": 30.0, "D": 70.0},
@@ -96,7 +96,7 @@
       ]
     },
     {
-      "id": "koptyjski",
+      "id": "coptic_christianity",
       "display_name": "Koptyjski Kościół",
       "icon": "☥",
       "axes": {"A": 55.0, "B": 50.0, "C": 35.0, "D": 70.0},
@@ -115,7 +115,7 @@
       ]
     },
     {
-      "id": "manicheizm",
+      "id": "manichaeism",
       "display_name": "Manicheizm",
       "icon": "☯",
       "axes": {"A": 40.0, "B": 35.0, "C": 85.0, "D": 80.0},
@@ -134,7 +134,7 @@
       ]
     },
     {
-      "id": "religie_arabskie",
+      "id": "arabian_paganism",
       "display_name": "Religie Arabskie",
       "icon": "🌙",
       "axes": {"A": 25.0, "B": 30.0, "C": 55.0, "D": 45.0},
@@ -153,7 +153,7 @@
       ]
     },
     {
-      "id": "hinduizm",
+      "id": "hinduism",
       "display_name": "Hinduizm",
       "icon": "🕉",
       "axes": {"A": 50.0, "B": 70.0, "C": 45.0, "D": 65.0},
@@ -172,7 +172,7 @@
       ]
     },
     {
-      "id": "buddyzm",
+      "id": "buddhism",
       "display_name": "Buddyzm",
       "icon": "☸",
       "axes": {"A": 35.0, "B": 40.0, "C": 70.0, "D": 85.0},
@@ -184,14 +184,14 @@
       "factions": [
         {"id": "sangha_monastyczna", "display_name": "Sangha Monastyczna", "influence_start": 0.50, "tension_start": 20.0,
          "axis_preferences": [{"axis": "D", "direction": 1}, {"axis": "B", "direction": -1}]},
-        {"id": "buddyzm_swiatowy", "display_name": "Buddyzm Światowy", "influence_start": 0.30, "tension_start": 20.0,
+        {"id": "buddhism_swiatowy", "display_name": "Buddyzm Światowy", "influence_start": 0.30, "tension_start": 20.0,
          "axis_preferences": [{"axis": "C", "direction": 1}]},
         {"id": "mahayana", "display_name": "Mahajana", "influence_start": 0.20, "tension_start": 20.0,
          "axis_preferences": [{"axis": "C", "direction": 1}, {"axis": "D", "direction": 1}]}
       ]
     },
     {
-      "id": "religie_germanskie",
+      "id": "germanic_paganism",
       "display_name": "Religie Germańskie",
       "icon": "⚡",
       "axes": {"A": 20.0, "B": 35.0, "C": 60.0, "D": 50.0},
@@ -210,7 +210,7 @@
       ]
     },
     {
-      "id": "religie_slowianski",
+      "id": "slavic_paganism",
       "display_name": "Religie Słowiańskie",
       "icon": "🌿",
       "axes": {"A": 20.0, "B": 25.0, "C": 65.0, "D": 55.0},

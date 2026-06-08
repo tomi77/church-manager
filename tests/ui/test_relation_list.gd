@@ -58,46 +58,46 @@ func test_war_marker():
 	add_child_autofree(state)
 	var war: War = WarScript.new()
 	war.attacker_id = "islam"
-	war.defender_id = "zoroastryzm"
+	war.defender_id = "zoroastrianism"
 	war.state = "BATTLING"
 	state.active_wars.append(war)
 	var l := await _instance_list(state)
-	assert_eq(l._items["zoroastryzm"].marker, "⚔")
+	assert_eq(l._items["zoroastrianism"].marker, "⚔")
 
 func test_coalition_marker():
 	var state := _make_state()
 	add_child_autofree(state)
 	var c: Coalition = CoalitionScript.new()
 	c.target_id = "islam"
-	c.members = ["chr_zachodnie"]
+	c.members = ["western_christianity"]
 	state.active_coalitions.append(c)
 	var l := await _instance_list(state)
-	assert_eq(l._items["chr_zachodnie"].marker, "●")
+	assert_eq(l._items["western_christianity"].marker, "●")
 
 func test_vassal_marker():
 	var state := _make_state()
 	add_child_autofree(state)
-	state.get_religion("koptyjski").suzerain_id = "islam"
+	state.get_religion("coptic_christianity").suzerain_id = "islam"
 	var l := await _instance_list(state)
-	assert_eq(l._items["koptyjski"].marker, "↑👑")
+	assert_eq(l._items["coptic_christianity"].marker, "↑👑")
 
 func test_grievance_marker():
 	var state := _make_state()
 	add_child_autofree(state)
 	var player: Religion = state.get_player_religion()
-	player.interdict_grievance_from_id = "chr_zachodnie"
+	player.interdict_grievance_from_id = "western_christianity"
 	player.interdict_grievance_until = state.current_turn + 5
 	var l := await _instance_list(state)
-	assert_eq(l._items["chr_zachodnie"].marker, "⚠")
+	assert_eq(l._items["western_christianity"].marker, "⚠")
 
 func test_war_sorted_first():
 	var state := _make_state()
 	add_child_autofree(state)
 	var war: War = WarScript.new()
 	war.attacker_id = "islam"
-	war.defender_id = "zoroastryzm"
+	war.defender_id = "zoroastrianism"
 	war.state = "BATTLING"
 	state.active_wars.append(war)
 	var l := await _instance_list(state)
 	var first_child: RelationListItem = l.get_node("%ItemsVBox").get_child(0)
-	assert_eq(first_child.religion.id, "zoroastryzm")
+	assert_eq(first_child.religion.id, "zoroastrianism")

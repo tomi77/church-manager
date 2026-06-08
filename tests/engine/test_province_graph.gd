@@ -6,8 +6,8 @@ func before_each() -> void:
 	graph = ProvinceGraph.new()
 	var anatolia := Province.new()
 	anatolia.id = "anatolia"
-	anatolia.owner = "chr_wschodnie"
-	anatolia.pressure = {"chr_wschodnie": 80.0, "islam": 30.0}
+	anatolia.owner = "eastern_christianity"
+	anatolia.pressure = {"eastern_christianity": 80.0, "islam": 30.0}
 	var lewant := Province.new()
 	lewant.id = "lewant"
 	lewant.owner = "islam"
@@ -49,5 +49,5 @@ func test_graph_provinces_with_owner() -> void:
 	assert_eq(islam_provinces.size(), 2)
 
 func test_graph_border_provinces_returns_own_provinces_adjacent_to_foreign() -> void:
-	var borders := graph.border_provinces("chr_wschodnie")
+	var borders := graph.border_provinces("eastern_christianity")
 	assert_true(borders.has("anatolia"))

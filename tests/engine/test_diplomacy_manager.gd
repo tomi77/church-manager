@@ -42,27 +42,27 @@ func test_game_state_has_active_coalitions_empty() -> void:
 
 func test_pair_key_sorts_alphabetically() -> void:
 	var dm: DiplomacyManager = DiplomacyManagerScript.new()
-	var key1 := dm._pair_key("islam", "chr_zachodnie")
-	var key2 := dm._pair_key("chr_zachodnie", "islam")
+	var key1 := dm._pair_key("islam", "western_christianity")
+	var key2 := dm._pair_key("western_christianity", "islam")
 	assert_eq(key1, key2)
-	assert_eq(key1[0], "chr_zachodnie")
-	assert_eq(key1[1], "islam")
+	assert_eq(key1[0], "islam")
+	assert_eq(key1[1], "western_christianity")
 
 func test_get_or_create_relation_creates_new() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	assert_not_null(rel)
-	assert_eq(rel.religion_a_id, "chr_zachodnie")  # sorted
-	assert_eq(rel.religion_b_id, "islam")
+	assert_eq(rel.religion_a_id, "islam")  # sorted
+	assert_eq(rel.religion_b_id, "western_christianity")
 	assert_eq(gs.relations.size(), 1)
 
 func test_get_or_create_relation_returns_existing() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	var rel1 := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel1 := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel1.theological_trust = 42.0
-	var rel2 := dm.get_or_create_relation(gs, "chr_zachodnie", "islam")
+	var rel2 := dm.get_or_create_relation(gs, "western_christianity", "islam")
 	assert_eq(rel2, rel1)
 	assert_almost_eq(rel2.theological_trust, 42.0, 0.001)
 	assert_eq(gs.relations.size(), 1)
@@ -70,9 +70,9 @@ func test_get_or_create_relation_returns_existing() -> void:
 func test_get_or_create_relation_symmetric_lookup() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
-	dm.get_or_create_relation(gs, "chr_zachodnie", "islam")
-	dm.get_or_create_relation(gs, "islam", "hinduizm")
+	dm.get_or_create_relation(gs, "islam", "western_christianity")
+	dm.get_or_create_relation(gs, "western_christianity", "islam")
+	dm.get_or_create_relation(gs, "islam", "hinduism")
 	assert_eq(gs.relations.size(), 2)
 
 func test_threat_index_zero_without_wars() -> void:
@@ -86,7 +86,7 @@ func test_threat_index_active_attacker_war() -> void:
 	var dm := DiplomacyManager.new()
 	var war := War.new()
 	war.attacker_id = "islam"
-	war.defender_id = "chr_zachodnie"
+	war.defender_id = "western_christianity"
 	war.state = "BATTLING"
 	gs.active_wars.append(war)
 	var threat := dm.compute_threat_index(gs, "islam")
@@ -96,7 +96,7 @@ func test_threat_index_active_defender_war() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
 	var war := War.new()
-	war.attacker_id = "chr_zachodnie"
+	war.attacker_id = "western_christianity"
 	war.defender_id = "islam"
 	war.state = "BATTLING"
 	gs.active_wars.append(war)
@@ -106,7 +106,7 @@ func test_threat_index_active_defender_war() -> void:
 func test_threat_index_multiple_wars_clamped() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	for target_id in ["chr_zachodnie", "hinduizm", "buddyzm", "judaizm", "zoroastryzm", "manicheizm"]:
+	for target_id in ["western_christianity", "hinduism", "buddhism", "judaism", "zoroastrianism", "manichaeism"]:
 		var war := War.new()
 		war.attacker_id = "islam"
 		war.defender_id = target_id
@@ -120,7 +120,7 @@ func test_threat_index_ignores_ended_wars() -> void:
 	var dm := DiplomacyManager.new()
 	var war := War.new()
 	war.attacker_id = "islam"
-	war.defender_id = "chr_zachodnie"
+	war.defender_id = "western_christianity"
 	war.state = "ENDED"
 	gs.active_wars.append(war)
 	var threat := dm.compute_threat_index(gs, "islam")
@@ -138,10 +138,10 @@ func test_declare_alliance_success_high_trust() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 50
 	_pin_axes(src, 50.0, 50.0, 60.0, 50.0)	# C=60 → Ekskluzywizm 40 (brak blokady)
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 55.0
 	rel.military_tension = 20.0
-	var ok := dm.declare_alliance(gs, "islam", "chr_zachodnie")
+	var ok := dm.declare_alliance(gs, "islam", "western_christianity")
 	assert_true(ok)
 	assert_true(rel.alliance_active)
 	assert_eq(src.prestige, 30)	 # 50 - 20
@@ -153,9 +153,9 @@ func test_declare_alliance_success_high_economic() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 30
 	_pin_axes(src, 50.0, 50.0, 60.0, 50.0)
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.economic_cooperation = 65.0
-	var ok := dm.declare_alliance(gs, "islam", "chr_zachodnie")
+	var ok := dm.declare_alliance(gs, "islam", "western_christianity")
 	assert_true(ok)
 	assert_true(rel.alliance_active)
 
@@ -165,10 +165,10 @@ func test_declare_alliance_fails_no_thresholds() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 50
 	_pin_axes(src, 50.0, 50.0, 60.0, 50.0)
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 30.0
 	rel.economic_cooperation = 30.0
-	var ok := dm.declare_alliance(gs, "islam", "chr_zachodnie")
+	var ok := dm.declare_alliance(gs, "islam", "western_christianity")
 	assert_false(ok)
 	assert_false(rel.alliance_active)
 	assert_eq(src.prestige, 50)	 # bez potrącenia
@@ -179,11 +179,11 @@ func test_declare_alliance_blocked_by_exclusivity_and_partner_synkretyzm() -> vo
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 50
 	_pin_axes(src, 50.0, 50.0, 15.0, 50.0)	# C=15 → Ekskluzywizm 85
-	var dst: Religion = gs.get_religion("chr_zachodnie")
+	var dst: Religion = gs.get_religion("western_christianity")
 	_pin_axes(dst, 50.0, 50.0, 70.0, 50.0)	# C=70 → Synkretyzm 70 (>60 partnera)
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 70.0
-	var ok := dm.declare_alliance(gs, "islam", "chr_zachodnie")
+	var ok := dm.declare_alliance(gs, "islam", "western_christianity")
 	assert_false(ok)
 	assert_false(rel.alliance_active)
 	assert_eq(src.prestige, 50)
@@ -194,11 +194,11 @@ func test_declare_alliance_passes_high_exclusivity_low_partner_synkretyzm() -> v
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 50
 	_pin_axes(src, 50.0, 50.0, 15.0, 50.0)	# C=15 → Ekskluzywizm 85
-	var dst: Religion = gs.get_religion("chr_zachodnie")
+	var dst: Religion = gs.get_religion("western_christianity")
 	_pin_axes(dst, 50.0, 50.0, 40.0, 50.0)	# C=40 → Synkretyzm 40 (≤60, nie blokuje)
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 70.0
-	var ok := dm.declare_alliance(gs, "islam", "chr_zachodnie")
+	var ok := dm.declare_alliance(gs, "islam", "western_christianity")
 	assert_true(ok)
 	assert_true(rel.alliance_active)
 
@@ -208,11 +208,11 @@ func test_declare_alliance_passes_high_exclusivity_partner_synkretyzm_at_thresho
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 50
 	_pin_axes(src, 50.0, 50.0, 15.0, 50.0)	# C=15 → Ekskluzywizm 85
-	var dst: Religion = gs.get_religion("chr_zachodnie")
+	var dst: Religion = gs.get_religion("western_christianity")
 	_pin_axes(dst, 50.0, 50.0, 60.0, 50.0)	# C=60 exact threshold → NOT blocked (strict >)
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 70.0
-	var ok := dm.declare_alliance(gs, "islam", "chr_zachodnie")
+	var ok := dm.declare_alliance(gs, "islam", "western_christianity")
 	assert_true(ok)
 	assert_true(rel.alliance_active)
 
@@ -222,9 +222,9 @@ func test_declare_alliance_fails_insufficient_prestige() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 10  # < 20
 	_pin_axes(src, 50.0, 50.0, 60.0, 50.0)
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 70.0
-	var ok := dm.declare_alliance(gs, "islam", "chr_zachodnie")
+	var ok := dm.declare_alliance(gs, "islam", "western_christianity")
 	assert_false(ok)
 	assert_false(rel.alliance_active)
 	assert_eq(src.prestige, 10)
@@ -234,10 +234,10 @@ func test_proclaim_interdict_success() -> void:
 	var dm := DiplomacyManager.new()
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 50
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.military_tension = 10.0
 	rel.theological_trust = 40.0
-	var ok := dm.proclaim_interdict(gs, "islam", "chr_zachodnie")
+	var ok := dm.proclaim_interdict(gs, "islam", "western_christianity")
 	assert_true(ok)
 	assert_eq(src.prestige, 35)	 # 50 - 15
 	assert_almost_eq(rel.military_tension, 30.0, 0.001)
@@ -248,9 +248,9 @@ func test_proclaim_interdict_clamps_trust_at_zero() -> void:
 	var dm := DiplomacyManager.new()
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 50
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 10.0
-	var ok := dm.proclaim_interdict(gs, "islam", "chr_zachodnie")
+	var ok := dm.proclaim_interdict(gs, "islam", "western_christianity")
 	assert_true(ok)
 	assert_almost_eq(rel.theological_trust, 0.0, 0.001)
 
@@ -259,9 +259,9 @@ func test_proclaim_interdict_clamps_tension_at_100() -> void:
 	var dm := DiplomacyManager.new()
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 50
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.military_tension = 90.0
-	var ok := dm.proclaim_interdict(gs, "islam", "chr_zachodnie")
+	var ok := dm.proclaim_interdict(gs, "islam", "western_christianity")
 	assert_true(ok)
 	assert_almost_eq(rel.military_tension, 100.0, 0.001)
 
@@ -270,7 +270,7 @@ func test_proclaim_interdict_fails_low_prestige() -> void:
 	var dm := DiplomacyManager.new()
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 10
-	var ok := dm.proclaim_interdict(gs, "islam", "chr_zachodnie")
+	var ok := dm.proclaim_interdict(gs, "islam", "western_christianity")
 	assert_false(ok)
 	assert_eq(src.prestige, 10)
 
@@ -285,8 +285,8 @@ func _setup_agresor_scenario(gs: Node, agresor: String, ofiary: Array) -> void:
 func test_evaluate_coalitions_creates_coalition() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	_setup_agresor_scenario(gs, "islam", ["chr_zachodnie", "hinduizm", "buddyzm"])
-	for member: String in ["judaizm", "zoroastryzm", "manicheizm"]:
+	_setup_agresor_scenario(gs, "islam", ["western_christianity", "hinduism", "buddhism"])
+	for member: String in ["judaism", "zoroastrianism", "manichaeism"]:
 		var rel := dm.get_or_create_relation(gs, member, "islam")
 		rel.military_tension = 50.0
 	dm.evaluate_coalitions(gs)
@@ -294,17 +294,17 @@ func test_evaluate_coalitions_creates_coalition() -> void:
 	var c: Coalition = gs.active_coalitions[0]
 	assert_eq(c.target_id, "islam")
 	assert_eq(c.members.size(), 3)
-	assert_true("judaizm" in c.members)
-	assert_true("zoroastryzm" in c.members)
-	assert_true("manicheizm" in c.members)
+	assert_true("judaism" in c.members)
+	assert_true("zoroastrianism" in c.members)
+	assert_true("manichaeism" in c.members)
 
 func test_evaluate_coalitions_skips_low_threat() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	_setup_agresor_scenario(gs, "islam", ["chr_zachodnie"])
-	var rel := dm.get_or_create_relation(gs, "judaizm", "islam")
+	_setup_agresor_scenario(gs, "islam", ["western_christianity"])
+	var rel := dm.get_or_create_relation(gs, "judaism", "islam")
 	rel.military_tension = 60.0
-	var rel2 := dm.get_or_create_relation(gs, "zoroastryzm", "islam")
+	var rel2 := dm.get_or_create_relation(gs, "zoroastrianism", "islam")
 	rel2.military_tension = 60.0
 	dm.evaluate_coalitions(gs)
 	assert_eq(gs.active_coalitions.size(), 0)
@@ -312,8 +312,8 @@ func test_evaluate_coalitions_skips_low_threat() -> void:
 func test_evaluate_coalitions_skips_too_few_members() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	_setup_agresor_scenario(gs, "islam", ["chr_zachodnie", "hinduizm", "buddyzm"])
-	var rel := dm.get_or_create_relation(gs, "judaizm", "islam")
+	_setup_agresor_scenario(gs, "islam", ["western_christianity", "hinduism", "buddhism"])
+	var rel := dm.get_or_create_relation(gs, "judaism", "islam")
 	rel.military_tension = 60.0
 	dm.evaluate_coalitions(gs)
 	assert_eq(gs.active_coalitions.size(), 0)
@@ -321,8 +321,8 @@ func test_evaluate_coalitions_skips_too_few_members() -> void:
 func test_evaluate_coalitions_does_not_duplicate() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	_setup_agresor_scenario(gs, "islam", ["chr_zachodnie", "hinduizm", "buddyzm"])
-	for member: String in ["judaizm", "zoroastryzm"]:
+	_setup_agresor_scenario(gs, "islam", ["western_christianity", "hinduism", "buddhism"])
+	for member: String in ["judaism", "zoroastrianism"]:
 		var rel := dm.get_or_create_relation(gs, member, "islam")
 		rel.military_tension = 50.0
 	dm.evaluate_coalitions(gs)
@@ -332,24 +332,24 @@ func test_evaluate_coalitions_does_not_duplicate() -> void:
 func test_evaluate_coalitions_excludes_agresor_and_victims() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	_setup_agresor_scenario(gs, "islam", ["chr_zachodnie", "hinduizm", "buddyzm"])
-	for victim: String in ["chr_zachodnie", "hinduizm", "buddyzm"]:
+	_setup_agresor_scenario(gs, "islam", ["western_christianity", "hinduism", "buddhism"])
+	for victim: String in ["western_christianity", "hinduism", "buddhism"]:
 		var rel := dm.get_or_create_relation(gs, victim, "islam")
 		rel.military_tension = 80.0
-	for member: String in ["judaizm", "zoroastryzm"]:
+	for member: String in ["judaism", "zoroastrianism"]:
 		var rel := dm.get_or_create_relation(gs, member, "islam")
 		rel.military_tension = 50.0
 	dm.evaluate_coalitions(gs)
 	var c: Coalition = gs.active_coalitions[0]
 	assert_eq(c.members.size(), 2)
-	assert_false("chr_zachodnie" in c.members)
+	assert_false("western_christianity" in c.members)
 
 func test_dissolve_coalition_when_threat_drops() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
 	var c := Coalition.new()
 	c.target_id = "islam"
-	c.members = ["judaizm", "zoroastryzm"]
+	c.members = ["judaism", "zoroastrianism"]
 	gs.active_coalitions.append(c)
 	# Brak wojen → threat=0
 	dm.dissolve_coalitions(gs)
@@ -358,10 +358,10 @@ func test_dissolve_coalition_when_threat_drops() -> void:
 func test_coalition_persists_when_threat_high() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	_setup_agresor_scenario(gs, "islam", ["chr_zachodnie", "hinduizm", "buddyzm"])
+	_setup_agresor_scenario(gs, "islam", ["western_christianity", "hinduism", "buddhism"])
 	var c := Coalition.new()
 	c.target_id = "islam"
-	c.members = ["judaizm", "zoroastryzm"]
+	c.members = ["judaism", "zoroastrianism"]
 	gs.active_coalitions.append(c)
 	dm.dissolve_coalitions(gs)
 	assert_eq(gs.active_coalitions.size(), 1)
@@ -371,15 +371,15 @@ func test_coalition_dissolves_after_5_turns_without_conflict() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
 	# Konstrukcja stanu: islam ma 1 ofensywę (threat += 20) + 5 obrony (threat += 25) = 45
-	var w1 := War.new(); w1.attacker_id = "islam"; w1.defender_id = "chr_zachodnie"; w1.state = "BATTLING"
+	var w1 := War.new(); w1.attacker_id = "islam"; w1.defender_id = "western_christianity"; w1.state = "BATTLING"
 	gs.active_wars.append(w1)
 	for i in range(5):
-		var wd := War.new(); wd.attacker_id = "buddyzm"; wd.defender_id = "islam"; wd.state = "BATTLING"
+		var wd := War.new(); wd.attacker_id = "buddhism"; wd.defender_id = "islam"; wd.state = "BATTLING"
 		gs.active_wars.append(wd)
 	# threat(islam) = 20 + 5*5 = 45 ≥ 30
 	var c := Coalition.new()
 	c.target_id = "islam"
-	c.members = ["judaizm", "zoroastryzm"]
+	c.members = ["judaism", "zoroastrianism"]
 	gs.active_coalitions.append(c)
 	# Pierwsza iteracja: islam wciąż atakuje → reset turns_without_conflict
 	dm.dissolve_coalitions(gs)
@@ -388,7 +388,7 @@ func test_coalition_dissolves_after_5_turns_without_conflict() -> void:
 	gs.active_wars.remove_at(0)
 	# threat = 25, < 30 → natychmiastowy rozpad. Aby utrzymać >30:
 	for i in range(2):
-		var wd := War.new(); wd.attacker_id = "manicheizm"; wd.defender_id = "islam"; wd.state = "BATTLING"
+		var wd := War.new(); wd.attacker_id = "manichaeism"; wd.defender_id = "islam"; wd.state = "BATTLING"
 		gs.active_wars.append(wd)
 	# threat(islam) = 7*5 = 35 ≥ 30, ale islam nie atakuje → turns_without_conflict++
 	for i in range(5):
@@ -437,13 +437,13 @@ func test_integration_coalition_lifecycle() -> void:
 	islam.prestige = 100
 
 	# 1. Islam wypowiada 3 wojny — agresja → threat=60
-	for ofiara: String in ["chr_zachodnie", "hinduizm", "buddyzm"]:
+	for ofiara: String in ["western_christianity", "hinduism", "buddhism"]:
 		var war: War = wm.declare_war("islam", ofiara, "krucjata", gs)
 		assert_not_null(war, "declare_war failed for %s" % ofiara)
 
 	# 2. Sąsiedzi mają wysokie napięcie (z declare_war: +20, więc po jednym CB tension=20)
 	# podkręcamy ręcznie żeby przekroczyć próg 40
-	for member: String in ["judaizm", "zoroastryzm"]:
+	for member: String in ["judaism", "zoroastrianism"]:
 		var rel := dm.get_or_create_relation(gs, member, "islam")
 		rel.military_tension = 50.0
 
@@ -453,8 +453,8 @@ func test_integration_coalition_lifecycle() -> void:
 	var c: Coalition = gs.active_coalitions[0]
 	assert_eq(c.target_id, "islam")
 	assert_eq(c.members.size(), 2)
-	assert_true("judaizm" in c.members)
-	assert_true("zoroastryzm" in c.members)
+	assert_true("judaism" in c.members)
+	assert_true("zoroastrianism" in c.members)
 
 	# 4. Wszystkie wojny się kończą (czyścimy active_wars) → threat spada do 0
 	gs.active_wars.clear()
@@ -540,11 +540,11 @@ func test_ecumenical_council_success() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 50
 	_pin_axes(src, 50.0, 50.0, 50.0, 50.0)	# C=50, Synkretyzm 50 (>40)
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 65.0
 	rel.military_tension = 20.0
 	var initial_a := src.get_axis("A")
-	var ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", 5.0)
+	var ok := dm.ecumenical_council(gs, "islam", "western_christianity", "A", 5.0)
 	assert_true(ok)
 	assert_eq(src.prestige, 20)	 # 50 - 30
 	assert_almost_eq(src.get_axis("A"), initial_a + 5.0, 0.001)
@@ -557,10 +557,10 @@ func test_ecumenical_council_clamps_delta_to_min() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 50
 	_pin_axes(src, 50.0, 50.0, 50.0, 50.0)
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 65.0
 	var initial_a := src.get_axis("A")
-	var ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", 1.0)
+	var ok := dm.ecumenical_council(gs, "islam", "western_christianity", "A", 1.0)
 	assert_true(ok)
 	assert_almost_eq(src.get_axis("A"), initial_a + 3.0, 0.001)	 # 1.0 → 3.0 (min)
 
@@ -570,10 +570,10 @@ func test_ecumenical_council_clamps_delta_to_max() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 50
 	_pin_axes(src, 50.0, 50.0, 50.0, 50.0)
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 65.0
 	var initial_a := src.get_axis("A")
-	var ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", 20.0)
+	var ok := dm.ecumenical_council(gs, "islam", "western_christianity", "A", 20.0)
 	assert_true(ok)
 	assert_almost_eq(src.get_axis("A"), initial_a + 8.0, 0.001)	 # 20 → 8 (max)
 
@@ -583,10 +583,10 @@ func test_ecumenical_council_negative_delta_preserves_sign() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 50
 	_pin_axes(src, 50.0, 50.0, 50.0, 50.0)
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 65.0
 	var initial_a := src.get_axis("A")
-	var ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", -5.0)
+	var ok := dm.ecumenical_council(gs, "islam", "western_christianity", "A", -5.0)
 	assert_true(ok)
 	assert_almost_eq(src.get_axis("A"), initial_a - 5.0, 0.001)
 
@@ -596,9 +596,9 @@ func test_ecumenical_council_fails_low_trust() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 50
 	_pin_axes(src, 50.0, 50.0, 50.0, 50.0)
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 40.0  # <60
-	var ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", 5.0)
+	var ok := dm.ecumenical_council(gs, "islam", "western_christianity", "A", 5.0)
 	assert_false(ok)
 	assert_eq(src.prestige, 50)
 
@@ -608,9 +608,9 @@ func test_ecumenical_council_fails_low_synkretyzm() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 50
 	_pin_axes(src, 50.0, 50.0, 30.0, 50.0)	# C=30 → Synkretyzm <40
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 65.0
-	var ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", 5.0)
+	var ok := dm.ecumenical_council(gs, "islam", "western_christianity", "A", 5.0)
 	assert_false(ok)
 
 func test_ecumenical_council_fails_high_tension() -> void:
@@ -619,10 +619,10 @@ func test_ecumenical_council_fails_high_tension() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 50
 	_pin_axes(src, 50.0, 50.0, 50.0, 50.0)
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 65.0
 	rel.military_tension = 90.0	 # >85
-	var ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", 5.0)
+	var ok := dm.ecumenical_council(gs, "islam", "western_christianity", "A", 5.0)
 	assert_false(ok)
 
 func test_ecumenical_council_fails_active_war() -> void:
@@ -631,14 +631,14 @@ func test_ecumenical_council_fails_active_war() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 50
 	_pin_axes(src, 50.0, 50.0, 50.0, 50.0)
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 65.0
 	var war := War.new()
 	war.attacker_id = "islam"
-	war.defender_id = "chr_zachodnie"
+	war.defender_id = "western_christianity"
 	war.state = "BATTLING"
 	gs.active_wars.append(war)
-	var ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", 5.0)
+	var ok := dm.ecumenical_council(gs, "islam", "western_christianity", "A", 5.0)
 	assert_false(ok)
 
 func test_ecumenical_council_fails_insufficient_prestige() -> void:
@@ -647,9 +647,9 @@ func test_ecumenical_council_fails_insufficient_prestige() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 20  # <30
 	_pin_axes(src, 50.0, 50.0, 50.0, 50.0)
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 65.0
-	var ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", 5.0)
+	var ok := dm.ecumenical_council(gs, "islam", "western_christianity", "A", 5.0)
 	assert_false(ok)
 
 func test_ecumenical_council_hierarchia_discount() -> void:
@@ -658,9 +658,9 @@ func test_ecumenical_council_hierarchia_discount() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 30
 	_pin_axes(src, 50.0, 70.0, 50.0, 50.0)	# B=70 → Hierarchia, koszt 30*0.8=24
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 65.0
-	var ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", 5.0)
+	var ok := dm.ecumenical_council(gs, "islam", "western_christianity", "A", 5.0)
 	assert_true(ok)
 	assert_eq(src.prestige, 6)	# 30 - 24
 
@@ -670,9 +670,9 @@ func test_ecumenical_council_synkretyzm_trust_bonus() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 50
 	_pin_axes(src, 50.0, 50.0, 80.0, 50.0)	# C=80 → Synkretyzm wysoki (1.35x)
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 65.0
-	var ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", 5.0)
+	var ok := dm.ecumenical_council(gs, "islam", "western_christianity", "A", 5.0)
 	assert_true(ok)
 	# trust gain = 15 * 1.35 = 20.25
 	assert_almost_eq(rel.theological_trust, 65.0 + 20.25, 0.001)
@@ -683,9 +683,9 @@ func test_ecumenical_council_fails_zero_delta() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 50
 	_pin_axes(src, 50.0, 50.0, 50.0, 50.0)
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 65.0
-	var ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", 0.0)
+	var ok := dm.ecumenical_council(gs, "islam", "western_christianity", "A", 0.0)
 	assert_false(ok)
 	assert_eq(src.prestige, 50)
 
@@ -697,9 +697,9 @@ func test_send_missionaries_success() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 30
 	_pin_axes(src, 50.0, 50.0, 50.0, 50.0)
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 40.0
-	var ok := dm.send_missionaries(gs, "islam", "chr_zachodnie")
+	var ok := dm.send_missionaries(gs, "islam", "western_christianity")
 	assert_true(ok)
 	assert_eq(src.prestige, 20)	 # 30 - 10
 	assert_eq(gs.missionary_missions.size(), 2)
@@ -711,9 +711,9 @@ func test_send_missionaries_creates_symmetric_pair() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 30
 	_pin_axes(src, 50.0, 50.0, 50.0, 50.0)
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 40.0
-	dm.send_missionaries(gs, "islam", "chr_zachodnie")
+	dm.send_missionaries(gs, "islam", "western_christianity")
 	var sources: Array[String] = []
 	var targets: Array[String] = []
 	for m: MissionaryMission in gs.missionary_missions:
@@ -721,9 +721,9 @@ func test_send_missionaries_creates_symmetric_pair() -> void:
 		targets.append(m.target_id)
 		assert_eq(m.turns_remaining, 3)
 	assert_true("islam" in sources)
-	assert_true("chr_zachodnie" in sources)
+	assert_true("western_christianity" in sources)
 	assert_true("islam" in targets)
-	assert_true("chr_zachodnie" in targets)
+	assert_true("western_christianity" in targets)
 
 func test_send_missionaries_fails_low_trust() -> void:
 	var gs := _make_state()
@@ -731,9 +731,9 @@ func test_send_missionaries_fails_low_trust() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 30
 	_pin_axes(src, 50.0, 50.0, 50.0, 50.0)
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 20.0  # <30
-	var ok := dm.send_missionaries(gs, "islam", "chr_zachodnie")
+	var ok := dm.send_missionaries(gs, "islam", "western_christianity")
 	assert_false(ok)
 	assert_eq(src.prestige, 30)
 	assert_eq(gs.missionary_missions.size(), 0)
@@ -744,9 +744,9 @@ func test_send_missionaries_fails_high_exclusivity() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 30
 	_pin_axes(src, 50.0, 50.0, 15.0, 50.0)	# C=15 → Ekskluzywizm 85 (>80)
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 40.0
-	var ok := dm.send_missionaries(gs, "islam", "chr_zachodnie")
+	var ok := dm.send_missionaries(gs, "islam", "western_christianity")
 	assert_false(ok)
 	assert_eq(gs.missionary_missions.size(), 0)
 
@@ -756,10 +756,10 @@ func test_send_missionaries_fails_high_tension() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 30
 	_pin_axes(src, 50.0, 50.0, 50.0, 50.0)
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 40.0
 	rel.military_tension = 90.0	 # >85
-	var ok := dm.send_missionaries(gs, "islam", "chr_zachodnie")
+	var ok := dm.send_missionaries(gs, "islam", "western_christianity")
 	assert_false(ok)
 
 func test_send_missionaries_fails_insufficient_prestige() -> void:
@@ -768,9 +768,9 @@ func test_send_missionaries_fails_insufficient_prestige() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 5  # <10
 	_pin_axes(src, 50.0, 50.0, 50.0, 50.0)
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 40.0
-	var ok := dm.send_missionaries(gs, "islam", "chr_zachodnie")
+	var ok := dm.send_missionaries(gs, "islam", "western_christianity")
 	assert_false(ok)
 
 func test_send_missionaries_hierarchia_discount() -> void:
@@ -779,9 +779,9 @@ func test_send_missionaries_hierarchia_discount() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 30
 	_pin_axes(src, 50.0, 70.0, 50.0, 50.0)	# B=70 → koszt 10*0.8=8
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 40.0
-	var ok := dm.send_missionaries(gs, "islam", "chr_zachodnie")
+	var ok := dm.send_missionaries(gs, "islam", "western_christianity")
 	assert_true(ok)
 	assert_eq(src.prestige, 22)	 # 30 - 8
 
@@ -791,9 +791,9 @@ func test_send_missionaries_synkretyzm_trust_bonus() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 30
 	_pin_axes(src, 50.0, 50.0, 80.0, 50.0)	# C=80 → Synkretyzm wysoki (1.35x)
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 40.0
-	var ok := dm.send_missionaries(gs, "islam", "chr_zachodnie")
+	var ok := dm.send_missionaries(gs, "islam", "western_christianity")
 	assert_true(ok)
 	# trust gain = 10 * 1.35 = 13.5
 	assert_almost_eq(rel.theological_trust, 40.0 + 13.5, 0.001)
@@ -806,12 +806,12 @@ func test_missionary_decrement_per_turn() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 30
 	_pin_axes(src, 50.0, 50.0, 50.0, 50.0)
-	var dst: Religion = gs.get_religion("chr_zachodnie")
+	var dst: Religion = gs.get_religion("western_christianity")
 	_pin_axes(dst, 50.0, 50.0, 50.0, 50.0)
 	var dm := DiplomacyManager.new()
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 40.0
-	dm.send_missionaries(gs, "islam", "chr_zachodnie")
+	dm.send_missionaries(gs, "islam", "western_christianity")
 	# Po wysłaniu: turns_remaining=3 dla obu misji
 	for m: MissionaryMission in gs.missionary_missions:
 		assert_eq(m.turns_remaining, 3)
@@ -826,13 +826,13 @@ func test_missionary_returns_after_three_turns_spawns_ideas() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 30
 	_pin_axes(src, 50.0, 50.0, 50.0, 50.0)
-	var dst: Religion = gs.get_religion("chr_zachodnie")
+	var dst: Religion = gs.get_religion("western_christianity")
 	# Wymuszamy różnicę osi > IDEA_MIN_AXIS_DIFF (=10), żeby Idea powstała
 	_pin_axes(dst, 80.0, 50.0, 50.0, 50.0)	# A=80 vs source A=50 → diff 30
 	var dm := DiplomacyManager.new()
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 40.0
-	dm.send_missionaries(gs, "islam", "chr_zachodnie")
+	dm.send_missionaries(gs, "islam", "western_christianity")
 	tm.process_turn(gs)
 	tm.process_turn(gs)
 	tm.process_turn(gs)
@@ -847,24 +847,24 @@ func test_missionary_dogmatyzm_reduces_idea_delta() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 30
 	_pin_axes(src, 50.0, 50.0, 50.0, 50.0)	# A=50
-	var dst: Religion = gs.get_religion("chr_zachodnie")
+	var dst: Religion = gs.get_religion("western_christianity")
 	_pin_axes(dst, 80.0, 50.0, 50.0, 50.0)	# A=80 → Dogmatyzm 80 (>70), diff=30
 	var dm := DiplomacyManager.new()
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 40.0
-	dm.send_missionaries(gs, "islam", "chr_zachodnie")
+	dm.send_missionaries(gs, "islam", "western_christianity")
 	tm.process_turn(gs)
 	tm.process_turn(gs)
 	tm.process_turn(gs)
-	# Idea wracająca DO chr_zachodnie (target=chr_zachodnie) ma 50% delta
+	# Idea wracająca DO western_christianity (target=western_christianity) ma 50% delta
 	# Idea wracająca DO islam (target=islam, A=50, nie Dogmatyzm) ma 100% delta
 	# Idea pochodząca od islam: best_axis=A (diff 30), delta = min(30*0.3, 8) = 8.0
-	# Idea pochodząca od chr_zachodnie: też axis A, delta = 8.0
+	# Idea pochodząca od western_christianity: też axis A, delta = 8.0
 	var idea_to_islam: Idea = null
 	var idea_to_chr: Idea = null
 	for idea: Idea in gs.pending_ideas:
-		if idea.from_religion_id == "chr_zachodnie":
-			idea_to_islam = idea  # idea od chr_zachodnie wraca do islam
+		if idea.from_religion_id == "western_christianity":
+			idea_to_islam = idea  # idea od western_christianity wraca do islam
 		else:
 			idea_to_chr = idea
 	assert_not_null(idea_to_islam)
@@ -881,25 +881,25 @@ func test_missionary_exclusivity_bumps_faction_tension() -> void:
 	# Pin osie islam tak żeby JEGO dominująca frakcja nie dryfowała w _update_faction_tensions:
 	# islam dominant faction = "ulama" (prefs A+1, B+1), nie diverged przy A=80,B=80.
 	_pin_axes(src, 80.0, 80.0, 50.0, 50.0)	# Ekskluzywizm 50 (nie >70), brak dryfu napięcia
-	var dst: Religion = gs.get_religion("chr_zachodnie")
-	# Pin chr_zachodnie tak by: (a) C=20 → Ekskluzywizm 80 (>70) wywoła bump,
+	var dst: Religion = gs.get_religion("western_christianity")
+	# Pin western_christianity tak by: (a) C=20 → Ekskluzywizm 80 (>70) wywoła bump,
 	# (b) papiestwo (dominant, prefs A+1, B+1) NIE diverged przy A=80,B=80 → brak dryfu.
 	# Pozostałe frakcje (zakonnicy/reformatorzy) mogą dryfować, ale nie są dominujące.
 	_pin_axes(dst, 80.0, 80.0, 20.0, 50.0)
-	assert_true(dst.factions.size() > 0, "chr_zachodnie powinno mieć frakcje w danych historycznych")
+	assert_true(dst.factions.size() > 0, "western_christianity powinno mieć frakcje w danych historycznych")
 	var dom_before := dst.dominant_faction()
 	var initial_tension := dom_before.tension
 	var dm := DiplomacyManager.new()
-	var rel := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel.theological_trust = 40.0
-	dm.send_missionaries(gs, "islam", "chr_zachodnie")
+	dm.send_missionaries(gs, "islam", "western_christianity")
 	tm.process_turn(gs)
 	tm.process_turn(gs)
 	tm.process_turn(gs)
 	var dom_after := dst.dominant_faction()
-	# Misjonarz z islam→chr (m1) wraca: target=chr_zachodnie, C=20 (Eksklu>70) → bump +10.0
+	# Misjonarz z islam→chr (m1) wraca: target=western_christianity, C=20 (Eksklu>70) → bump +10.0
 	# Misjonarz z chr→islam (m2) wraca: target=islam, C=50 (Eksklu 50, nie >70) → brak bumpa
-	# → tylko chr_zachodnie's dominant faction (papiestwo) dostaje +10.0
+	# → tylko western_christianity's dominant faction (papiestwo) dostaje +10.0
 	assert_almost_eq(dom_after.tension, initial_tension + 10.0, 0.001)
 
 # --- Auto-join sojuszników do koalicji ---
@@ -907,27 +907,27 @@ func test_missionary_exclusivity_bumps_faction_tension() -> void:
 func test_auto_join_adds_ally_of_member() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	# Koalicja przeciw "islam" z member "judaizm"
+	# Koalicja przeciw "islam" z member "judaism"
 	var c := Coalition.new()
 	c.target_id = "islam"
-	c.members = ["judaizm"]
+	c.members = ["judaism"]
 	gs.active_coalitions.append(c)
-	# Sojusz między judaizm a zoroastryzm
-	var rel := dm.get_or_create_relation(gs, "judaizm", "zoroastryzm")
+	# Sojusz między judaism a zoroastrianism
+	var rel := dm.get_or_create_relation(gs, "judaism", "zoroastrianism")
 	rel.alliance_active = true
 	dm.auto_join_allies_to_coalitions(gs)
 	assert_eq(c.members.size(), 2)
-	assert_true("zoroastryzm" in c.members)
+	assert_true("zoroastrianism" in c.members)
 
 func test_auto_join_skips_target() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
 	var c := Coalition.new()
 	c.target_id = "islam"
-	c.members = ["judaizm"]
+	c.members = ["judaism"]
 	gs.active_coalitions.append(c)
-	# Sojusz judaizm z islam (sam target koalicji) — nie powinien być dodany
-	var rel := dm.get_or_create_relation(gs, "judaizm", "islam")
+	# Sojusz judaism z islam (sam target koalicji) — nie powinien być dodany
+	var rel := dm.get_or_create_relation(gs, "judaism", "islam")
 	rel.alliance_active = true
 	dm.auto_join_allies_to_coalitions(gs)
 	assert_eq(c.members.size(), 1)
@@ -938,12 +938,12 @@ func test_auto_join_idempotent() -> void:
 	var dm := DiplomacyManager.new()
 	var c := Coalition.new()
 	c.target_id = "islam"
-	c.members = ["judaizm", "zoroastryzm"]
+	c.members = ["judaism", "zoroastrianism"]
 	gs.active_coalitions.append(c)
-	var rel := dm.get_or_create_relation(gs, "judaizm", "zoroastryzm")
+	var rel := dm.get_or_create_relation(gs, "judaism", "zoroastrianism")
 	rel.alliance_active = true
 	dm.auto_join_allies_to_coalitions(gs)
-	# zoroastryzm już jest członkiem — nie duplikujemy
+	# zoroastrianism już jest członkiem — nie duplikujemy
 	assert_eq(c.members.size(), 2)
 
 func test_auto_join_skips_non_alliance() -> void:
@@ -951,10 +951,10 @@ func test_auto_join_skips_non_alliance() -> void:
 	var dm := DiplomacyManager.new()
 	var c := Coalition.new()
 	c.target_id = "islam"
-	c.members = ["judaizm"]
+	c.members = ["judaism"]
 	gs.active_coalitions.append(c)
 	# Relacja istnieje, ale alliance_active=false
-	var rel := dm.get_or_create_relation(gs, "judaizm", "zoroastryzm")
+	var rel := dm.get_or_create_relation(gs, "judaism", "zoroastrianism")
 	rel.alliance_active = false
 	rel.theological_trust = 90.0  # mimo wysokiego trust — bez sojuszu nie dołącza
 	dm.auto_join_allies_to_coalitions(gs)
@@ -964,30 +964,30 @@ func test_auto_join_runs_in_process_diplomacy() -> void:
 	var gs := _make_state()
 	var tm := TurnManagerScript.new()
 	var dm := DiplomacyManager.new()
-	# Setup koalicji z member judaizm, sojusz judaizm-zoroastryzm
+	# Setup koalicji z member judaism, sojusz judaism-zoroastrianism
 	var c := Coalition.new()
 	c.target_id = "islam"
-	c.members = ["judaizm"]
+	c.members = ["judaism"]
 	gs.active_coalitions.append(c)
-	var rel := dm.get_or_create_relation(gs, "judaizm", "zoroastryzm")
+	var rel := dm.get_or_create_relation(gs, "judaism", "zoroastrianism")
 	rel.alliance_active = true
 	# Dwie aktywne wojny atakowane przez islam → threat = 2 × 20 = 40 (>30 dissolve, <50 dla nowej koalicji,
 	# ale `_has_active_coalition` blokuje tworzenie kolejnej — istniejąca pre-built coalition zostaje
 	# nietknięta przez evaluate_coalitions, a dissolve nie usuwa jej przy threat>30).
 	var war1 := War.new()
 	war1.attacker_id = "islam"
-	war1.defender_id = "hinduizm"
+	war1.defender_id = "hinduism"
 	war1.state = "BATTLING"
 	gs.active_wars.append(war1)
 	var war2 := War.new()
 	war2.attacker_id = "islam"
-	war2.defender_id = "chr_zachodnie"
+	war2.defender_id = "western_christianity"
 	war2.state = "BATTLING"
 	gs.active_wars.append(war2)
 	tm.process_turn(gs)
-	# Po turze: koalicja nadal aktywna i zoroastryzm dołączył przez auto-join
+	# Po turze: koalicja nadal aktywna i zoroastrianism dołączył przez auto-join
 	assert_eq(gs.active_coalitions.size(), 1)
-	assert_true("zoroastryzm" in gs.active_coalitions[0].members)
+	assert_true("zoroastrianism" in gs.active_coalitions[0].members)
 
 # --- Integration test Plan 05: cykl doktrynalny + koalicja ---
 
@@ -999,44 +999,44 @@ func test_integration_council_missionaries_coalition_lifecycle() -> void:
 	var islam: Religion = gs.get_religion("islam")
 	islam.prestige = 200
 	_pin_axes(islam, 50.0, 50.0, 50.0, 50.0)
-	var chr_zach: Religion = gs.get_religion("chr_zachodnie")
+	var chr_zach: Religion = gs.get_religion("western_christianity")
 	# A=70 (NIE Dogmatyzm bo nie >70 strict), różnica A=20 zapewnia generację Idei nawet po Sobór
 	_pin_axes(chr_zach, 70.0, 50.0, 50.0, 50.0)
-	var rel_islam_chr := dm.get_or_create_relation(gs, "islam", "chr_zachodnie")
+	var rel_islam_chr := dm.get_or_create_relation(gs, "islam", "western_christianity")
 	rel_islam_chr.theological_trust = 65.0
 	rel_islam_chr.military_tension = 20.0
 
 	# 1. Sobór Ekumeniczny: islam shift A +5 (po Sobór: A=55, diff od chr=15 — dalej ≥10 dla Idea)
-	var sobor_ok := dm.ecumenical_council(gs, "islam", "chr_zachodnie", "A", 5.0)
+	var sobor_ok := dm.ecumenical_council(gs, "islam", "western_christianity", "A", 5.0)
 	assert_true(sobor_ok, "Sobór powinien przejść (trust=65>60, Synkr=50>40, brak wojny)")
 	assert_almost_eq(islam.get_axis("A"), 55.0, 0.001)
 	assert_almost_eq(rel_islam_chr.theological_trust, 80.0, 0.001)	# 65 + 15
 
-	# 2. Misjonarze Wymienni: islam ↔ chr_zachodnie (trust=80>30, nie Eksklu, napięcie 10 po Sobór)
-	var send_ok := dm.send_missionaries(gs, "islam", "chr_zachodnie")
+	# 2. Misjonarze Wymienni: islam ↔ western_christianity (trust=80>30, nie Eksklu, napięcie 10 po Sobór)
+	var send_ok := dm.send_missionaries(gs, "islam", "western_christianity")
 	assert_true(send_ok, "Misjonarze powinni zostać wysłani")
 	assert_eq(gs.missionary_missions.size(), 2)
 	assert_almost_eq(rel_islam_chr.theological_trust, 90.0, 0.001)	# 80 + 10
 
 	# 3. Koalicja: 3 wars przez islam → threat = 3 × 20 = 60 (≥50)
-	for defender: String in ["hinduizm", "buddyzm", "religie_arabskie"]:
+	for defender: String in ["hinduism", "buddhism", "arabian_paganism"]:
 		var war := War.new()
 		war.attacker_id = "islam"
 		war.defender_id = defender
 		war.state = "BATTLING"
 		gs.active_wars.append(war)
 
-	# 4. Tensions kwalifikujące judaizm i manicheizm jako członków koalicji (≥40 vs islam).
+	# 4. Tensions kwalifikujące judaism i manichaeism jako członków koalicji (≥40 vs islam).
 	# Decay: 50.0 - 3 × PEACE_TENSION_DECAY_PER_TURN(1.0) = 47.0, nadal ≥ COALITION_MEMBER_TENSION_THRESHOLD(40.0).
-	var rel_islam_jud := dm.get_or_create_relation(gs, "islam", "judaizm")
+	var rel_islam_jud := dm.get_or_create_relation(gs, "islam", "judaism")
 	rel_islam_jud.military_tension = 50.0
-	var rel_islam_man := dm.get_or_create_relation(gs, "islam", "manicheizm")
+	var rel_islam_man := dm.get_or_create_relation(gs, "islam", "manichaeism")
 	rel_islam_man.military_tension = 50.0
 
-	# 5. Auto-join setup: judaizm ↔ zoroastryzm alliance, ALE zoroastryzm BEZ tension≥40 vs islam
-	var rel_jud_zoro := dm.get_or_create_relation(gs, "judaizm", "zoroastryzm")
+	# 5. Auto-join setup: judaism ↔ zoroastrianism alliance, ALE zoroastrianism BEZ tension≥40 vs islam
+	var rel_jud_zoro := dm.get_or_create_relation(gs, "judaism", "zoroastrianism")
 	rel_jud_zoro.alliance_active = true
-	var rel_islam_zoro := dm.get_or_create_relation(gs, "islam", "zoroastryzm")
+	var rel_islam_zoro := dm.get_or_create_relation(gs, "islam", "zoroastrianism")
 	rel_islam_zoro.military_tension = 10.0	# <40 → NIE kwalifikuje przez evaluate_coalitions
 
 	# 6. process_turn × 3 — misjonarze wracają na turze 3, koalicja formuje się na każdej turze
@@ -1052,37 +1052,37 @@ func test_integration_council_missionaries_coalition_lifecycle() -> void:
 	assert_eq(gs.active_coalitions.size(), 1, "koalicja powinna powstać przy threat=60")
 	var coalition: Coalition = gs.active_coalitions[0]
 	assert_eq(coalition.target_id, "islam", "koalicja powinna celować w islam (agresor wojen)")
-	# 7d. judaizm i manicheizm dołączyli przez evaluate_coalitions (tension≥40)
-	assert_true("judaizm" in coalition.members, "judaizm kwalifikuje się przez napięcie")
-	assert_true("manicheizm" in coalition.members, "manicheizm kwalifikuje się przez napięcie")
-	# 7e. zoroastryzm dołączył przez auto_join (tension <40, ale sojusz z judaizm)
-	assert_true("zoroastryzm" in coalition.members, "zoroastryzm dołączył auto-join przez sojusz z judaizm")
+	# 7d. judaism i manichaeism dołączyli przez evaluate_coalitions (tension≥40)
+	assert_true("judaism" in coalition.members, "judaism kwalifikuje się przez napięcie")
+	assert_true("manichaeism" in coalition.members, "manichaeism kwalifikuje się przez napięcie")
+	# 7e. zoroastrianism dołączył przez auto_join (tension <40, ale sojusz z judaism)
+	assert_true("zoroastrianism" in coalition.members, "zoroastrianism dołączył auto-join przez sojusz z judaism")
 
 # --- recognize_suzerainty (Plan 06) ---
 
 func test_recognize_suzerainty_success() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	var client: Religion = gs.get_religion("judaizm")
-	var patron: Religion = gs.get_religion("chr_zachodnie")
+	var client: Religion = gs.get_religion("judaism")
+	var patron: Religion = gs.get_religion("western_christianity")
 	_pin_axes(client, 50.0, 50.0, 50.0, 50.0)  # A=50 (<80) OK
 	patron.prestige = 0
-	var rel := dm.get_or_create_relation(gs, "judaizm", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "judaism", "western_christianity")
 	rel.theological_trust = 45.0  # >40 OK
-	var ok := dm.recognize_suzerainty(gs, "judaizm", "chr_zachodnie")
+	var ok := dm.recognize_suzerainty(gs, "judaism", "western_christianity")
 	assert_true(ok, "akceptacja przy A<80, trust>40, brak wojny")
-	assert_eq(client.suzerain_id, "chr_zachodnie")
+	assert_eq(client.suzerain_id, "western_christianity")
 	assert_eq(patron.prestige, DiplomacyManager.SUZERAINTY_PATRON_PRESTIGE_GAIN)
 	assert_almost_eq(rel.economic_cooperation, DiplomacyManager.SUZERAINTY_ECON_GAIN, 0.001)
 
 func test_recognize_suzerainty_blocked_dogmatyzm() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	var client: Religion = gs.get_religion("judaizm")
+	var client: Religion = gs.get_religion("judaism")
 	_pin_axes(client, 85.0, 50.0, 50.0, 50.0)  # A=85 → Dogmatyzm >80 blokuje
-	var rel := dm.get_or_create_relation(gs, "judaizm", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "judaism", "western_christianity")
 	rel.theological_trust = 60.0
-	var ok := dm.recognize_suzerainty(gs, "judaizm", "chr_zachodnie")
+	var ok := dm.recognize_suzerainty(gs, "judaism", "western_christianity")
 	assert_false(ok, "A>=80 blokuje uznanie")
 	assert_eq(client.suzerain_id, "")
 
@@ -1090,53 +1090,53 @@ func test_recognize_suzerainty_blocked_dogmatyzm_threshold() -> void:
 	# Próg jest <80 (ostry); A=80 dokładnie nadal blokuje (warunek: A >= 80)
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	var client: Religion = gs.get_religion("judaizm")
+	var client: Religion = gs.get_religion("judaism")
 	_pin_axes(client, 80.0, 50.0, 50.0, 50.0)
-	var rel := dm.get_or_create_relation(gs, "judaizm", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "judaism", "western_christianity")
 	rel.theological_trust = 60.0
-	assert_false(dm.recognize_suzerainty(gs, "judaizm", "chr_zachodnie"), "A==80 blokuje")
+	assert_false(dm.recognize_suzerainty(gs, "judaism", "western_christianity"), "A==80 blokuje")
 
 func test_recognize_suzerainty_blocked_low_trust() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	var client: Religion = gs.get_religion("judaizm")
+	var client: Religion = gs.get_religion("judaism")
 	_pin_axes(client, 50.0, 50.0, 50.0, 50.0)
-	var rel := dm.get_or_create_relation(gs, "judaizm", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "judaism", "western_christianity")
 	rel.theological_trust = 40.0  # próg ostry: trust > 40
-	var ok := dm.recognize_suzerainty(gs, "judaizm", "chr_zachodnie")
+	var ok := dm.recognize_suzerainty(gs, "judaism", "western_christianity")
 	assert_false(ok, "trust<=40 blokuje")
 
 func test_recognize_suzerainty_blocked_active_war() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	var client: Religion = gs.get_religion("judaizm")
+	var client: Religion = gs.get_religion("judaism")
 	_pin_axes(client, 50.0, 50.0, 50.0, 50.0)
-	var rel := dm.get_or_create_relation(gs, "judaizm", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "judaism", "western_christianity")
 	rel.theological_trust = 70.0
 	var war := War.new()
-	war.attacker_id = "chr_zachodnie"
-	war.defender_id = "judaizm"
+	war.attacker_id = "western_christianity"
+	war.defender_id = "judaism"
 	war.state = "BATTLING"
 	gs.active_wars.append(war)
-	assert_false(dm.recognize_suzerainty(gs, "judaizm", "chr_zachodnie"))
+	assert_false(dm.recognize_suzerainty(gs, "judaism", "western_christianity"))
 	assert_eq(client.suzerain_id, "", "mutacja nie powinna była zajść mimo blokady wojny")
 
 func test_recognize_suzerainty_blocked_existing_patron() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	var client: Religion = gs.get_religion("judaizm")
+	var client: Religion = gs.get_religion("judaism")
 	client.suzerain_id = "islam"  # już ma patrona
 	_pin_axes(client, 50.0, 50.0, 50.0, 50.0)
-	var rel := dm.get_or_create_relation(gs, "judaizm", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "judaism", "western_christianity")
 	rel.theological_trust = 70.0
-	assert_false(dm.recognize_suzerainty(gs, "judaizm", "chr_zachodnie"), "klient z istniejącym patronem nie może uznać kolejnego")
+	assert_false(dm.recognize_suzerainty(gs, "judaism", "western_christianity"), "klient z istniejącym patronem nie może uznać kolejnego")
 	assert_eq(client.suzerain_id, "islam", "istniejący patron nie powinien być nadpisany")
 
 func test_recognize_suzerainty_returns_false_on_null_religions() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	assert_false(dm.recognize_suzerainty(gs, "nonexistent", "chr_zachodnie"))
-	assert_false(dm.recognize_suzerainty(gs, "judaizm", "nonexistent"))
+	assert_false(dm.recognize_suzerainty(gs, "nonexistent", "western_christianity"))
+	assert_false(dm.recognize_suzerainty(gs, "judaism", "nonexistent"))
 
 # --- _process_resources (Plan 06) ---
 
@@ -1144,19 +1144,19 @@ func test_process_resources_passive_income_only() -> void:
 	var gs := _make_state()
 	var tm := TurnManagerScript.new()
 	var islam: Religion = gs.get_religion("islam")
-	var chr_z: Religion = gs.get_religion("chr_zachodnie")
+	var chr_z: Religion = gs.get_religion("western_christianity")
 	islam.resources = 0
 	chr_z.resources = 0
 	tm._process_resources(gs)
 	assert_eq(islam.resources, DiplomacyManager.PASSIVE_INCOME_PER_TURN, "islam: passive income +5")
-	assert_eq(chr_z.resources, DiplomacyManager.PASSIVE_INCOME_PER_TURN, "chr_zachodnie: passive income +5")
+	assert_eq(chr_z.resources, DiplomacyManager.PASSIVE_INCOME_PER_TURN, "western_christianity: passive income +5")
 
 func test_process_resources_tribute_flows_client_to_patron() -> void:
 	var gs := _make_state()
 	var tm := TurnManagerScript.new()
-	var client: Religion = gs.get_religion("judaizm")
-	var patron: Religion = gs.get_religion("chr_zachodnie")
-	client.suzerain_id = "chr_zachodnie"
+	var client: Religion = gs.get_religion("judaism")
+	var patron: Religion = gs.get_religion("western_christianity")
+	client.suzerain_id = "western_christianity"
 	client.resources = 10
 	patron.resources = 0
 	tm._process_resources(gs)
@@ -1168,9 +1168,9 @@ func test_process_resources_tribute_flows_client_to_patron() -> void:
 func test_process_resources_tribute_floor_zero() -> void:
 	var gs := _make_state()
 	var tm := TurnManagerScript.new()
-	var client: Religion = gs.get_religion("judaizm")
-	var patron: Religion = gs.get_religion("chr_zachodnie")
-	client.suzerain_id = "chr_zachodnie"
+	var client: Religion = gs.get_religion("judaism")
+	var patron: Religion = gs.get_religion("western_christianity")
+	client.suzerain_id = "western_christianity"
 	# Worst case: klient startuje turę z 0. Passive income daje mu 5, trybut pobiera min(3,5)=3.
 	client.resources = 0
 	patron.resources = 0
@@ -1182,7 +1182,7 @@ func test_process_resources_tribute_floor_zero() -> void:
 func test_process_resources_no_patron_no_tribute() -> void:
 	var gs := _make_state()
 	var tm := TurnManagerScript.new()
-	var orphan: Religion = gs.get_religion("judaizm")
+	var orphan: Religion = gs.get_religion("judaism")
 	orphan.suzerain_id = ""	 # bez patrona
 	orphan.resources = 0
 	tm._process_resources(gs)
@@ -1191,7 +1191,7 @@ func test_process_resources_no_patron_no_tribute() -> void:
 func test_process_resources_dangling_patron_skipped() -> void:
 	var gs := _make_state()
 	var tm := TurnManagerScript.new()
-	var client: Religion = gs.get_religion("judaizm")
+	var client: Religion = gs.get_religion("judaism")
 	client.suzerain_id = "nonexistent_religion"
 	client.resources = 10
 	tm._process_resources(gs)
@@ -1203,7 +1203,7 @@ func test_process_resources_does_not_leak_into_unrelated_state() -> void:
 	# Strzeże przed pułapką polegającą na przypadkowej modyfikacji pól używanych w innych testach.
 	var gs := _make_state()
 	var tm := TurnManagerScript.new()
-	var probe: Religion = gs.get_religion("buddyzm")  # religia nieuczestnicząca w żadnym scenariuszu
+	var probe: Religion = gs.get_religion("buddhism")  # religia nieuczestnicząca w żadnym scenariuszu
 	probe.prestige = 50
 	probe.war_weariness = 12.5
 	var a_before := probe.get_axis("A")
@@ -1234,11 +1234,11 @@ func test_vassal_revolt_triggers_above_threshold() -> void:
 	var gs := _make_state()
 	var tm := TurnManagerScript.new()
 	var dm := DiplomacyManager.new()
-	_make_client_with_faction_tension(gs, "judaizm", "chr_zachodnie", 85.0)	 # >80
-	var rel := dm.get_or_create_relation(gs, "judaizm", "chr_zachodnie")
+	_make_client_with_faction_tension(gs, "judaism", "western_christianity", 85.0)	 # >80
+	var rel := dm.get_or_create_relation(gs, "judaism", "western_christianity")
 	rel.military_tension = 10.0
 	tm._process_vassal_revolts(gs)
-	var client: Religion = gs.get_religion("judaizm")
+	var client: Religion = gs.get_religion("judaism")
 	assert_eq(client.suzerain_id, "", "klient się wyzwala")
 	assert_almost_eq(rel.military_tension, 10.0 + DiplomacyManager.REVOLT_TENSION_INCREASE, 0.001, "military_tension += 30")
 	assert_almost_eq(client.dominant_faction().tension, 85.0 - DiplomacyManager.REVOLT_TENSION_RELIEF, 0.001, "ulga po buncie -40")
@@ -1247,24 +1247,24 @@ func test_vassal_revolt_threshold_boundary() -> void:
 	# Próg ostry: tension > 80; dokładnie 80.0 NIE triggeruje
 	var gs := _make_state()
 	var tm := TurnManagerScript.new()
-	_make_client_with_faction_tension(gs, "judaizm", "chr_zachodnie", 80.0)
+	_make_client_with_faction_tension(gs, "judaism", "western_christianity", 80.0)
 	tm._process_vassal_revolts(gs)
-	var client: Religion = gs.get_religion("judaizm")
-	assert_eq(client.suzerain_id, "chr_zachodnie", "tension==80 nie triggeruje buntu")
+	var client: Religion = gs.get_religion("judaism")
+	assert_eq(client.suzerain_id, "western_christianity", "tension==80 nie triggeruje buntu")
 
 func test_vassal_revolt_no_op_below_threshold() -> void:
 	var gs := _make_state()
 	var tm := TurnManagerScript.new()
-	_make_client_with_faction_tension(gs, "judaizm", "chr_zachodnie", 50.0)
+	_make_client_with_faction_tension(gs, "judaism", "western_christianity", 50.0)
 	tm._process_vassal_revolts(gs)
-	var client: Religion = gs.get_religion("judaizm")
-	assert_eq(client.suzerain_id, "chr_zachodnie", "klient bez buntu pod progiem")
+	var client: Religion = gs.get_religion("judaism")
+	assert_eq(client.suzerain_id, "western_christianity", "klient bez buntu pod progiem")
 
 func test_vassal_revolt_skips_religions_without_patron() -> void:
 	var gs := _make_state()
 	var tm := TurnManagerScript.new()
 	# Religia bez patrona, ale z wysokim tension dominującej frakcji — NIE powinno wywoływać akcji
-	var orphan: Religion = gs.get_religion("judaizm")
+	var orphan: Religion = gs.get_religion("judaism")
 	if orphan.factions.is_empty():
 		var f := Faction.new()
 		f.id = "test_dom"
@@ -1277,12 +1277,12 @@ func test_vassal_revolt_skips_religions_without_patron() -> void:
 func test_vassal_revolt_skips_client_without_factions() -> void:
 	var gs := _make_state()
 	var tm := TurnManagerScript.new()
-	var client: Religion = gs.get_religion("judaizm")
+	var client: Religion = gs.get_religion("judaism")
 	client.factions.clear()	 # brak frakcji
-	client.suzerain_id = "chr_zachodnie"
+	client.suzerain_id = "western_christianity"
 	tm._process_vassal_revolts(gs)
 	# klient bez frakcji → dominant_faction() == null → no-op
-	assert_eq(client.suzerain_id, "chr_zachodnie", "klient bez frakcji nie buntuje się")
+	assert_eq(client.suzerain_id, "western_christianity", "klient bez frakcji nie buntuje się")
 
 # --- vassal_council (Plan 06) ---
 
@@ -1307,11 +1307,11 @@ func _setup_vassal_council(gs: Node, patron_id: String, client_id: String) -> Re
 func test_vassal_council_success() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	var rel := _setup_vassal_council(gs, "chr_zachodnie", "judaizm")
-	var client: Religion = gs.get_religion("judaizm")
-	var patron: Religion = gs.get_religion("chr_zachodnie")
+	var rel := _setup_vassal_council(gs, "western_christianity", "judaism")
+	var client: Religion = gs.get_religion("judaism")
+	var patron: Religion = gs.get_religion("western_christianity")
 	var client_d_before := client.get_axis("D")
-	var ok := dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 5.0)
+	var ok := dm.vassal_council(gs, "western_christianity", "judaism", "D", 5.0)
 	assert_true(ok)
 	assert_almost_eq(client.get_axis("D"), client_d_before + 5.0, 0.001, "klient shift +5 na osi D")
 	assert_eq(patron.prestige, 100 - DiplomacyManager.VASSAL_COUNCIL_PRESTIGE_COST)
@@ -1321,53 +1321,53 @@ func test_vassal_council_success() -> void:
 func test_vassal_council_blocked_low_hierarchia() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	_setup_vassal_council(gs, "chr_zachodnie", "judaizm")
-	var patron: Religion = gs.get_religion("chr_zachodnie")
+	_setup_vassal_council(gs, "western_christianity", "judaism")
+	var patron: Religion = gs.get_religion("western_christianity")
 	_pin_axes(patron, 50.0, 75.0, 50.0, 50.0)  # B=75 dokładnie — próg ostry: B>75
-	assert_false(dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 5.0), "B==75 nie wystarczy")
+	assert_false(dm.vassal_council(gs, "western_christianity", "judaism", "D", 5.0), "B==75 nie wystarczy")
 
 func test_vassal_council_blocked_low_prestige() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	_setup_vassal_council(gs, "chr_zachodnie", "judaizm")
-	var patron: Religion = gs.get_religion("chr_zachodnie")
+	_setup_vassal_council(gs, "western_christianity", "judaism")
+	var patron: Religion = gs.get_religion("western_christianity")
 	patron.prestige = DiplomacyManager.VASSAL_COUNCIL_PRESTIGE_COST - 1
-	assert_false(dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 5.0))
+	assert_false(dm.vassal_council(gs, "western_christianity", "judaism", "D", 5.0))
 
 func test_vassal_council_blocked_not_suzerain() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	_setup_vassal_council(gs, "chr_zachodnie", "judaizm")
-	var client: Religion = gs.get_religion("judaizm")
+	_setup_vassal_council(gs, "western_christianity", "judaism")
+	var client: Religion = gs.get_religion("judaism")
 	client.suzerain_id = "islam"  # patron to ktoś inny
-	assert_false(dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 5.0))
+	assert_false(dm.vassal_council(gs, "western_christianity", "judaism", "D", 5.0))
 
 func test_vassal_council_blocked_no_relation_no_suzerain() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	_setup_vassal_council(gs, "chr_zachodnie", "judaizm")
-	var client: Religion = gs.get_religion("judaizm")
+	_setup_vassal_council(gs, "western_christianity", "judaism")
+	var client: Religion = gs.get_religion("judaism")
 	client.suzerain_id = ""	 # klient bez patrona
-	assert_false(dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 5.0))
+	assert_false(dm.vassal_council(gs, "western_christianity", "judaism", "D", 5.0))
 
 func test_vassal_council_cooldown_blocks_second_call() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	_setup_vassal_council(gs, "chr_zachodnie", "judaizm")
-	assert_true(dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 5.0))
-	assert_false(dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 5.0), "cooldown blokuje drugi raz")
+	_setup_vassal_council(gs, "western_christianity", "judaism")
+	assert_true(dm.vassal_council(gs, "western_christianity", "judaism", "D", 5.0))
+	assert_false(dm.vassal_council(gs, "western_christianity", "judaism", "D", 5.0), "cooldown blokuje drugi raz")
 
 func test_vassal_council_cooldown_expires() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	_setup_vassal_council(gs, "chr_zachodnie", "judaizm")
-	var patron: Religion = gs.get_religion("chr_zachodnie")
+	_setup_vassal_council(gs, "western_christianity", "judaism")
+	var patron: Religion = gs.get_religion("western_christianity")
 	patron.prestige = 200  # dość na 2 użycia
-	assert_true(dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 5.0))
+	assert_true(dm.vassal_council(gs, "western_christianity", "judaism", "D", 5.0))
 	# Przewińmy turę poza cooldown (5 tur)
 	for i in range(DiplomacyManager.VASSAL_COUNCIL_COOLDOWN_TURNS + 1):
 		gs.advance_turn()
-	assert_true(dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 5.0), "cooldown wygasł, akcja dostępna")
+	assert_true(dm.vassal_council(gs, "western_christianity", "judaism", "D", 5.0), "cooldown wygasł, akcja dostępna")
 
 func test_vassal_council_cooldown_boundary_exact_turn() -> void:
 	# Guard: current_turn <= cooldown_until → blokada. Sprawdza zachowanie DOKŁADNIE na granicy.
@@ -1376,53 +1376,53 @@ func test_vassal_council_cooldown_boundary_exact_turn() -> void:
 	# Turn T+6: guard T+6 <= T+5 → false → przejdzie (oczekiwane).
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	_setup_vassal_council(gs, "chr_zachodnie", "judaizm")
-	var patron: Religion = gs.get_religion("chr_zachodnie")
+	_setup_vassal_council(gs, "western_christianity", "judaism")
+	var patron: Religion = gs.get_religion("western_christianity")
 	patron.prestige = 200
 	var t_start: int = gs.current_turn
-	assert_true(dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 5.0))
+	assert_true(dm.vassal_council(gs, "western_christianity", "judaism", "D", 5.0))
 	# przewinięcie do T+5 (cooldown_until)
 	while gs.current_turn < t_start + DiplomacyManager.VASSAL_COUNCIL_COOLDOWN_TURNS:
 		gs.advance_turn()
 	assert_eq(gs.current_turn, t_start + DiplomacyManager.VASSAL_COUNCIL_COOLDOWN_TURNS)
-	assert_false(dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 5.0), "dokładnie na cooldown_until: nadal zablokowane")
+	assert_false(dm.vassal_council(gs, "western_christianity", "judaism", "D", 5.0), "dokładnie na cooldown_until: nadal zablokowane")
 	# przewinięcie do T+6 — pierwszy dostępny tick
 	gs.advance_turn()
-	assert_true(dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 5.0), "T+6 (cooldown+1): odblokowane")
+	assert_true(dm.vassal_council(gs, "western_christianity", "judaism", "D", 5.0), "T+6 (cooldown+1): odblokowane")
 
 func test_vassal_council_delta_clamped() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	_setup_vassal_council(gs, "chr_zachodnie", "judaizm")
-	var client: Religion = gs.get_religion("judaizm")
+	_setup_vassal_council(gs, "western_christianity", "judaism")
+	var client: Religion = gs.get_religion("judaism")
 	_pin_axes(client, 50.0, 50.0, 50.0, 50.0)
-	var ok := dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 20.0)	# przekracza MAX=8
+	var ok := dm.vassal_council(gs, "western_christianity", "judaism", "D", 20.0)	# przekracza MAX=8
 	assert_true(ok)
 	assert_almost_eq(client.get_axis("D"), 50.0 + DiplomacyManager.VASSAL_COUNCIL_MAX_AXIS_DELTA, 0.001, "delta clampnięta do MAX=8")
 
 func test_vassal_council_negative_delta_clamped() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	_setup_vassal_council(gs, "chr_zachodnie", "judaizm")
-	var client: Religion = gs.get_religion("judaizm")
+	_setup_vassal_council(gs, "western_christianity", "judaism")
+	var client: Religion = gs.get_religion("judaism")
 	_pin_axes(client, 50.0, 50.0, 50.0, 50.0)
-	var ok := dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", -20.0)
+	var ok := dm.vassal_council(gs, "western_christianity", "judaism", "D", -20.0)
 	assert_true(ok)
 	assert_almost_eq(client.get_axis("D"), 50.0 - DiplomacyManager.VASSAL_COUNCIL_MAX_AXIS_DELTA, 0.001, "delta -20 clampnięta do -8")
 
 func test_vassal_council_delta_zero_returns_false() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	_setup_vassal_council(gs, "chr_zachodnie", "judaizm")
-	assert_false(dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 0.0), "delta=0 → no-op false")
+	_setup_vassal_council(gs, "western_christianity", "judaism")
+	assert_false(dm.vassal_council(gs, "western_christianity", "judaism", "D", 0.0), "delta=0 → no-op false")
 
 func test_vassal_council_below_min_delta_clamped_up() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	_setup_vassal_council(gs, "chr_zachodnie", "judaizm")
-	var client: Religion = gs.get_religion("judaizm")
+	_setup_vassal_council(gs, "western_christianity", "judaism")
+	var client: Religion = gs.get_religion("judaism")
 	_pin_axes(client, 50.0, 50.0, 50.0, 50.0)
-	var ok := dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 1.0)  # poniżej MIN=3
+	var ok := dm.vassal_council(gs, "western_christianity", "judaism", "D", 1.0)  # poniżej MIN=3
 	assert_true(ok)
 	assert_almost_eq(client.get_axis("D"), 50.0 + DiplomacyManager.VASSAL_COUNCIL_MIN_AXIS_DELTA, 0.001, "delta 1 clampnięta do MIN=3 z zachowanym znakiem")
 
@@ -1431,10 +1431,10 @@ func test_vassal_council_below_min_delta_clamped_up() -> void:
 func test_people_council_success() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	var src: Religion = gs.get_religion("judaizm")
+	var src: Religion = gs.get_religion("judaism")
 	_pin_axes(src, 50.0, 20.0, 50.0, 50.0)	# B=20 → Równouprawnienie >70
 	src.prestige = 50
-	var ok := dm.people_council(gs, "judaizm")
+	var ok := dm.people_council(gs, "judaism")
 	assert_true(ok)
 	assert_eq(src.prestige, 50 - DiplomacyManager.PEOPLE_COUNCIL_PRESTIGE_COST)
 	assert_eq(src.interdict_immunity_until, gs.current_turn + DiplomacyManager.PEOPLE_COUNCIL_IMMUNITY_TURNS)
@@ -1442,18 +1442,18 @@ func test_people_council_success() -> void:
 func test_people_council_blocked_high_hierarchia() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	var src: Religion = gs.get_religion("judaizm")
+	var src: Religion = gs.get_religion("judaism")
 	_pin_axes(src, 50.0, 30.0, 50.0, 50.0)	# B=30 dokładnie — próg ostry: B<30
 	src.prestige = 50
-	assert_false(dm.people_council(gs, "judaizm"), "B==30 nie kwalifikuje")
+	assert_false(dm.people_council(gs, "judaism"), "B==30 nie kwalifikuje")
 
 func test_people_council_blocked_low_prestige() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	var src: Religion = gs.get_religion("judaizm")
+	var src: Religion = gs.get_religion("judaism")
 	_pin_axes(src, 50.0, 20.0, 50.0, 50.0)
 	src.prestige = DiplomacyManager.PEOPLE_COUNCIL_PRESTIGE_COST - 1
-	assert_false(dm.people_council(gs, "judaizm"))
+	assert_false(dm.people_council(gs, "judaism"))
 
 func test_people_council_null_religion() -> void:
 	var gs := _make_state()
@@ -1467,9 +1467,9 @@ func test_proclaim_interdict_blocked_by_immunity() -> void:
 	var dm := DiplomacyManager.new()
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 100
-	var target: Religion = gs.get_religion("judaizm")
+	var target: Religion = gs.get_religion("judaism")
 	target.interdict_immunity_until = gs.current_turn + 3  # 3 tury immunity w przyszłość
-	assert_false(dm.proclaim_interdict(gs, "islam", "judaizm"), "immunity blokuje Interdykt")
+	assert_false(dm.proclaim_interdict(gs, "islam", "judaism"), "immunity blokuje Interdykt")
 	assert_eq(src.prestige, 100, "prestiż nietknięty przy zablokowanej akcji")
 
 func test_proclaim_interdict_passes_when_immunity_expired() -> void:
@@ -1481,9 +1481,9 @@ func test_proclaim_interdict_passes_when_immunity_expired() -> void:
 	var dm := DiplomacyManager.new()
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 100
-	var target: Religion = gs.get_religion("judaizm")
+	var target: Religion = gs.get_religion("judaism")
 	target.interdict_immunity_until = gs.current_turn  # immunity równe current_turn → już nie blokuje
-	assert_true(dm.proclaim_interdict(gs, "islam", "judaizm"), "immunity == current_turn już nie blokuje")
+	assert_true(dm.proclaim_interdict(gs, "islam", "judaism"), "immunity == current_turn już nie blokuje")
 	assert_eq(src.prestige, 100 - DiplomacyManager.INTERDICT_PRESTIGE_COST)
 
 func test_proclaim_interdict_baseline_no_immunity() -> void:
@@ -1492,7 +1492,7 @@ func test_proclaim_interdict_baseline_no_immunity() -> void:
 	var dm := DiplomacyManager.new()
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 100
-	assert_true(dm.proclaim_interdict(gs, "islam", "judaizm"))
+	assert_true(dm.proclaim_interdict(gs, "islam", "judaism"))
 	assert_eq(src.prestige, 100 - DiplomacyManager.INTERDICT_PRESTIGE_COST, "prestiż źródła powinien zostać zmniejszony o koszt Interdyktu")
 
 
@@ -1504,8 +1504,8 @@ func test_integration_vassalage_lifecycle() -> void:
 	var dm := DiplomacyManager.new()
 	var tm := TurnManagerScript.new()
 
-	var client: Religion = gs.get_religion("judaizm")
-	var patron: Religion = gs.get_religion("chr_zachodnie")
+	var client: Religion = gs.get_religion("judaism")
+	var patron: Religion = gs.get_religion("western_christianity")
 	_pin_axes(client, 50.0, 50.0, 50.0, 50.0)
 	_pin_axes(patron, 50.0, 80.0, 50.0, 50.0)  # B=80 → uprawniony do Soboru Wasalnego
 	patron.prestige = 200
@@ -1530,12 +1530,12 @@ func test_integration_vassalage_lifecycle() -> void:
 		dom_init.axis_preferences = []
 
 	# 1. Trust > 40 wymagany dla uznania
-	var rel := dm.get_or_create_relation(gs, "judaizm", "chr_zachodnie")
+	var rel := dm.get_or_create_relation(gs, "judaism", "western_christianity")
 	rel.theological_trust = 60.0
 
 	# 2. Uznanie Zwierzchnictwa
-	assert_true(dm.recognize_suzerainty(gs, "judaizm", "chr_zachodnie"), "krok 1: uznanie")
-	assert_eq(client.suzerain_id, "chr_zachodnie")
+	assert_true(dm.recognize_suzerainty(gs, "judaism", "western_christianity"), "krok 1: uznanie")
+	assert_eq(client.suzerain_id, "western_christianity")
 	assert_eq(patron.prestige, 200 + DiplomacyManager.SUZERAINTY_PATRON_PRESTIGE_GAIN, "patron +20 prestiżu")
 
 	# 3. Sobór Wasalny × 4 (każdy +15 tension dominującej frakcji = 60 łącznie; nadal < 80, brak buntu na tym etapie)
@@ -1543,13 +1543,13 @@ func test_integration_vassalage_lifecycle() -> void:
 	var dom: Faction = client.dominant_faction()
 	var tension_before := dom.tension
 	for i in range(4):
-		assert_true(dm.vassal_council(gs, "chr_zachodnie", "judaizm", "D", 4.0), "sobór wasalny iteracja %d" % i)
+		assert_true(dm.vassal_council(gs, "western_christianity", "judaism", "D", 4.0), "sobór wasalny iteracja %d" % i)
 		# 6 tur, żeby cooldown wygasł przed następnym wywołaniem
 		for _t in range(DiplomacyManager.VASSAL_COUNCIL_COOLDOWN_TURNS + 1):
 			tm.process_turn(gs)
 	# Tension dominującej frakcji: 0 + 4*15 = 60 (poniżej progu 80)
 	assert_almost_eq(dom.tension, tension_before + 4.0 * DiplomacyManager.VASSAL_COUNCIL_CLIENT_TENSION_BUMP, 0.001, "tension dominującej frakcji = 60 po 4 soborach")
-	assert_eq(client.suzerain_id, "chr_zachodnie", "klient nadal wasalem po 4 soborach")
+	assert_eq(client.suzerain_id, "western_christianity", "klient nadal wasalem po 4 soborach")
 
 	# 4. Pchnięcie tension na próg buntu (uproszczenie testowe).
 	#	 Naturalna saturacja wymaga 6 sobórów (6×15=90), co przy cooldownie 5 daje 30+ tur.
@@ -1577,23 +1577,23 @@ func test_integration_people_council_protects_against_interdict() -> void:
 	var dm := DiplomacyManager.new()
 	var tm := TurnManagerScript.new()
 
-	var defender: Religion = gs.get_religion("judaizm")
+	var defender: Religion = gs.get_religion("judaism")
 	_pin_axes(defender, 50.0, 20.0, 50.0, 50.0)	 # B=20 → Równouprawnienie >70
 	defender.prestige = 50
 
 	var attacker_a: Religion = gs.get_religion("islam")
 	attacker_a.prestige = 100
-	var attacker_b: Religion = gs.get_religion("hinduizm")
+	var attacker_b: Religion = gs.get_religion("hinduism")
 	attacker_b.prestige = 100
 
 	# 1. Defender wystawia Sobór Ludowy
-	assert_true(dm.people_council(gs, "judaizm"))
+	assert_true(dm.people_council(gs, "judaism"))
 	var immunity_turn := defender.interdict_immunity_until
 	assert_eq(immunity_turn, gs.current_turn + DiplomacyManager.PEOPLE_COUNCIL_IMMUNITY_TURNS)
 
 	# 2. Dwa różne aktorzy próbują Interdyktu — oba blokowane
-	assert_false(dm.proclaim_interdict(gs, "islam", "judaizm"), "atakujący A blokowany")
-	assert_false(dm.proclaim_interdict(gs, "hinduizm", "judaizm"), "atakujący B blokowany")
+	assert_false(dm.proclaim_interdict(gs, "islam", "judaism"), "atakujący A blokowany")
+	assert_false(dm.proclaim_interdict(gs, "hinduism", "judaism"), "atakujący B blokowany")
 	assert_eq(attacker_a.prestige, 100, "prestiż A nietknięty")
 	assert_eq(attacker_b.prestige, 100, "prestiż B nietknięty")
 
@@ -1603,15 +1603,15 @@ func test_integration_people_council_protects_against_interdict() -> void:
 	assert_eq(gs.current_turn, immunity_turn, "current_turn dogonił immunity_until po IMMUNITY_TURNS turach process_turn")
 
 	# 4. Po wygaśnięciu — Interdykt przechodzi
-	assert_true(dm.proclaim_interdict(gs, "islam", "judaizm"), "po wygaśnięciu immunity Interdykt działa")
+	assert_true(dm.proclaim_interdict(gs, "islam", "judaism"), "po wygaśnięciu immunity Interdykt działa")
 
 func test_recognize_suzerainty_blocked_self_suzerainty() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	var solo: Religion = gs.get_religion("judaizm")
+	var solo: Religion = gs.get_religion("judaism")
 	_pin_axes(solo, 50.0, 50.0, 50.0, 50.0)
 	var relations_before: int = gs.relations.size()
-	assert_false(dm.recognize_suzerainty(gs, "judaizm", "judaizm"), "religia nie może być własnym patronem")
+	assert_false(dm.recognize_suzerainty(gs, "judaism", "judaism"), "religia nie może być własnym patronem")
 	assert_eq(solo.suzerain_id, "", "suzerain_id nie zmienia się")
 	assert_eq(gs.relations.size(), relations_before, "brak self-relation w state.relations")
 
@@ -1632,9 +1632,9 @@ func test_proclaim_interdict_records_grievance_on_target() -> void:
 	var dm := DiplomacyManager.new()
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 100
-	var target: Religion = gs.get_religion("judaizm")
+	var target: Religion = gs.get_religion("judaism")
 	var t_before: int = gs.current_turn
-	var ok := dm.proclaim_interdict(gs, "islam", "judaizm")
+	var ok := dm.proclaim_interdict(gs, "islam", "judaism")
 	assert_true(ok, "Interdykt przeszedł")
 	assert_eq(target.interdict_grievance_from_id, "islam", "grievance ustawione na sprawcę")
 	assert_eq(target.interdict_grievance_until, t_before + DiplomacyManager.GRIEVANCE_WINDOW_TURNS)
@@ -1642,13 +1642,13 @@ func test_proclaim_interdict_records_grievance_on_target() -> void:
 func test_proclaim_interdict_overwrites_previous_grievance() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	var target: Religion = gs.get_religion("judaizm")
-	# Symulacja: poprzednia zniewaga od hinduizmu, zapisana 5 tur wcześniej (już ustabilizowana)
-	target.interdict_grievance_from_id = "hinduizm"
+	var target: Religion = gs.get_religion("judaism")
+	# Symulacja: poprzednia zniewaga od hinduismu, zapisana 5 tur wcześniej (już ustabilizowana)
+	target.interdict_grievance_from_id = "hinduism"
 	target.interdict_grievance_until = gs.current_turn + 2
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 100
-	assert_true(dm.proclaim_interdict(gs, "islam", "judaizm"), "nowy Interdykt przechodzi")
+	assert_true(dm.proclaim_interdict(gs, "islam", "judaism"), "nowy Interdykt przechodzi")
 	assert_eq(target.interdict_grievance_from_id, "islam", "nowy źródło nadpisuje stary")
 	assert_eq(target.interdict_grievance_until, gs.current_turn + DiplomacyManager.GRIEVANCE_WINDOW_TURNS, "okno zresetowane")
 
@@ -1659,9 +1659,9 @@ func test_proclaim_interdict_does_not_set_grievance_on_immunity_block() -> void:
 	var dm := DiplomacyManager.new()
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 100
-	var target: Religion = gs.get_religion("judaizm")
+	var target: Religion = gs.get_religion("judaism")
 	target.interdict_immunity_until = gs.current_turn + 3
-	assert_false(dm.proclaim_interdict(gs, "islam", "judaizm"))
+	assert_false(dm.proclaim_interdict(gs, "islam", "judaism"))
 	assert_eq(target.interdict_grievance_from_id, "", "grievance NIE ustawione gdy Interdykt zablokowany przez immunity")
 	assert_eq(target.interdict_grievance_until, 0)
 
@@ -1677,28 +1677,28 @@ func _make_coalition_against(gs: Node, target_id: String, members: Array[String]
 func test_vassal_auto_join_client_follows_patron_in_members() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	var client: Religion = gs.get_religion("judaizm")
-	client.suzerain_id = "chr_zachodnie"  # patron = chr_zachodnie
-	var c := _make_coalition_against(gs, "islam", ["chr_zachodnie", "hinduizm"] as Array[String])
+	var client: Religion = gs.get_religion("judaism")
+	client.suzerain_id = "western_christianity"  # patron = western_christianity
+	var c := _make_coalition_against(gs, "islam", ["western_christianity", "hinduism"] as Array[String])
 	dm.auto_join_vassals_to_coalitions(gs)
-	assert_true("judaizm" in c.members, "klient dołączył bo patron jest w members")
+	assert_true("judaism" in c.members, "klient dołączył bo patron jest w members")
 	assert_eq(c.members.size(), 3, "dokładnie 3 członków (poprzedni + klient)")
 
 func test_vassal_auto_join_skips_when_patron_not_in_members() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	var client: Religion = gs.get_religion("judaizm")
-	client.suzerain_id = "chr_zachodnie"
-	var c := _make_coalition_against(gs, "islam", ["hinduizm", "buddyzm"] as Array[String])
+	var client: Religion = gs.get_religion("judaism")
+	client.suzerain_id = "western_christianity"
+	var c := _make_coalition_against(gs, "islam", ["hinduism", "buddhism"] as Array[String])
 	dm.auto_join_vassals_to_coalitions(gs)
-	assert_false("judaizm" in c.members, "patron nie jest w koalicji → klient nie dołącza")
+	assert_false("judaism" in c.members, "patron nie jest w koalicji → klient nie dołącza")
 
 func test_vassal_auto_join_skips_when_client_already_member() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	var client: Religion = gs.get_religion("judaizm")
-	client.suzerain_id = "chr_zachodnie"
-	var c := _make_coalition_against(gs, "islam", ["chr_zachodnie", "judaizm"] as Array[String])  # klient już jest
+	var client: Religion = gs.get_religion("judaism")
+	client.suzerain_id = "western_christianity"
+	var c := _make_coalition_against(gs, "islam", ["western_christianity", "judaism"] as Array[String])  # klient już jest
 	var members_before: int = c.members.size()
 	dm.auto_join_vassals_to_coalitions(gs)
 	assert_eq(c.members.size(), members_before, "idempotentne — bez duplikatów")
@@ -1706,52 +1706,52 @@ func test_vassal_auto_join_skips_when_client_already_member() -> void:
 func test_vassal_auto_join_skips_when_client_is_coalition_target() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	var client: Religion = gs.get_religion("judaizm")
-	client.suzerain_id = "chr_zachodnie"
-	var c := _make_coalition_against(gs, "judaizm", ["chr_zachodnie", "hinduizm"] as Array[String])	 # klient JEST target
+	var client: Religion = gs.get_religion("judaism")
+	client.suzerain_id = "western_christianity"
+	var c := _make_coalition_against(gs, "judaism", ["western_christianity", "hinduism"] as Array[String])	 # klient JEST target
 	dm.auto_join_vassals_to_coalitions(gs)
-	assert_false("judaizm" in c.members, "klient nie może być w members swojej własnej koalicji-target")
+	assert_false("judaism" in c.members, "klient nie może być w members swojej własnej koalicji-target")
 
 func test_vassal_auto_join_skips_when_patron_is_coalition_target() -> void:
 	# Brzegowy przypadek z spec sek.2: jeśli patron jest target_id (poza members),
 	# klient nie zostaje wciągany do members.
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	var client: Religion = gs.get_religion("judaizm")
-	client.suzerain_id = "chr_zachodnie"
+	var client: Religion = gs.get_religion("judaism")
+	client.suzerain_id = "western_christianity"
 	# Patologiczna konfiguracja (normalnie evaluate_coalitions tego nie tworzy):
-	var c := _make_coalition_against(gs, "chr_zachodnie", ["chr_zachodnie", "hinduizm"] as Array[String])
+	var c := _make_coalition_against(gs, "western_christianity", ["western_christianity", "hinduism"] as Array[String])
 	dm.auto_join_vassals_to_coalitions(gs)
-	assert_false("judaizm" in c.members, "klient nie atakuje swojego patrona")
+	assert_false("judaism" in c.members, "klient nie atakuje swojego patrona")
 
 func test_vassal_auto_join_skips_when_patron_null() -> void:
 	# Jeśli suzerain_id wskazuje na nieistniejącą religię, klient nie podąża.
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	var client: Religion = gs.get_religion("judaizm")
+	var client: Religion = gs.get_religion("judaism")
 	client.suzerain_id = "nieistniejacy_patron"
-	var c := _make_coalition_against(gs, "islam", ["nieistniejacy_patron", "hinduizm"] as Array[String])
+	var c := _make_coalition_against(gs, "islam", ["nieistniejacy_patron", "hinduism"] as Array[String])
 	dm.auto_join_vassals_to_coalitions(gs)
-	assert_false("judaizm" in c.members, "klient z null patron nie dołącza")
+	assert_false("judaism" in c.members, "klient z null patron nie dołącza")
 
 func test_vassal_auto_join_one_level_propagation_only() -> void:
 	# Klient klienta NIE jest dodawany w tej samej turze.
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	var a: Religion = gs.get_religion("judaizm")
-	a.suzerain_id = "chr_zachodnie"
-	var b: Religion = gs.get_religion("zoroastryzm")
-	b.suzerain_id = "judaizm"
-	var c := _make_coalition_against(gs, "islam", ["chr_zachodnie", "hinduizm"] as Array[String])
+	var a: Religion = gs.get_religion("judaism")
+	a.suzerain_id = "western_christianity"
+	var b: Religion = gs.get_religion("zoroastrianism")
+	b.suzerain_id = "judaism"
+	var c := _make_coalition_against(gs, "islam", ["western_christianity", "hinduism"] as Array[String])
 	dm.auto_join_vassals_to_coalitions(gs)
-	assert_true("judaizm" in c.members, "klient pierwszego poziomu (A) dołącza")
-	assert_false("zoroastryzm" in c.members, "klient drugiego poziomu (B) NIE dołącza w tej samej turze")
+	assert_true("judaism" in c.members, "klient pierwszego poziomu (A) dołącza")
+	assert_false("zoroastrianism" in c.members, "klient drugiego poziomu (B) NIE dołącza w tej samej turze")
 
 func test_vassal_auto_join_no_active_coalitions_noop() -> void:
 	var gs := _make_state()
 	var dm := DiplomacyManager.new()
-	var client: Religion = gs.get_religion("judaizm")
-	client.suzerain_id = "chr_zachodnie"
+	var client: Religion = gs.get_religion("judaism")
+	client.suzerain_id = "western_christianity"
 	# Brak koalicji w state.active_coalitions
 	dm.auto_join_vassals_to_coalitions(gs)
 	assert_eq(gs.active_coalitions.size(), 0, "no-op gdy brak koalicji")
@@ -1763,44 +1763,44 @@ func test_integration_vassal_auto_join_in_turn_manager_pipeline() -> void:
 	# 1. Agresor G atakuje victim V — tworzy się tension, ale koalicja jeszcze nie powstaje (potrzebne threat>=50).
 	# 2. G atakuje też drugą religię — threat=40 (atak)+? Plus military_tension ofiar.
 	# Setup: aggressor "islam" prowadzi 3 ofensywne wojny → threat_index >= 50 (3*20 = 60).
-	# Patron "chr_zachodnie" ma tension >= 40 (ręcznie ustawione) → kwalifikuje się jako member.
-	# Klient "judaizm" ma suzerain_id="chr_zachodnie".
-	# Po process_turn, auto_join_vassals_to_coalitions powinno dodać judaizm do koalicji wraz z patronem.
+	# Patron "western_christianity" ma tension >= 40 (ręcznie ustawione) → kwalifikuje się jako member.
+	# Klient "judaism" ma suzerain_id="western_christianity".
+	# Po process_turn, auto_join_vassals_to_coalitions powinno dodać judaism do koalicji wraz z patronem.
 	var gs := _make_state()
 	var tm := TurnManagerScript.new()
 	var dm := DiplomacyManager.new()
 	var wm := WarManager.new()
 
 	var aggressor: Religion = gs.get_religion("islam")
-	var victim1: Religion = gs.get_religion("hinduizm")
-	var victim2: Religion = gs.get_religion("buddyzm")
-	var victim3: Religion = gs.get_religion("religie_arabskie")
-	var patron: Religion = gs.get_religion("chr_zachodnie")
-	var client: Religion = gs.get_religion("judaizm")
+	var victim1: Religion = gs.get_religion("hinduism")
+	var victim2: Religion = gs.get_religion("buddhism")
+	var victim3: Religion = gs.get_religion("arabian_paganism")
+	var patron: Religion = gs.get_religion("western_christianity")
+	var client: Religion = gs.get_religion("judaism")
 
 	aggressor.prestige = 1000
 	_pin_axes(aggressor, 50.0, 50.0, 20.0, 30.0)  # Ekskluzywizm + Doczesność → krucjata
 
 	# 3 ofensywne wojny — threat_index = 60 >= COALITION_THREAT_THRESHOLD (50)
-	var w1 := wm.declare_war("islam", "hinduizm", "krucjata", gs)
-	var w2 := wm.declare_war("islam", "buddyzm", "krucjata", gs)
-	var w3 := wm.declare_war("islam", "religie_arabskie", "krucjata", gs)
+	var w1 := wm.declare_war("islam", "hinduism", "krucjata", gs)
+	var w2 := wm.declare_war("islam", "buddhism", "krucjata", gs)
+	var w3 := wm.declare_war("islam", "arabian_paganism", "krucjata", gs)
 	assert_not_null(w1)
 	assert_not_null(w2)
 	assert_not_null(w3)
 
 	# Patron ma tension >= 40 (kwalifikuje się jako member)
-	var rel_patron_aggressor := dm.get_or_create_relation(gs, "chr_zachodnie", "islam")
+	var rel_patron_aggressor := dm.get_or_create_relation(gs, "western_christianity", "islam")
 	rel_patron_aggressor.military_tension = 45.0
 
 	# Druga religia spoza wasalstwa ma tension >= 40 (żeby members.size() >= 2 wymagane w evaluate_coalitions)
-	var rel_other_aggressor := dm.get_or_create_relation(gs, "zoroastryzm", "islam")
+	var rel_other_aggressor := dm.get_or_create_relation(gs, "zoroastrianism", "islam")
 	rel_other_aggressor.military_tension = 45.0
 
 	# Klient ma patrona, ale sam ma niskie tension (więc nie kwalifikuje się jako "naturalny" member)
-	var rel_client_aggressor := dm.get_or_create_relation(gs, "judaizm", "islam")
+	var rel_client_aggressor := dm.get_or_create_relation(gs, "judaism", "islam")
 	rel_client_aggressor.military_tension = 10.0  # poniżej progu 40
-	client.suzerain_id = "chr_zachodnie"
+	client.suzerain_id = "western_christianity"
 
 	# Process turn — evaluate_coalitions tworzy koalicję, auto_join_vassals dołącza klienta
 	tm.process_turn(gs)
@@ -1808,8 +1808,8 @@ func test_integration_vassal_auto_join_in_turn_manager_pipeline() -> void:
 	assert_eq(gs.active_coalitions.size(), 1, "powstała 1 koalicja przeciw islam")
 	var c: Coalition = gs.active_coalitions[0]
 	assert_eq(c.target_id, "islam")
-	assert_true("chr_zachodnie" in c.members, "patron w members (przez tension)")
-	assert_true("judaizm" in c.members, "klient w members (przez auto-join wasala)")
+	assert_true("western_christianity" in c.members, "patron w members (przez tension)")
+	assert_true("judaism" in c.members, "klient w members (przez auto-join wasala)")
 	# Sanity: klient nadal ma niskie własne tension (auto-join działa niezależnie od tego).
 	# Po process_turn military_tension JEST modyfikowany (PEACE_TENSION_DECAY_PER_TURN -1 gdy nie ma wojny pary).
 	# Klient w teście nie ma wojny z aggressorem, więc tension spadnie z 10 do 9 (>= 0, < COALITION_MEMBER_TENSION_THRESHOLD=40).

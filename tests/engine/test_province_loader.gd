@@ -17,4 +17,4 @@ func test_loader_mekka_neighbors_lewant() -> void:
 func test_loader_province_has_correct_owner() -> void:
 	var graph := ProvinceLoader.load_graph_from_file("res://data/provinces_historical.json")
 	var egipt := graph.get_province("egipt")
-	assert_eq(egipt.owner, "koptyjski")
+	assert_eq(egipt.owner, "coptic_christianity")

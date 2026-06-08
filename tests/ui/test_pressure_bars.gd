@@ -20,24 +20,24 @@ func _instance(state: Node, province_id: String) -> PressureBars:
 func test_bars_render_one_row_per_pressure_entry():
 	var state := _make_state()
 	add_child_autofree(state)
-	# lewant: chr_wschodnie=60, islam=15 → 2 rows
+	# lewant: eastern_christianity=60, islam=15 → 2 rows
 	var pb := await _instance(state, "lewant")
 	assert_eq(pb.row_count(), 2)
 
 func test_bars_skip_zero_pressure():
 	var state := _make_state()
 	add_child_autofree(state)
-	# mekka: religie_arabskie=80 → 1 row (no other pressures)
+	# mekka: arabian_paganism=80 → 1 row (no other pressures)
 	var pb := await _instance(state, "mekka")
 	assert_eq(pb.row_count(), 1)
 
 func test_bars_sort_descending_by_pressure():
 	var state := _make_state()
 	add_child_autofree(state)
-	# lewant: chr_wschodnie=60 > islam=15 → row[0]=chr_wschodnie
+	# lewant: eastern_christianity=60 > islam=15 → row[0]=eastern_christianity
 	var pb := await _instance(state, "lewant")
 	var first := pb.get_row(0)
-	assert_eq(first.religion_id, "chr_wschodnie")
+	assert_eq(first.religion_id, "eastern_christianity")
 	var second := pb.get_row(1)
 	assert_eq(second.religion_id, "islam")
 

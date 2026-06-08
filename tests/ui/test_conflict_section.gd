@@ -29,7 +29,7 @@ func test_visible_when_player_has_war():
 	add_child_autofree(state)
 	var war: War = WarScript.new()
 	war.attacker_id = "islam"
-	war.defender_id = "zoroastryzm"
+	war.defender_id = "zoroastrianism"
 	war.state = "BATTLING"
 	state.active_wars.append(war)
 	var s := await _instance(state)
@@ -40,11 +40,11 @@ func test_lists_only_player_wars():
 	add_child_autofree(state)
 	var w1: War = WarScript.new()
 	w1.attacker_id = "islam"
-	w1.defender_id = "zoroastryzm"
+	w1.defender_id = "zoroastrianism"
 	w1.state = "BATTLING"
 	var w2: War = WarScript.new()
-	w2.attacker_id = "chr_zachodnie"
-	w2.defender_id = "chr_wschodnie"
+	w2.attacker_id = "western_christianity"
+	w2.defender_id = "eastern_christianity"
 	w2.state = "BATTLING"
 	state.active_wars.append(w1)
 	state.active_wars.append(w2)
@@ -56,7 +56,7 @@ func test_ended_wars_excluded():
 	add_child_autofree(state)
 	var war: War = WarScript.new()
 	war.attacker_id = "islam"
-	war.defender_id = "zoroastryzm"
+	war.defender_id = "zoroastrianism"
 	war.state = "ENDED"
 	state.active_wars.append(war)
 	var s := await _instance(state)
@@ -68,7 +68,7 @@ func test_peace_council_button_disabled_when_low_prestige():
 	state.get_player_religion().prestige = 10
 	var war: War = WarScript.new()
 	war.attacker_id = "islam"
-	war.defender_id = "zoroastryzm"
+	war.defender_id = "zoroastrianism"
 	war.state = "BATTLING"
 	state.active_wars.append(war)
 	var s := await _instance(state)
@@ -82,7 +82,7 @@ func test_peace_council_button_enabled_when_prestige_sufficient():
 	state.get_player_religion().prestige = 100
 	var war: War = WarScript.new()
 	war.attacker_id = "islam"
-	war.defender_id = "zoroastryzm"
+	war.defender_id = "zoroastrianism"
 	war.state = "BATTLING"
 	state.active_wars.append(war)
 	var s := await _instance(state)
@@ -97,7 +97,7 @@ func test_peace_council_emits_state_changed():
 	state.get_player_religion().war_weariness = 60.0
 	var war: War = WarScript.new()
 	war.attacker_id = "islam"
-	war.defender_id = "zoroastryzm"
+	war.defender_id = "zoroastrianism"
 	war.state = "BATTLING"
 	state.active_wars.append(war)
 	var s := await _instance(state)
