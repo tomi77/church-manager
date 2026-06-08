@@ -1,0 +1,54 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/factions/FactionCard.gd" id="1"]
+
+[node name="FactionCard" type="PanelContainer"]
+script = ExtResource("1")
+size_flags_horizontal = 3
+
+[node name="VBox" type="VBoxContainer" parent="."]
+
+[node name="NameLabel" type="Label" parent="VBox"]
+unique_name_in_owner = true
+text = "(brak)"
+theme_override_font_sizes/font_size = 16
+
+[node name="PhaseLabel" type="Label" parent="VBox"]
+unique_name_in_owner = true
+text = ""
+theme_override_font_sizes/font_size = 12
+
+[node name="Separator1" type="HSeparator" parent="VBox"]
+
+[node name="InfluenceValue" type="Label" parent="VBox"]
+unique_name_in_owner = true
+text = "0%"
+theme_override_font_sizes/font_size = 24
+
+[node name="InfluenceLabel" type="Label" parent="VBox"]
+unique_name_in_owner = true
+text = "wpływ"
+theme_override_font_sizes/font_size = 10
+
+[node name="TensionBar" type="ProgressBar" parent="VBox"]
+unique_name_in_owner = true
+max_value = 100.0
+value = 0.0
+show_percentage = false
+
+[node name="TensionValue" type="Label" parent="VBox"]
+unique_name_in_owner = true
+text = "napięcie 0"
+theme_override_font_sizes/font_size = 12
+
+[node name="Separator2" type="HSeparator" parent="VBox"]
+
+[node name="PreferencesLabel" type="Label" parent="VBox"]
+unique_name_in_owner = true
+text = "preferencje"
+theme_override_font_sizes/font_size = 10
+
+[node name="PreferencesList" type="Label" parent="VBox"]
+unique_name_in_owner = true
+text = ""
+theme_override_font_sizes/font_size = 12
