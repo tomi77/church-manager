@@ -211,6 +211,21 @@ func test_check_sets_defeated_reason_on_long_vassalage():
 	assert_eq(rel.defeated_at_turn, 50)
 	assert_eq(rel.defeated_reason, "long_vassalage")
 
+func test_check_sets_defeated_reason_on_total_schism():
+	# Plan 13: gdy D3 triggeruje, defeated_reason == "total_schism"
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("islam")
+	rel.ever_owned_province = true
+	# Ustaw licznik tuż przed threshold + symulacja ostatniej tury (3 frakcje w fazie 3)
+	gs.defeat_progress["islam"] = {"zero_provinces_turns": 0, "vassalage_turns": 0, "total_schism_turns": VictoryManager.SCHISM_TOTAL_TURNS_REQUIRED - 1}
+	for f: Faction in rel.factions:
+		f.tension = 90.0
+	gs.current_turn = 80
+	var vm := VictoryManager.new()
+	vm.check(gs)
+	assert_eq(rel.defeated_at_turn, 80)
+	assert_eq(rel.defeated_reason, "total_schism")
+
 func test_check_turn_limit_sets_outcome_even_when_all_religions_defeated():
 	# Edge case: cała mapa pokonana w tej samej turze. Bez tego guardu gra wisiała
 	# po TURN_LIMIT (TurnManager wywoływany w nieskończoność).
