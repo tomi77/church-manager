@@ -39,7 +39,7 @@ func test_shell_instantiates_factions_tab_as_real_component():
 	add_child_autofree(state)
 	var shell := await _instance_shell(state)
 	var factions = shell.get_node("%FactionsTab")
-	assert_true(factions is FactionsTab, "FactionsTab should be a FactionsTab instance, not PlaceholderTab")
+	assert_true(factions is FactionsTab, "FactionsTab should be a FactionsTab instance")
 
 func test_shell_binds_state_to_factions_tab():
 	var state := _make_state()
@@ -53,7 +53,7 @@ func test_shell_instantiates_faith_tab_as_real_component():
 	add_child_autofree(state)
 	var shell := await _instance_shell(state)
 	var wiara = shell.get_node("%FaithTab")
-	assert_true(wiara is FaithTab, "FaithTab should be a FaithTab instance, not PlaceholderTab")
+	assert_true(wiara is FaithTab, "FaithTab should be a FaithTab instance")
 
 func test_shell_binds_state_to_faith_tab():
 	var state := _make_state()
