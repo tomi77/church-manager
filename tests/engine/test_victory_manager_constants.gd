@@ -29,3 +29,17 @@ func test_unique_constants_exist():
 func test_victory_manager_instantiable():
 	var vm := VictoryManager.new()
 	assert_not_null(vm)
+
+func test_plan13_constants_exist():
+	# D3 schizma totalna
+	assert_eq(VictoryManager.SCHISM_TOTAL_TURNS_REQUIRED, 2)
+	# Western Reformacja Apostolska
+	assert_eq(VictoryManager.WESTERN_ROME_ID, "rzym")
+	assert_eq(VictoryManager.WESTERN_VASSALS_REQUIRED, 4)
+	assert_eq(VictoryManager.WESTERN_PRESTIGE_REQUIRED, 600)
+	# Hindu Dharmiczna Trwałość
+	assert_eq(VictoryManager.HINDU_PROVINCES_REQUIRED, 2)
+	assert_eq(VictoryManager.HINDU_DHARMA_TURNS_REQUIRED, 50)
+	# Buddhism Środkowa Droga
+	assert_almost_eq(VictoryManager.BUDDHISM_AXIS_D_REQUIRED, 90.0, 0.001)
+	assert_eq(VictoryManager.BUDDHISM_DISTINCT_SOURCES_REQUIRED, 4)

@@ -34,6 +34,22 @@ const EAST_CHRISTIANITY_VASSALS_REQUIRED := 3
 const MANICHAEISM_AXIS_C_REQUIRED := 90.0
 const MANICHAEISM_DISTINCT_SOURCES_REQUIRED := 4
 
+# === Plan 13: schizma totalna (D3 defeat) ===
+const SCHISM_TOTAL_TURNS_REQUIRED := 2				# trzy frakcje w fazie 3 przez N tur → defeat
+
+# === Plan 13: unikalne warunki — Western Christianity ===
+const WESTERN_ROME_ID := "rzym"
+const WESTERN_VASSALS_REQUIRED := 4
+const WESTERN_PRESTIGE_REQUIRED := 600
+
+# === Plan 13: unikalne warunki — Hinduism ===
+const HINDU_PROVINCES_REQUIRED := 2
+const HINDU_DHARMA_TURNS_REQUIRED := 50
+
+# === Plan 13: unikalne warunki — Buddhism ===
+const BUDDHISM_AXIS_D_REQUIRED := 90.0
+const BUDDHISM_DISTINCT_SOURCES_REQUIRED := 4
+
 # === Public API (implementacja w kolejnych taskach) ===
 
 func check(state: Node) -> void:
