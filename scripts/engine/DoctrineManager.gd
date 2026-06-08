@@ -90,6 +90,11 @@ func generate_idea(from_religion_id: String, to_religion_id: String, state: Node
 
 func accept_idea(idea: Idea, religion: Religion, state: Node) -> void:
 	religion.shift_axis(idea.axis, idea.delta)
+	# Spec 12 §8: rejestracja źródła dla warunku Manicheizm Synkretyczna Iluminacja.
+	# Guard chroni przed self-source (artefakt edge case) i pustym from_religion_id.
+	if idea.from_religion_id != "" and idea.from_religion_id != religion.id:
+		if not religion.absorbed_idea_sources.has(idea.from_religion_id):
+			religion.absorbed_idea_sources.append(idea.from_religion_id)
 	state.pending_ideas.erase(idea)
 
 func reject_idea(idea: Idea, state: Node) -> void:
