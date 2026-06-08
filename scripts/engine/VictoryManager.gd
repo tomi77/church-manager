@@ -219,7 +219,9 @@ func evaluate_unique_victory(religion: Religion, state: Node) -> String:
 	return ""
 
 func _judaism_return_satisfied(religion: Religion, state: Node) -> bool:
-	if state.province_graph.get_province(JUDAISM_JERUSALEM_ID).owner != religion.id:
+	# Null guard: custom mapy mogą nie zawierać jerozolimy — wtedy warunek niespełniony.
+	var jerusalem: Province = state.province_graph.get_province(JUDAISM_JERUSALEM_ID)
+	if jerusalem == null or jerusalem.owner != religion.id:
 		return false
 	if state.province_graph.provinces_with_owner(religion.id).size() < JUDAISM_PROVINCES_REQUIRED:
 		return false
@@ -229,7 +231,9 @@ func _judaism_return_satisfied(religion: Religion, state: Node) -> bool:
 	return true
 
 func _zoroastrianism_renaissance_satisfied(religion: Religion, state: Node) -> bool:
-	if state.province_graph.get_province(ZOROASTRIANISM_PERSEPOLIS_ID).owner != religion.id:
+	# Null guard: custom mapy mogą nie zawierać persepolis.
+	var persepolis: Province = state.province_graph.get_province(ZOROASTRIANISM_PERSEPOLIS_ID)
+	if persepolis == null or persepolis.owner != religion.id:
 		return false
 	return state.province_graph.provinces_with_owner(religion.id).size() >= ZOROASTRIANISM_PROVINCES_REQUIRED
 
@@ -241,9 +245,12 @@ func _east_christianity_pentarchy_satisfied(religion: Religion, state: Node) -> 
 	return vassal_count >= EAST_CHRISTIANITY_VASSALS_REQUIRED
 
 func _islam_caliphate_satisfied(religion: Religion, state: Node) -> bool:
-	if state.province_graph.get_province(ISLAM_MEKKA_ID).owner != religion.id:
+	# Null guard: custom mapy mogą nie zawierać mekki lub jerozolimy.
+	var mekka: Province = state.province_graph.get_province(ISLAM_MEKKA_ID)
+	if mekka == null or mekka.owner != religion.id:
 		return false
-	if state.province_graph.get_province(ISLAM_JERUSALEM_ID).owner != religion.id:
+	var jerusalem: Province = state.province_graph.get_province(ISLAM_JERUSALEM_ID)
+	if jerusalem == null or jerusalem.owner != religion.id:
 		return false
 	return state.province_graph.provinces_with_owner(religion.id).size() >= ISLAM_PROVINCES_REQUIRED
 

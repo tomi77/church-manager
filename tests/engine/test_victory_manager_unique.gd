@@ -226,3 +226,37 @@ func test_no_unique_victory_for_western_christianity():
 	var rel: Religion = gs.get_religion("western_christianity")
 	var vm := VictoryManager.new()
 	assert_eq(vm.evaluate_unique_victory(rel, gs), "")
+
+# === Null-guard edge cases (custom mapy bez wymaganych ID) ===
+
+func test_judaism_return_does_not_crash_when_jerusalem_missing_from_graph():
+	# Custom-map scenario: graph bez jerozolimy. Helper musi zwrócić false, nie crashować.
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("judaism")
+	# Manualnie usuwamy jerozolimę z grafu (provinces dict)
+	gs.province_graph._provinces.erase("jerozolima")
+	for f: Faction in rel.factions:
+		f.tension = 10.0
+	var vm := VictoryManager.new()
+	assert_eq(vm.evaluate_unique_victory(rel, gs), "")
+
+func test_zoroastrianism_renaissance_does_not_crash_when_persepolis_missing():
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("zoroastrianism")
+	gs.province_graph._provinces.erase("persepolis")
+	var vm := VictoryManager.new()
+	assert_eq(vm.evaluate_unique_victory(rel, gs), "")
+
+func test_islam_caliphate_does_not_crash_when_mekka_missing():
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("islam")
+	gs.province_graph._provinces.erase("mekka")
+	var vm := VictoryManager.new()
+	assert_eq(vm.evaluate_unique_victory(rel, gs), "")
+
+func test_islam_caliphate_does_not_crash_when_jerusalem_missing():
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("islam")
+	gs.province_graph._provinces.erase("jerozolima")
+	var vm := VictoryManager.new()
+	assert_eq(vm.evaluate_unique_victory(rel, gs), "")
