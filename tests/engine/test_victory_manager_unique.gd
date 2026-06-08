@@ -351,3 +351,39 @@ func test_hindu_dharma_blocked_when_counter_missing():
 	# victory_progress["hinduism"] nie istnieje
 	var vm := VictoryManager.new()
 	assert_eq(vm.evaluate_unique_victory(rel, gs), "")
+
+# === Plan 13: Buddhism ===
+
+func test_buddhism_middle_way_requires_D_90_and_4_sources():
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("buddhism")
+	rel.axes["D"] = 90.0
+	rel.absorbed_idea_sources = ["islam", "judaism", "hinduism", "manichaeism"]
+	var vm := VictoryManager.new()
+	assert_eq(vm.evaluate_unique_victory(rel, gs), "buddhism_middle_way")
+
+func test_buddhism_middle_way_blocked_with_D_89():
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("buddhism")
+	rel.axes["D"] = 89.0
+	rel.absorbed_idea_sources = ["islam", "judaism", "hinduism", "manichaeism", "zoroastrianism"]
+	var vm := VictoryManager.new()
+	assert_eq(vm.evaluate_unique_victory(rel, gs), "")
+
+func test_buddhism_middle_way_blocked_with_3_sources():
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("buddhism")
+	rel.axes["D"] = 95.0
+	rel.absorbed_idea_sources = ["islam", "judaism", "hinduism"]
+	var vm := VictoryManager.new()
+	assert_eq(vm.evaluate_unique_victory(rel, gs), "")
+
+func test_buddhism_can_win_with_zero_provinces():
+	# Analog test_manichaeism_can_win_with_zero_provinces — Buddhism startowo bez prowincji
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("buddhism")
+	rel.axes["D"] = 90.0
+	rel.absorbed_idea_sources = ["islam", "judaism", "hinduism", "manichaeism"]
+	assert_false(rel.ever_owned_province, "buddhism startuje bez prowincji w fixture")
+	var vm := VictoryManager.new()
+	assert_eq(vm.evaluate_unique_victory(rel, gs), "buddhism_middle_way")

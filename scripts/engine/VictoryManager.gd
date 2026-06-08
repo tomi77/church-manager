@@ -259,6 +259,9 @@ func evaluate_unique_victory(religion: Religion, state: Node) -> String:
 		"hinduism":
 			if _hindu_dharma_satisfied(religion, state):
 				return "hindu_dharma"
+		"buddhism":
+			if _buddhism_middle_way_satisfied(religion, state):
+				return "buddhism_middle_way"
 	return ""
 
 func _judaism_return_satisfied(religion: Religion, state: Node) -> bool:
@@ -326,6 +329,13 @@ func _hindu_dharma_satisfied(religion: Religion, state: Node) -> bool:
 	# Counter dharma_turns aktualizowany w update_counters (Plan 13 Task 3).
 	var vp: Dictionary = state.victory_progress.get(religion.id, {})
 	return vp.get("dharma_turns", 0) >= HINDU_DHARMA_TURNS_REQUIRED
+
+func _buddhism_middle_way_satisfied(religion: Religion, state: Node) -> bool:
+	# Spec 13 §5.3: oś D (Transcendencja) >= BUDDHISM_AXIS_D_REQUIRED + ≥ BUDDHISM_DISTINCT_SOURCES_REQUIRED źródeł.
+	# Analog Manicheism (oś C), Buddhism focused na D.
+	if religion.get_axis("D") < BUDDHISM_AXIS_D_REQUIRED:
+		return false
+	return religion.absorbed_idea_sources.size() >= BUDDHISM_DISTINCT_SOURCES_REQUIRED
 
 func evaluate_defeat(religion: Religion, state: Node) -> String:
 	# Spec §5: D1 (elimination) i D2 (long_vassalage), oba wymagają ever_owned_province.
