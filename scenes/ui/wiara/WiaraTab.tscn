@@ -1,0 +1,31 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/wiara/WiaraTab.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/ui/wiara/AxisRadar.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/ui/wiara/TraitCard.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/ui/wiara/DoctrineList.tscn" id="4"]
+
+[node name="WiaraTab" type="Control"]
+script = ExtResource("1")
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="VBox" type="VBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+
+[node name="AxisRadar" parent="VBox" instance=ExtResource("2")]
+unique_name_in_owner = true
+size_flags_horizontal = 4
+
+[node name="TraitCard" parent="VBox" instance=ExtResource("3")]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+
+[node name="DoctrineList" parent="VBox" instance=ExtResource("4")]
+unique_name_in_owner = true
+size_flags_horizontal = 3
