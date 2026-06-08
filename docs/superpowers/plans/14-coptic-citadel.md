@@ -296,9 +296,9 @@ git commit -m "feat(fixture): Plan 14 — 4 nowe prowincje (aleksandria, abisyni
 
 func test_no_ghost_edges_in_full_graph() -> void:
 	var graph := ProvinceLoader.load_graph_from_file("res://data/provinces_historical.json")
-	# Allowlist: znane out-of-scope ghost edges (mapa nie obejmuje italia północna, jemen).
+	# Allowlist: znane pre-existing out-of-scope ghost edges (mapa nie obejmuje italia północna, jemen, tracja).
 	# Po Plan 14 'afryka_polnocna' nie powinna być w allowlist — została zastąpiona przez karthago.
-	var allowed_ghosts := ["jemen", "italia_polnocna"]
+	var allowed_ghosts := ["jemen", "italia_polnocna", "tracja"]
 	var actual_ghosts: Array[String] = []
 	for p: Province in graph.all_provinces():
 		for n: String in p.neighbors:

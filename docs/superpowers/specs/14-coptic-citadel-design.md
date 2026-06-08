@@ -10,7 +10,7 @@
 > **Wyłączone z zakresu:**
 > - Religie Arabskie (osobna spec, wymaga konwersji religii).
 > - Religie Słowiańskie (osobna spec, wymaga eurazjatyckiej ekspansji mapy).
-> - Pozostałe broken edges (`mekka↔jemen`, `rzym↔italia_polnocna`) — dokumentowane jako known issues, future work.
+> - Pozostałe broken edges (`mekka↔jemen`, `rzym↔italia_polnocna`, `konstantynopol↔tracja`) — dokumentowane jako known issues, future work.
 
 ---
 
@@ -26,7 +26,7 @@ Plan 13 (Sekcja 8) wymienił Koptyjski Kościół jako deferred — warunek zwyc
 Po Plan 14:
 - 10 z 12 religii ma unique victory (Plan 13 dał 9, Plan 14 dodaje Coptic).
 - Mapa historyczna ma 16 prowincji (z 12), z naturalną osią Egipt–Afryka Północna–Italia.
-- 2 z 4 ghost edges naprawione; pozostałe 2 (`mekka↔jemen`, `rzym↔italia_polnocna`) zostają jako jawnie udokumentowane known issues poza zakresem Plan 14.
+- 1 z 4 ghost edges (`rzym↔afryka_polnocna`) naprawione przez karthago; pozostałe 3 pre-existing (`mekka↔jemen`, `rzym↔italia_polnocna`, `konstantynopol↔tracja`) zostają jako jawnie udokumentowane known issues poza zakresem Plan 14.
 
 ---
 
