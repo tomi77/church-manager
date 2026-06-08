@@ -63,3 +63,12 @@ func test_null_relation_renders_zero():
 	var item := await _instance()
 	item.set_data(null, _make_religion("x", "X", "?"), "")
 	assert_eq(item.get_node("%ZLabel").text, "Z 0")
+
+# Regresja: PanelContainer > Button > HBox(anchors) kolapsowal do 0 wysokosci,
+# wiersze nakladaly sie w VBox listy. Wymuszamy ze min_size.y > 0 po set_data.
+func test_item_has_nonzero_minimum_height():
+	var item := await _instance()
+	item.set_data(_make_relation(0, 0, 0), _make_religion("islam", "Islam", "☪"), "")
+	await get_tree().process_frame
+	assert_gt(item.get_combined_minimum_size().y, 0.0,
+		"RelationListItem must propagate label min_size to PanelContainer")
