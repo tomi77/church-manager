@@ -264,3 +264,48 @@ func test_update_counters_total_schism_does_not_touch_defeated_religion():
 	vm.update_counters(gs)
 	assert_false(gs.defeat_progress.has("manichaeism"),
 		"pokonana religia nie podlega update_counters")
+
+# === Plan 13: dharma_turns counter (Hindu) ===
+
+func test_update_counters_initializes_dharma_turns_zero():
+	var gs := _make_state()
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("hinduism", {})
+	assert_eq(prog.get("dharma_turns", -1), 0,
+		"po pierwszym update licznik istnieje i jest 0")
+
+func test_update_counters_increments_dharma_when_hindu_owns_2_provinces():
+	var gs := _make_state()
+	# Hindu startowo nie ma prowincji — daj 2
+	gs.province_graph.get_province("mekka").owner = "hinduism"
+	gs.province_graph.get_province("lewant").owner = "hinduism"
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("hinduism", {})
+	assert_eq(prog.get("dharma_turns", 0), 1)
+	vm.update_counters(gs)
+	prog = gs.victory_progress.get("hinduism", {})
+	assert_eq(prog.get("dharma_turns", 0), 2)
+
+func test_update_counters_resets_dharma_when_hindu_owns_only_1_province():
+	var gs := _make_state()
+	gs.victory_progress["hinduism"] = {"domination_turns": 0, "prestige_hegemony_turns": 0, "dharma_turns": 30}
+	# Hindu ma 1 prowincję
+	gs.province_graph.get_province("mekka").owner = "hinduism"
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("hinduism", {})
+	assert_eq(prog.get("dharma_turns", 0), 0, "spadek poniżej progu → reset")
+
+func test_update_counters_only_increments_dharma_for_hinduism():
+	# Inne religie (np. islam) nie mają licznika dharma_turns inkrementowanego nawet z ≥ 2 prowincji
+	var gs := _make_state()
+	# Islam startowo ma 1 prowincję (mezopotamia), dodajmy drugą
+	gs.province_graph.get_province("lewant").owner = "islam"
+	assert_gt(gs.province_graph.provinces_with_owner("islam").size(), 1)
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("islam", {})
+	# Klucz dharma_turns istnieje (default 0) ale nie inkrementuje dla islamu
+	assert_eq(prog.get("dharma_turns", -1), 0)

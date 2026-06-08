@@ -142,7 +142,7 @@ func update_counters(state: Node) -> void:
 	for religion: Religion in state.all_religions():
 		if religion.defeated_at_turn != -1:
 			continue
-		_ensure_progress_entry(state.victory_progress, religion.id, {"domination_turns": 0, "prestige_hegemony_turns": 0})
+		_ensure_progress_entry(state.victory_progress, religion.id, {"domination_turns": 0, "prestige_hegemony_turns": 0, "dharma_turns": 0})
 		_ensure_progress_entry(state.defeat_progress, religion.id, {"zero_provinces_turns": 0, "vassalage_turns": 0, "total_schism_turns": 0})
 
 		# Dominacja
@@ -161,6 +161,14 @@ func update_counters(state: Node) -> void:
 			state.victory_progress[religion.id]["prestige_hegemony_turns"] += 1
 		else:
 			state.victory_progress[religion.id]["prestige_hegemony_turns"] = 0
+
+		# Plan 13 §5.2: hindu dharma — kontrola ≥ HINDU_PROVINCES_REQUIRED prowincji.
+		# Tylko Hinduizm — inne religie mają default 0 i nie podlegają.
+		if religion.id == "hinduism":
+			if owned >= HINDU_PROVINCES_REQUIRED:
+				state.victory_progress[religion.id]["dharma_turns"] += 1
+			else:
+				state.victory_progress[religion.id]["dharma_turns"] = 0
 
 		# Defeat counters
 		if owned == 0:
