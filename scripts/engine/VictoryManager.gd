@@ -149,7 +149,68 @@ func _evaluate_holy_land(religion: Religion, state: Node) -> bool:
 	return false
 
 func evaluate_unique_victory(religion: Religion, state: Node) -> String:
+	# Spec §4.2: jeden unikalny warunek per religia (in-scope w Plan 12).
+	match religion.id:
+		"manichaeism":
+			if religion.get_axis("C") >= MANICHAEISM_AXIS_C_REQUIRED \
+					and religion.absorbed_idea_sources.size() >= MANICHAEISM_DISTINCT_SOURCES_REQUIRED:
+				return "manichaeism_illumination"
+		"judaism":
+			if _judaism_return_satisfied(religion, state):
+				return "judaism_return"
+		"zoroastrianism":
+			if _zoroastrianism_renaissance_satisfied(religion, state):
+				return "zoroastrianism_renaissance"
+		"eastern_christianity":
+			if _east_christianity_pentarchy_satisfied(religion, state):
+				return "east_christianity_pentarchy"
+		"islam":
+			if _islam_caliphate_satisfied(religion, state):
+				return "islam_caliphate"
+		"germanic_paganism":
+			if _germanic_ragnarok_satisfied(religion, state):
+				return "germanic_ragnarok"
 	return ""
+
+func _judaism_return_satisfied(religion: Religion, state: Node) -> bool:
+	if state.province_graph.get_province(JUDAISM_JERUSALEM_ID).owner != religion.id:
+		return false
+	if state.province_graph.provinces_with_owner(religion.id).size() < JUDAISM_PROVINCES_REQUIRED:
+		return false
+	for f: Faction in religion.factions:
+		if f.tension >= JUDAISM_FACTION_UNITY_TENSION_MAX:
+			return false
+	return true
+
+func _zoroastrianism_renaissance_satisfied(religion: Religion, state: Node) -> bool:
+	if state.province_graph.get_province(ZOROASTRIANISM_PERSEPOLIS_ID).owner != religion.id:
+		return false
+	return state.province_graph.provinces_with_owner(religion.id).size() >= ZOROASTRIANISM_PROVINCES_REQUIRED
+
+func _east_christianity_pentarchy_satisfied(religion: Religion, state: Node) -> bool:
+	var vassal_count: int = 0
+	for r: Religion in state.all_religions():
+		if r.suzerain_id == religion.id:
+			vassal_count += 1
+	return vassal_count >= EAST_CHRISTIANITY_VASSALS_REQUIRED
+
+func _islam_caliphate_satisfied(religion: Religion, state: Node) -> bool:
+	if state.province_graph.get_province(ISLAM_MEKKA_ID).owner != religion.id:
+		return false
+	if state.province_graph.get_province(ISLAM_JERUSALEM_ID).owner != religion.id:
+		return false
+	return state.province_graph.provinces_with_owner(religion.id).size() >= ISLAM_PROVINCES_REQUIRED
+
+func _germanic_ragnarok_satisfied(religion: Religion, state: Node) -> bool:
+	if not religion.ragnarok_triggered:
+		return false
+	if religion.starting_provinces_snapshot.is_empty():
+		return false
+	for pid: String in religion.starting_provinces_snapshot:
+		var p: Province = state.province_graph.get_province(pid)
+		if p == null or p.owner != religion.id:
+			return false
+	return true
 
 func evaluate_defeat(religion: Religion, state: Node) -> String:
 	return ""
