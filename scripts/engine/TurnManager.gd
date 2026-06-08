@@ -7,6 +7,9 @@ const AXIS_DIVERGENCE_THRESHOLD := 20.0
 const BELIEVER_EXODUS_PER_TURN := 5
 
 func process_turn(state: Node) -> void:
+	# Spec 12 §5: pokonane religie (defeated_at_turn != -1) wciąż przechodzą cały pipeline
+	# — zostają w świecie (mogą mieć prestiż, frakcje, zasoby). VictoryManager.update_counters
+	# pomija je w drugim-najwyższym prestiżu i nie próbuje już ustawiać warunków wygranej.
 	_apply_passive_pressure(state.province_graph)
 	_apply_holy_site_prestige(state)
 	_update_faction_tensions(state)
