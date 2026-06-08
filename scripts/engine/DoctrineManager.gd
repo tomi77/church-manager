@@ -14,16 +14,16 @@ const IDEA_MAX_DELTA := 8.0
 # Każda reguła: {"min": X} = oś >= X, {"max": X} = oś <= X. Klucze są wzajemnie wykluczające się.
 const AXIS_THRESHOLDS: Dictionary = {
 	"A": [
-		{"min": 75.0, "actions": ["kanon_doktryny"]},
-		{"max": 25.0, "actions": ["objawienie"]},
+		{"min": 75.0, "actions": ["dogma_canon"]},
+		{"max": 25.0, "actions": ["mystical_revelation"]},
 	],
 	"B": [
-		{"min": 75.0, "actions": ["papieskie_interdykty"]},
-		{"max": 25.0, "actions": ["sobor_ludowy"]},
+		{"min": 75.0, "actions": ["papal_interdicts"]},
+		{"max": 25.0, "actions": ["popular_council"]},
 	],
 	"C": [
-		{"min": 75.0, "actions": ["ekumenizm", "obrzad_fuzji"]},
-		{"max": 25.0, "actions": ["inkwizycja", "klatwa"]},
+		{"min": 75.0, "actions": ["ecumenism", "fusion_rite"]},
+		{"max": 25.0, "actions": ["inquisition", "anathema"]},
 	],
 	# Oś D (Doczesność↔Transcendencja) nie ma akcji progowych w tym PoC — celowe pominięcie.
 }

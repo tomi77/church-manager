@@ -33,17 +33,18 @@ func test_list_rows_sorted_axis_then_op_then_alphabetical():
 	var state := _make_state()
 	add_child_autofree(state)
 	var l := await _instance_list(state)
-	# Oczekiwana kolejnosc: A/min/kanon_doktryny, A/max/objawienie,
-	# B/min/papieskie_interdykty, B/max/sobor_ludowy,
-	# C/min/ekumenizm, C/min/obrzad_fuzji, C/max/inkwizycja, C/max/klatwa
-	assert_eq(l.action_id_at(0), "kanon_doktryny")
-	assert_eq(l.action_id_at(1), "objawienie")
-	assert_eq(l.action_id_at(2), "papieskie_interdykty")
-	assert_eq(l.action_id_at(3), "sobor_ludowy")
-	assert_eq(l.action_id_at(4), "ekumenizm")
-	assert_eq(l.action_id_at(5), "obrzad_fuzji")
-	assert_eq(l.action_id_at(6), "inkwizycja")
-	assert_eq(l.action_id_at(7), "klatwa")
+	# Oczekiwana kolejnosc (sort: axis -> op[min<max] -> action_id alfabetycznie):
+	# A/min/dogma_canon, A/max/mystical_revelation,
+	# B/min/papal_interdicts, B/max/popular_council,
+	# C/min/ecumenism, C/min/fusion_rite, C/max/anathema, C/max/inquisition
+	assert_eq(l.action_id_at(0), "dogma_canon")
+	assert_eq(l.action_id_at(1), "mystical_revelation")
+	assert_eq(l.action_id_at(2), "papal_interdicts")
+	assert_eq(l.action_id_at(3), "popular_council")
+	assert_eq(l.action_id_at(4), "ecumenism")
+	assert_eq(l.action_id_at(5), "fusion_rite")
+	assert_eq(l.action_id_at(6), "anathema")
+	assert_eq(l.action_id_at(7), "inquisition")
 
 func test_list_marks_doctrines_available_per_player_axes():
 	var state := _make_state()
@@ -60,7 +61,7 @@ func test_list_unlocks_doctrines_on_axis_change():
 	var state := _make_state()
 	add_child_autofree(state)
 	var l := await _instance_list(state)
-	# Przesun A do 80 → kanon_doktryny powinien byc dostepny
+	# Przesun A do 80 → dogma_canon powinien byc dostepny
 	state.get_player_religion().axes["A"] = 80.0
 	l.refresh()
 	var kanon_row: DoctrineRow = l.row_at(0)

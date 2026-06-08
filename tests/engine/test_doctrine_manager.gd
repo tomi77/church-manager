@@ -32,21 +32,21 @@ func test_idea_has_correct_fields() -> void:
 
 const DoctrineManagerScript := preload("res://scripts/engine/DoctrineManager.gd")
 
-func test_doctrine_manager_axis_A_high_unlocks_kanon_doktryny() -> void:
+func test_doctrine_manager_axis_A_high_unlocks_dogma_canon() -> void:
 	var dm := DoctrineManagerScript.new()
 	var gs := _make_state()
 	var rel: Religion = gs.get_religion("islam")
 	rel.axes["A"] = 76.0
 	var actions := dm.available_threshold_actions(rel)
-	assert_true(actions.has("kanon_doktryny"), "A>=75 powinno odblokować kanon_doktryny")
+	assert_true(actions.has("dogma_canon"), "A>=75 powinno odblokować dogma_canon")
 
-func test_doctrine_manager_axis_A_low_unlocks_objawienie() -> void:
+func test_doctrine_manager_axis_A_low_unlocks_mystical_revelation() -> void:
 	var dm := DoctrineManagerScript.new()
 	var gs := _make_state()
 	var rel: Religion = gs.get_religion("islam")
 	rel.axes["A"] = 24.0
 	var actions := dm.available_threshold_actions(rel)
-	assert_true(actions.has("objawienie"), "A<=25 powinno odblokować objawienie")
+	assert_true(actions.has("mystical_revelation"), "A<=25 powinno odblokować mystical_revelation")
 
 func test_doctrine_manager_axis_middle_no_threshold_actions() -> void:
 	var dm := DoctrineManagerScript.new()
@@ -59,23 +59,23 @@ func test_doctrine_manager_axis_middle_no_threshold_actions() -> void:
 	var actions := dm.available_threshold_actions(rel)
 	assert_eq(actions.size(), 0)
 
-func test_doctrine_manager_axis_C_high_unlocks_ekumenizm_and_obrzad() -> void:
+func test_doctrine_manager_axis_C_high_unlocks_ecumenism_and_obrzad() -> void:
 	var dm := DoctrineManagerScript.new()
 	var gs := _make_state()
 	var rel: Religion = gs.get_religion("islam")
 	rel.axes["C"] = 80.0
 	var actions := dm.available_threshold_actions(rel)
-	assert_true(actions.has("ekumenizm"))
-	assert_true(actions.has("obrzad_fuzji"))
+	assert_true(actions.has("ecumenism"))
+	assert_true(actions.has("fusion_rite"))
 
-func test_doctrine_manager_axis_C_low_unlocks_inkwizycja_and_klatwa() -> void:
+func test_doctrine_manager_axis_C_low_unlocks_inquisition_and_anathema() -> void:
 	var dm := DoctrineManagerScript.new()
 	var gs := _make_state()
 	var rel: Religion = gs.get_religion("islam")
 	rel.axes["C"] = 20.0
 	var actions := dm.available_threshold_actions(rel)
-	assert_true(actions.has("inkwizycja"))
-	assert_true(actions.has("klatwa"))
+	assert_true(actions.has("inquisition"))
+	assert_true(actions.has("anathema"))
 
 func test_call_sobor_shifts_axis_and_costs_prestige() -> void:
 	var dm := DoctrineManagerScript.new()

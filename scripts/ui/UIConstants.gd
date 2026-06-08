@@ -118,42 +118,42 @@ const TRAIT_INFO: Dictionary = {
 
 # Doctrine info — 8 wpisów, parytet z DoctrineManager.AXIS_THRESHOLDS (test_doctrine_info_parity.gd)
 const DOCTRINE_INFO: Dictionary = {
-	"kanon_doktryny": {
+	"dogma_canon": {
 		"name": "Kanon Doktrynalny",
 		"axis": "A", "op": "min", "threshold": 75.0,
 		"description": "Ortodoksja chroni przed obcymi ideami.",
 	},
-	"objawienie": {
+	"mystical_revelation": {
 		"name": "Objawienie Mistyczne",
 		"axis": "A", "op": "max", "threshold": 25.0,
 		"description": "Mistyczna interpretacja otwiera nowe doktryny.",
 	},
-	"papieskie_interdykty": {
+	"papal_interdicts": {
 		"name": "Papieskie Interdykty",
 		"axis": "B", "op": "min", "threshold": 75.0,
 		"description": "Hierarchia może rzucać Interdykt.",
 	},
-	"sobor_ludowy": {
+	"popular_council": {
 		"name": "Sobór Ludowy",
 		"axis": "B", "op": "max", "threshold": 25.0,
 		"description": "Egalitarne sobory tańsze o połowę.",
 	},
-	"ekumenizm": {
+	"ecumenism": {
 		"name": "Ekumenizm",
 		"axis": "C", "op": "min", "threshold": 75.0,
 		"description": "Łatwiejsza absorpcja doktryn obcych religii.",
 	},
-	"obrzad_fuzji": {
+	"fusion_rite": {
 		"name": "Obrzęd Fuzji",
 		"axis": "C", "op": "min", "threshold": 75.0,
 		"description": "Możliwa fuzja z religią synkretyczną.",
 	},
-	"inkwizycja": {
+	"inquisition": {
 		"name": "Inkwizycja",
 		"axis": "C", "op": "max", "threshold": 25.0,
 		"description": "Schizmy odpierane brutalnie.",
 	},
-	"klatwa": {
+	"anathema": {
 		"name": "Klątwa",
 		"axis": "C", "op": "max", "threshold": 25.0,
 		"description": "Można rzucić klątwę na heretyka.",
