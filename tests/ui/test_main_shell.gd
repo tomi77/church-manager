@@ -82,3 +82,20 @@ func test_shell_end_turn_refreshes():
 	shell.get_node("%Header").get_node("%EndTurnButton").emit_signal("pressed")
 	assert_eq(state.current_turn, initial_turn + 1)
 	assert_eq(shell.get_node("%Header").get_node("%TurnLabel").text, "Tura %d" % state.current_turn)
+
+# Bootstrap z autoload GameState: StartMenu woła GameState.initialize(...) + change_scene_to_file(MainShell.tscn).
+# MainShell._ready() musi sam podpiąć autoload do dzieci — w przeciwnym razie Header/Mapa/Wiara/Świat
+# pokazują domyślne placeholdery ("?", A:0, Tura 0).
+func test_shell_auto_binds_to_initialized_gamestate_autoload():
+	var religions := ReligionLoader.load_from_file("res://data/religions_historical.json")
+	var graph := ProvinceLoader.load_graph_from_file("res://data/provinces_historical.json")
+	GameState.initialize("islam", religions, graph)
+	var s: MainShell = MainShellScene.instantiate()
+	add_child_autofree(s)
+	await get_tree().process_frame
+	# Bez wywoływania bind_state ręcznie — sprawdzamy że _ready() spiął autoload.
+	assert_eq(s.state, GameState)
+	var wiara: WiaraTab = s.get_node("%WiaraTab")
+	assert_eq(wiara.state, GameState)
+	# Etykiety osi pokazują wartości Islamu (A=70), nie zera.
+	assert_eq(wiara.get_node("%AxisRadar").get_node("%ValueLabelA").text, "A: 70")

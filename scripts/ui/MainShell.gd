@@ -20,6 +20,10 @@ func _ready() -> void:
 	if _swiat_tab.has_signal("state_changed"):
 		_swiat_tab.state_changed.connect(_on_swiat_state_changed)
 	_on_tab_changed(_tab_bar.current_tab)
+	# Live mode: StartMenu inicjalizuje autoload GameState i zmienia scenę.
+	# Sami podpinamy autoload, bo nikt inny nas nie spina. Testy nadpisują własnym state.
+	if state == null and GameState.player_religion_id != "":
+		bind_state(GameState)
 
 func bind_state(s: Node) -> void:
 	state = s
