@@ -4,7 +4,7 @@
 
 [node name="RelationList" type="ScrollContainer"]
 script = ExtResource("1")
-custom_minimum_size = Vector2(260, 0)
+custom_minimum_size = Vector2(380, 0)
 
 [node name="ItemsVBox" type="VBoxContainer" parent="."]
 unique_name_in_owner = true
