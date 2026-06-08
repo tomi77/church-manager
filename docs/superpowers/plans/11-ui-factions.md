@@ -27,7 +27,7 @@
 ## Test command reference
 
 ```bash
-# Cała suite (wzrost: 471 → 512)
+# Cała suite (wzrost: 471 → 513)
 godot --headless --path . -s res://addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit
 
 # Pojedynczy plik testu (zawsze res://-absolutna ścieżka)
@@ -645,7 +645,7 @@ godot --headless --path . --quit
 godot --headless --path . -s res://addons/gut/gut_cmdln.gd -gdir=res://tests/ui -gtest=res://tests/ui/test_faction_card.gd -gexit
 ```
 
-Expected: 24 passed tests (21 oryginalnych + 3 dodane podczas review).
+Expected: 25 passed tests.
 
 - [ ] **Step 7: Uruchom całą suite — nic nie powinno się zepsuć**
 
@@ -653,7 +653,7 @@ Expected: 24 passed tests (21 oryginalnych + 3 dodane podczas review).
 godot --headless --path . -s res://addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit
 ```
 
-Expected: 476 → 500 passing tests (24 nowe).
+Expected: 476 → 501 passing tests (25 nowych).
 
 - [ ] **Step 8: Commit**
 
@@ -954,7 +954,7 @@ Expected: 11 passed tests.
 godot --headless --path . -s res://addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit
 ```
 
-Expected: 500 → 511 passing tests (11 nowych).
+Expected: 501 → 512 passing tests (11 nowych).
 
 - [ ] **Step 8: Commit**
 
@@ -1144,7 +1144,7 @@ Expected: All pass (jeśli były asercje placeholder — teraz zaktualizowane).
 godot --headless --path . -s res://addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit
 ```
 
-Expected: 511 → 512 passing tests (1 nowy `test_shell_instantiates_factions_tab_as_real_component` + 1 nowy `test_shell_binds_state_to_factions_tab` − 1 usunięty `test_shell_frakcje_placeholder_has_correct_title`). Brak nowych failów.
+Expected: 512 → 513 passing tests (1 nowy `test_shell_instantiates_factions_tab_as_real_component` + 1 nowy `test_shell_binds_state_to_factions_tab` − 1 usunięty `test_shell_frakcje_placeholder_has_correct_title`). Brak nowych failów.
 
 - [ ] **Step 10: Manualna weryfikacja w edytorze (opcjonalna ale rekomendowana)**
 
@@ -1204,7 +1204,7 @@ Jeśli istnieje konkretny opis FactionsTab — zaktualizuj go aby odzwierciedla�
 godot --headless --path . -s res://addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit
 ```
 
-Expected: 512 passing tests.
+Expected: 513 passing tests.
 
 - [ ] **Step 4: Commit**
 
@@ -1234,7 +1234,7 @@ Po Task 5:
 godot --headless --path . -s res://addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit
 ```
 
-Oczekiwane: 512 passing tests, 0 failing.
+Oczekiwane: 513 passing tests, 0 failing.
 
 - [ ] **Live mode sprawdzenie (opcjonalne)**
 
