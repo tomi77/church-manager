@@ -67,3 +67,39 @@ func test_religion_grievance_fields_defaults() -> void:
 	var r := Religion.new()
 	assert_eq(r.interdict_grievance_from_id, "")
 	assert_eq(r.interdict_grievance_until, 0)
+
+func test_new_field_defeated_at_turn_defaults_to_minus_one():
+	var r := Religion.new()
+	assert_eq(r.defeated_at_turn, -1)
+
+func test_new_field_birth_turn_defaults_to_zero():
+	var r := Religion.new()
+	assert_eq(r.birth_turn, 0)
+
+func test_new_field_starting_provinces_snapshot_defaults_to_empty():
+	var r := Religion.new()
+	assert_eq(r.starting_provinces_snapshot.size(), 0)
+
+func test_new_field_ever_owned_province_defaults_to_false():
+	var r := Religion.new()
+	assert_false(r.ever_owned_province)
+
+func test_new_field_ragnarok_triggered_defaults_to_false():
+	var r := Religion.new()
+	assert_false(r.ragnarok_triggered)
+
+func test_new_field_absorbed_idea_sources_defaults_to_empty():
+	var r := Religion.new()
+	assert_eq(r.absorbed_idea_sources.size(), 0)
+
+func test_starting_provinces_snapshot_is_string_array():
+	var r := Religion.new()
+	r.starting_provinces_snapshot = ["mekka", "lewant"]
+	assert_eq(r.starting_provinces_snapshot[0], "mekka")
+	assert_eq(r.starting_provinces_snapshot[1], "lewant")
+
+func test_absorbed_idea_sources_is_string_array():
+	var r := Religion.new()
+	r.absorbed_idea_sources = ["islam", "judaism"]
+	assert_eq(r.absorbed_idea_sources[0], "islam")
+	assert_eq(r.absorbed_idea_sources[1], "judaism")

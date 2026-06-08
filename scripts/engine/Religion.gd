@@ -18,6 +18,12 @@ extends Resource
 @export var interdict_immunity_until: int = 0	 # turn numer do którego Interdykt jest blokowany
 @export var interdict_grievance_from_id: String = ""	# ostatnia religia która rzuciła na nas Interdykt (Plan 07)
 @export var interdict_grievance_until: int = 0			# tura do której (wyłącznie) CB Rewanż jest dostępny
+@export var defeated_at_turn: int = -1					 # -1 = w grze, inaczej numer tury przegranej
+@export var birth_turn: int = 0							 # 0 = od startu gry, inaczej numer tury narodzin ze schizmy
+@export var starting_provinces_snapshot: Array[String] = []	 # snapshot owner-prowincji w turze init
+@export var ever_owned_province: bool = false			 # trwała flaga: religia kontrolowała ≥1 prowincję w jakimś momencie
+@export var ragnarok_triggered: bool = false			 # trwała flaga: religia utraciła >50% snapshot (germanic_paganism)
+@export var absorbed_idea_sources: Array[String] = []	 # unikalna lista from_religion_id zaabsorbowanych idei
 
 func get_axis(axis: String) -> float:
 	return axes.get(axis, 50.0)
