@@ -65,3 +65,19 @@ func test_religion_colors_cover_all_historical_religions():
 	for r: Religion in religions:
 		assert_true(UIConstants.RELIGION_COLORS.has(r.id),
 			"RELIGION_COLORS missing entry for religion_id: " + r.id)
+
+# Parity: hex w JSON (Religion.color / accent_color) musi zgadzać się z Color w UIConstants.
+# Dryf między JSON a stałą = artyści zmieniają w jednym miejscu, render w drugim.
+func test_religion_colors_match_json_hex():
+	var religions := ReligionLoader.load_from_file("res://data/religions_historical.json")
+	for r: Religion in religions:
+		var json_hex: String = r.color.to_lower().trim_prefix("#")
+		var const_hex: String = UIConstants.RELIGION_COLORS[r.id].to_html(false).to_lower()
+		assert_eq(const_hex, json_hex, r.id + ": RELIGION_COLORS vs JSON color mismatch")
+
+func test_religion_accent_colors_match_json_hex():
+	var religions := ReligionLoader.load_from_file("res://data/religions_historical.json")
+	for r: Religion in religions:
+		var json_hex: String = r.accent_color.to_lower().trim_prefix("#")
+		var const_hex: String = UIConstants.RELIGION_ACCENT_COLORS[r.id].to_html(false).to_lower()
+		assert_eq(const_hex, json_hex, r.id + ": RELIGION_ACCENT_COLORS vs JSON accent_color mismatch")

@@ -52,3 +52,14 @@ func test_card_refresh_after_trait_change():
 	state.get_player_religion().trait_id = "diaspora"
 	c.refresh()
 	assert_eq(c.get_node("%NameLabel").text, "Diaspora")
+
+# Spec 10 §2: PanelContainer z subtelnym tłem Color(0.1, 0.1, 0.1).
+func test_card_panel_has_subtle_dark_background():
+	var c: TraitCard = TraitCardScene.instantiate()
+	add_child_autofree(c)
+	await get_tree().process_frame
+	var style: StyleBox = c.get_theme_stylebox("panel")
+	assert_not_null(style, "TraitCard musi mieć theme_override_styles/panel")
+	assert_true(style is StyleBoxFlat, "panel stylebox powinien być StyleBoxFlat")
+	var flat: StyleBoxFlat = style
+	assert_eq(flat.bg_color, Color(0.1, 0.1, 0.1), "spec 10 §2: tło Color(0.1, 0.1, 0.1)")
