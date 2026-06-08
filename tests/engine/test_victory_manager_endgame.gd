@@ -185,3 +185,17 @@ func test_compute_ranking_sorts_desc_by_prestige_then_id_asc():
 	var ranking := vm.compute_ranking(gs)
 	assert_eq(ranking[0]["religion_id"], "islam")
 	assert_eq(ranking[1]["religion_id"], "zoroastrianism")
+
+func test_check_turn_limit_sets_outcome_even_when_all_religions_defeated():
+	# Edge case: cała mapa pokonana w tej samej turze. Bez tego guardu gra wisiała
+	# po TURN_LIMIT (TurnManager wywoływany w nieskończoność).
+	var gs := _make_state()
+	gs.current_turn = VictoryManager.TURN_LIMIT
+	for r: Religion in gs.all_religions():
+		r.defeated_at_turn = gs.current_turn
+	var vm := VictoryManager.new()
+	vm.check(gs)
+	assert_not_null(gs.game_outcome, "turn_limit musi ustawić outcome nawet gdy ranking pusty")
+	assert_eq(gs.game_outcome.reason, "turn_limit")
+	assert_eq(gs.game_outcome.winner_id, "", "brak kandydatów → pusty winner_id (legalny stan)")
+	assert_eq(gs.game_outcome.end_turn, VictoryManager.TURN_LIMIT)

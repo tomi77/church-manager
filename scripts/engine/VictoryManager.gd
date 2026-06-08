@@ -66,11 +66,12 @@ func check(state: Node) -> void:
 		if defeat_reason != "":
 			religion.defeated_at_turn = state.current_turn
 
-	# Krok 6: turn limit fallback
+	# Krok 6: turn limit fallback. Gdy ranking pusty (wszyscy pokonani), wciąż ustaw outcome
+	# z pustym winner_id — inaczej TurnManager wpada w nieskończoną pętlę po TURN_LIMIT.
 	if state.current_turn >= TURN_LIMIT:
 		var ranking := compute_ranking(state, true)
-		if ranking.size() > 0:
-			_set_outcome(state, ranking[0]["religion_id"], "turn_limit")
+		var winner_id: String = ranking[0]["religion_id"] if ranking.size() > 0 else ""
+		_set_outcome(state, winner_id, "turn_limit")
 
 func _is_in_schism_grace(religion: Religion, state: Node) -> bool:
 	return religion.parent_religion_id != "" \
