@@ -17,50 +17,50 @@ func _instance_shell(state: Node) -> MainShell:
 	s.bind_state(state)
 	return s
 
-func test_shell_default_shows_swiat_tab():
+func test_shell_default_shows_world_tab():
 	var state := _make_state()
 	add_child_autofree(state)
 	var shell := await _instance_shell(state)
-	assert_true(shell.get_node("%SwiatTab").visible)
-	assert_false(shell.get_node("%MapaTab").visible)
-	assert_false(shell.get_node("%WiaraTab").visible)
-	assert_false(shell.get_node("%FrakcjeTab").visible)
+	assert_true(shell.get_node("%WorldTab").visible)
+	assert_false(shell.get_node("%MapTab").visible)
+	assert_false(shell.get_node("%FaithTab").visible)
+	assert_false(shell.get_node("%FactionsTab").visible)
 
 func test_shell_tab_change_switches_visible_content():
 	var state := _make_state()
 	add_child_autofree(state)
 	var shell := await _instance_shell(state)
-	shell.get_node("%TabBar").set_current_tab("wiara")
-	assert_true(shell.get_node("%WiaraTab").visible)
-	assert_false(shell.get_node("%SwiatTab").visible)
+	shell.get_node("%TabBar").set_current_tab("faith")
+	assert_true(shell.get_node("%FaithTab").visible)
+	assert_false(shell.get_node("%WorldTab").visible)
 
 func test_shell_frakcje_placeholder_has_correct_title():
 	var state := _make_state()
 	add_child_autofree(state)
 	var shell := await _instance_shell(state)
-	var frakcje: PlaceholderTab = shell.get_node("%FrakcjeTab")
+	var frakcje: PlaceholderTab = shell.get_node("%FactionsTab")
 	assert_string_contains(frakcje.title, "Plan 11")
 
-func test_shell_instantiates_wiara_tab_as_real_component():
+func test_shell_instantiates_faith_tab_as_real_component():
 	var state := _make_state()
 	add_child_autofree(state)
 	var shell := await _instance_shell(state)
-	var wiara = shell.get_node("%WiaraTab")
-	assert_true(wiara is WiaraTab, "WiaraTab should be a WiaraTab instance, not PlaceholderTab")
+	var wiara = shell.get_node("%FaithTab")
+	assert_true(wiara is FaithTab, "FaithTab should be a FaithTab instance, not PlaceholderTab")
 
-func test_shell_binds_state_to_wiara_tab():
+func test_shell_binds_state_to_faith_tab():
 	var state := _make_state()
 	add_child_autofree(state)
 	var shell := await _instance_shell(state)
-	var wiara: WiaraTab = shell.get_node("%WiaraTab")
+	var wiara: FaithTab = shell.get_node("%FaithTab")
 	assert_eq(wiara.state, state)
 
-func test_main_shell_renders_map_view_in_mapa_tab():
+func test_main_shell_renders_map_view_in_map_tab():
 	var state := _make_state()
 	add_child_autofree(state)
 	var shell := await _instance_shell(state)
-	shell.get_node("%TabBar").set_current_tab("mapa")
-	var mapa_tab: MapaTab = shell.get_node("%MapaTab")
+	shell.get_node("%TabBar").set_current_tab("map")
+	var mapa_tab: MapTab = shell.get_node("%MapTab")
 	assert_not_null(mapa_tab)
 	assert_true(mapa_tab.visible)
 	assert_eq(mapa_tab.get_node("%MapView").get_node_count(), 12)
@@ -69,8 +69,8 @@ func test_main_shell_hides_map_view_in_other_tabs():
 	var state := _make_state()
 	add_child_autofree(state)
 	var shell := await _instance_shell(state)
-	shell.get_node("%TabBar").set_current_tab("swiat")
-	var map_view = shell.get_node("%MapaTab")
+	shell.get_node("%TabBar").set_current_tab("world")
+	var map_view = shell.get_node("%MapTab")
 	assert_false(map_view.visible)
 
 func test_shell_end_turn_refreshes():
@@ -95,7 +95,7 @@ func test_shell_auto_binds_to_initialized_gamestate_autoload():
 	await get_tree().process_frame
 	# Bez wywoływania bind_state ręcznie — sprawdzamy że _ready() spiął autoload.
 	assert_eq(s.state, GameState)
-	var wiara: WiaraTab = s.get_node("%WiaraTab")
+	var wiara: FaithTab = s.get_node("%FaithTab")
 	assert_eq(wiara.state, GameState)
 	# Etykiety osi pokazują wartości Islamu (A=70), nie zera.
 	assert_eq(wiara.get_node("%AxisRadar").get_node("%ValueLabelA").text, "A: 70")

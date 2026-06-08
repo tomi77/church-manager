@@ -27,7 +27,7 @@ func test_full_loop_alliance():
 	rel.theological_trust = 70.0
 
 	var shell := await _shell(state)
-	var world: WorldTab = shell.get_node("%SwiatTab")
+	var world: WorldTab = shell.get_node("%WorldTab")
 	world._on_religion_selected("western_christianity")
 
 	var panel: ActionPanel = world.get_node("%ActionPanel")
@@ -53,7 +53,7 @@ func test_full_loop_rewanz():
 	player.axes["C"] = 20.0
 
 	var shell := await _shell(state)
-	var world: WorldTab = shell.get_node("%SwiatTab")
+	var world: WorldTab = shell.get_node("%WorldTab")
 	world._on_religion_selected("western_christianity")
 
 	var panel: ActionPanel = world.get_node("%ActionPanel")
@@ -89,7 +89,7 @@ func test_full_loop_peace_council_ends_war():
 	state.active_wars.append(war)
 
 	var shell := await _shell(state)
-	var world: WorldTab = shell.get_node("%SwiatTab")
+	var world: WorldTab = shell.get_node("%WorldTab")
 	var conflict: ConflictSection = world.get_node("%ConflictSection")
 	assert_true(conflict.visible)
 

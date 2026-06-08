@@ -1,6 +1,6 @@
 extends GutTest
 
-const WiaraTabScene := preload("res://scenes/ui/wiara/WiaraTab.tscn")
+const FaithTabScene := preload("res://scenes/ui/faith/FaithTab.tscn")
 const GameStateScript := preload("res://scripts/engine/GameState.gd")
 
 func _make_state() -> Node:
@@ -10,15 +10,15 @@ func _make_state() -> Node:
 	gs.initialize("islam", religions, graph)
 	return gs
 
-func _instance_tab(state: Node) -> WiaraTab:
-	var t: WiaraTab = WiaraTabScene.instantiate()
+func _instance_tab(state: Node) -> FaithTab:
+	var t: FaithTab = FaithTabScene.instantiate()
 	add_child_autofree(t)
 	await get_tree().process_frame
 	t.bind_state(state)
 	return t
 
 func test_tab_renders_without_state():
-	var t: WiaraTab = WiaraTabScene.instantiate()
+	var t: FaithTab = FaithTabScene.instantiate()
 	add_child_autofree(t)
 	await get_tree().process_frame
 	assert_not_null(t)
@@ -53,7 +53,7 @@ func test_tab_refresh_propagates_to_children():
 	assert_eq(radar.get_node("%ValueLabelA").text, "A: 100")
 
 func test_tab_refresh_no_op_when_state_null():
-	var t: WiaraTab = WiaraTabScene.instantiate()
+	var t: FaithTab = FaithTabScene.instantiate()
 	add_child_autofree(t)
 	await get_tree().process_frame
 	t.refresh()  # Bez crasha

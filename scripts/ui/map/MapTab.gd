@@ -1,4 +1,4 @@
-class_name MapaTab
+class_name MapTab
 extends HBoxContainer
 
 signal navigate_to_diplomacy(religion_id: String)

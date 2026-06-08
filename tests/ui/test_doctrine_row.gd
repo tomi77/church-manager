@@ -1,6 +1,6 @@
 extends GutTest
 
-const DoctrineRowScene := preload("res://scenes/ui/wiara/DoctrineRow.tscn")
+const DoctrineRowScene := preload("res://scenes/ui/faith/DoctrineRow.tscn")
 
 func _instance_row() -> DoctrineRow:
 	var r: DoctrineRow = DoctrineRowScene.instantiate()

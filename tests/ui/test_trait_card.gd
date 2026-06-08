@@ -1,6 +1,6 @@
 extends GutTest
 
-const TraitCardScene := preload("res://scenes/ui/wiara/TraitCard.tscn")
+const TraitCardScene := preload("res://scenes/ui/faith/TraitCard.tscn")
 const GameStateScript := preload("res://scripts/engine/GameState.gd")
 
 func _make_state(player_id: String = "islam") -> Node:

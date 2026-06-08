@@ -9,11 +9,11 @@ custom_minimum_size = Vector2(0, 36)
 
 [node name="MapaContainer" type="HBoxContainer" parent="."]
 
-[node name="MapaButton" type="Button" parent="MapaContainer"]
+[node name="MapButton" type="Button" parent="MapaContainer"]
 unique_name_in_owner = true
 text = "🗺 Mapa"
 
-[node name="MapaDot" type="ColorRect" parent="MapaContainer"]
+[node name="MapDot" type="ColorRect" parent="MapaContainer"]
 unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(6, 6)
@@ -21,11 +21,11 @@ color = Color(1, 0.4, 0.4, 1)
 
 [node name="WiaraContainer" type="HBoxContainer" parent="."]
 
-[node name="WiaraButton" type="Button" parent="WiaraContainer"]
+[node name="FaithButton" type="Button" parent="WiaraContainer"]
 unique_name_in_owner = true
 text = "🕌 Wiara"
 
-[node name="WiaraDot" type="ColorRect" parent="WiaraContainer"]
+[node name="FaithDot" type="ColorRect" parent="WiaraContainer"]
 unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(6, 6)
@@ -33,11 +33,11 @@ color = Color(1, 0.4, 0.4, 1)
 
 [node name="SwiatContainer" type="HBoxContainer" parent="."]
 
-[node name="SwiatButton" type="Button" parent="SwiatContainer"]
+[node name="WorldButton" type="Button" parent="SwiatContainer"]
 unique_name_in_owner = true
 text = "🌍 Świat"
 
-[node name="SwiatDot" type="ColorRect" parent="SwiatContainer"]
+[node name="WorldDot" type="ColorRect" parent="SwiatContainer"]
 unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(6, 6)
@@ -45,11 +45,11 @@ color = Color(1, 0.4, 0.4, 1)
 
 [node name="FrakcjeContainer" type="HBoxContainer" parent="."]
 
-[node name="FrakcjeButton" type="Button" parent="FrakcjeContainer"]
+[node name="FactionsButton" type="Button" parent="FrakcjeContainer"]
 unique_name_in_owner = true
 text = "👥 Frakcje"
 
-[node name="FrakcjeDot" type="ColorRect" parent="FrakcjeContainer"]
+[node name="FactionsDot" type="ColorRect" parent="FrakcjeContainer"]
 unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(6, 6)

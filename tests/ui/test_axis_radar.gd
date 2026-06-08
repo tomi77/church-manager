@@ -1,6 +1,6 @@
 extends GutTest
 
-const AxisRadarScene := preload("res://scenes/ui/wiara/AxisRadar.tscn")
+const AxisRadarScene := preload("res://scenes/ui/faith/AxisRadar.tscn")
 const GameStateScript := preload("res://scripts/engine/GameState.gd")
 
 func _make_state() -> Node:

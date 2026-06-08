@@ -3,23 +3,23 @@ extends HBoxContainer
 
 signal tab_changed(tab_id: String)
 
-const TABS := ["mapa", "wiara", "swiat", "frakcje"]
-const LABELS := {"mapa": "🗺 Mapa", "wiara": "🕌 Wiara", "swiat": "🌍 Świat", "frakcje": "👥 Frakcje"}
+const TABS := ["map", "faith", "world", "factions"]
+const LABELS := {"map": "🗺 Mapa", "faith": "🕌 Wiara", "world": "🌍 Świat", "factions": "👥 Frakcje"}
 
-var current_tab: String = "swiat"
+var current_tab: String = "world"
 var state: Node = null
 
 @onready var _buttons := {
-	"mapa": %MapaButton,
-	"wiara": %WiaraButton,
-	"swiat": %SwiatButton,
-	"frakcje": %FrakcjeButton,
+	"map": %MapButton,
+	"faith": %FaithButton,
+	"world": %WorldButton,
+	"factions": %FactionsButton,
 }
 @onready var _dots := {
-	"mapa": %MapaDot,
-	"wiara": %WiaraDot,
-	"swiat": %SwiatDot,
-	"frakcje": %FrakcjeDot,
+	"map": %MapDot,
+	"faith": %FaithDot,
+	"world": %WorldDot,
+	"factions": %FactionsDot,
 }
 
 func _ready() -> void:
@@ -59,14 +59,14 @@ func _should_alert(tab_id: String) -> bool:
 	var player: Religion = state.get_player_religion()
 	if player == null:
 		return false
-	if tab_id == "swiat":
+	if tab_id == "world":
 		# Alert gdy koalicja przeciw graczowi LUB grievance window aktywne
 		for c: Coalition in state.active_coalitions:
 			if c.target_id == player.id:
 				return true
 		if player.interdict_grievance_until > state.current_turn and player.interdict_grievance_from_id != "":
 			return true
-	elif tab_id == "frakcje":
+	elif tab_id == "factions":
 		var dom: Faction = player.dominant_faction()
 		if dom != null and dom.tension > UIConstants.TENSION_ALERT_THRESHOLD:
 			return true

@@ -1,6 +1,6 @@
 extends GutTest
 
-const DoctrineListScene := preload("res://scenes/ui/wiara/DoctrineList.tscn")
+const DoctrineListScene := preload("res://scenes/ui/faith/DoctrineList.tscn")
 const GameStateScript := preload("res://scripts/engine/GameState.gd")
 
 func _make_state() -> Node:

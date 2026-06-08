@@ -15,14 +15,14 @@ func _instance_shell(state: Node) -> Node:
 	add_child_autofree(shell)
 	await get_tree().process_frame
 	shell.bind_state(state)
-	shell.set_current_tab("mapa")
+	shell.set_current_tab("map")
 	return shell
 
 func test_full_flow_click_province_open_panel():
 	var state := _make_state()
 	add_child_autofree(state)
 	var shell := await _instance_shell(state)
-	var mapa_tab = shell.get_node("%MapaTab")
+	var mapa_tab = shell.get_node("%MapTab")
 	var map_view: MapView = mapa_tab.get_node("%MapView")
 	var lewant_node: ProvinceNode = map_view.get_node_for_id("lewant")
 	lewant_node.get_node("%ClickArea").emit_signal("pressed")
@@ -30,11 +30,11 @@ func test_full_flow_click_province_open_panel():
 	assert_true(panel.visible)
 	assert_eq(panel.current_province_id, "lewant")
 
-func test_navigate_switches_to_swiat_tab():
+func test_navigate_switches_to_world_tab():
 	var state := _make_state()
 	add_child_autofree(state)
 	var shell := await _instance_shell(state)
-	var mapa_tab = shell.get_node("%MapaTab")
+	var mapa_tab = shell.get_node("%MapTab")
 	var map_view: MapView = mapa_tab.get_node("%MapView")
 	var lewant_node: ProvinceNode = map_view.get_node_for_id("lewant")
 	lewant_node.get_node("%ClickArea").emit_signal("pressed")
@@ -43,7 +43,7 @@ func test_navigate_switches_to_swiat_tab():
 	var actions = panel.get_node("%Actions")
 	actions.get_node("%DiplomacyButton").emit_signal("pressed")
 	var tab_bar = shell.get_node("%TabBar")
-	assert_eq(tab_bar.current_tab, "swiat")
+	assert_eq(tab_bar.current_tab, "world")
 
 func test_missionaries_action_advances_engine_state():
 	var state := _make_state()
@@ -58,7 +58,7 @@ func test_missionaries_action_advances_engine_state():
 	islam.shift_axis("C", DiplomacyManager.MISSIONARIES_EXCLUSIVITY_BLOCK + 10.0 - islam.get_axis("C"))
 
 	var shell := await _instance_shell(state)
-	var mapa_tab = shell.get_node("%MapaTab")
+	var mapa_tab = shell.get_node("%MapTab")
 	var map_view: MapView = mapa_tab.get_node("%MapView")
 	var lewant_node: ProvinceNode = map_view.get_node_for_id("lewant")
 	lewant_node.get_node("%ClickArea").emit_signal("pressed")

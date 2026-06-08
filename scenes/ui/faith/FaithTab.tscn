@@ -1,11 +1,11 @@
 [gd_scene load_steps=5 format=3]
 
-[ext_resource type="Script" path="res://scripts/ui/wiara/WiaraTab.gd" id="1"]
-[ext_resource type="PackedScene" path="res://scenes/ui/wiara/AxisRadar.tscn" id="2"]
-[ext_resource type="PackedScene" path="res://scenes/ui/wiara/TraitCard.tscn" id="3"]
-[ext_resource type="PackedScene" path="res://scenes/ui/wiara/DoctrineList.tscn" id="4"]
+[ext_resource type="Script" path="res://scripts/ui/faith/FaithTab.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/ui/faith/AxisRadar.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/ui/faith/TraitCard.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/ui/faith/DoctrineList.tscn" id="4"]
 
-[node name="WiaraTab" type="Control"]
+[node name="FaithTab" type="Control"]
 script = ExtResource("1")
 anchor_right = 1.0
 anchor_bottom = 1.0

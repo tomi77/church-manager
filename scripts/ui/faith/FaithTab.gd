@@ -1,4 +1,4 @@
-class_name WiaraTab
+class_name FaithTab
 extends Control
 
 var state: Node = null

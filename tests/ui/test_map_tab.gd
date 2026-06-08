@@ -1,6 +1,6 @@
 extends GutTest
 
-const MapaTabScene := preload("res://scenes/ui/map/MapaTab.tscn")
+const MapTabScene := preload("res://scenes/ui/map/MapTab.tscn")
 const GameStateScript := preload("res://scripts/engine/GameState.gd")
 
 func _make_state() -> Node:
@@ -10,8 +10,8 @@ func _make_state() -> Node:
 	gs.initialize("islam", religions, graph)
 	return gs
 
-func _instance(state: Node) -> MapaTab:
-	var t: MapaTab = MapaTabScene.instantiate()
+func _instance(state: Node) -> MapTab:
+	var t: MapTab = MapTabScene.instantiate()
 	add_child_autofree(t)
 	await get_tree().process_frame
 	t.bind_state(state)

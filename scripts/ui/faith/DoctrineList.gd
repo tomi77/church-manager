@@ -1,7 +1,7 @@
 class_name DoctrineList
 extends VBoxContainer
 
-const DoctrineRowScene := preload("res://scenes/ui/wiara/DoctrineRow.tscn")
+const DoctrineRowScene := preload("res://scenes/ui/faith/DoctrineRow.tscn")
 const AXIS_ORDER: Array = ["A", "B", "C"]
 
 var state: Node = null

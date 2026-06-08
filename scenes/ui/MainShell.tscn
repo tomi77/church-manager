@@ -5,8 +5,8 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/TabBar.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PlaceholderTab.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/ui/world/WorldTab.tscn" id="5"]
-[ext_resource type="PackedScene" path="res://scenes/ui/map/MapaTab.tscn" id="6"]
-[ext_resource type="PackedScene" path="res://scenes/ui/wiara/WiaraTab.tscn" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/ui/map/MapTab.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/ui/faith/FaithTab.tscn" id="7"]
 
 [node name="MainShell" type="Control"]
 script = ExtResource("1")
@@ -28,17 +28,17 @@ unique_name_in_owner = true
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="MapaTab" parent="VBox/ContentArea" instance=ExtResource("6")]
+[node name="MapTab" parent="VBox/ContentArea" instance=ExtResource("6")]
 unique_name_in_owner = true
 visible = false
 
-[node name="WiaraTab" parent="VBox/ContentArea" instance=ExtResource("7")]
+[node name="FaithTab" parent="VBox/ContentArea" instance=ExtResource("7")]
 unique_name_in_owner = true
 visible = false
 
-[node name="SwiatTab" parent="VBox/ContentArea" instance=ExtResource("5")]
+[node name="WorldTab" parent="VBox/ContentArea" instance=ExtResource("5")]
 unique_name_in_owner = true
 
-[node name="FrakcjeTab" parent="VBox/ContentArea" instance=ExtResource("4")]
+[node name="FactionsTab" parent="VBox/ContentArea" instance=ExtResource("4")]
 unique_name_in_owner = true
 visible = false
