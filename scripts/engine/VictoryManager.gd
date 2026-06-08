@@ -37,8 +37,52 @@ const MANICHAEISM_DISTINCT_SOURCES_REQUIRED := 4
 # === Public API (implementacja w kolejnych taskach) ===
 
 func check(state: Node) -> void:
-	# Spec §6: główny entry point. Pełna pipeline w Task 13.
-	pass
+	# Spec §6: pełna pipeline. Pomijamy jeśli gra już zakończona.
+	if state.game_outcome != null:
+		return
+	update_flags(state)
+	update_counters(state)
+	# Lista religii sortowana deterministycznie po id ASC (krok 4 spec).
+	var religions: Array[Religion] = []
+	for r: Religion in state.all_religions():
+		if r.defeated_at_turn == -1:
+			religions.append(r)
+	religions.sort_custom(func(a: Religion, b: Religion) -> bool: return a.id < b.id)
+
+	# Krok 4: sprawdź zwycięstwa
+	for religion: Religion in religions:
+		if _is_in_schism_grace(religion, state):
+			continue
+		var reason: String = evaluate_unique_victory(religion, state)
+		if reason == "":
+			reason = evaluate_universal_victory(religion, state)
+		if reason != "":
+			_set_outcome(state, religion.id, reason)
+			return
+
+	# Krok 5: sprawdź przegrane
+	for religion: Religion in religions:
+		var defeat_reason: String = evaluate_defeat(religion, state)
+		if defeat_reason != "":
+			religion.defeated_at_turn = state.current_turn
+
+	# Krok 6: turn limit fallback
+	if state.current_turn >= TURN_LIMIT:
+		var ranking := compute_ranking(state, true)
+		if ranking.size() > 0:
+			_set_outcome(state, ranking[0]["religion_id"], "turn_limit")
+
+func _is_in_schism_grace(religion: Religion, state: Node) -> bool:
+	return religion.parent_religion_id != "" \
+			and state.current_turn - religion.birth_turn < SCHISM_GRACE_TURNS
+
+func _set_outcome(state: Node, winner_id: String, reason: String) -> void:
+	var outcome := GameOutcome.new()
+	outcome.winner_id = winner_id
+	outcome.reason = reason
+	outcome.end_turn = state.current_turn
+	outcome.ranking = compute_ranking(state, true)
+	state.game_outcome = outcome
 
 func update_flags(state: Node) -> void:
 	# Spec §6 krok 2: ever_owned_province i ragnarok_triggered są trwałymi flagami
@@ -224,4 +268,19 @@ func evaluate_defeat(religion: Religion, state: Node) -> String:
 	return ""
 
 func compute_ranking(state: Node, exclude_defeated: bool = true) -> Array:
-	return []
+	var entries: Array = []
+	for r: Religion in state.all_religions():
+		if exclude_defeated and r.defeated_at_turn != -1:
+			continue
+		entries.append({
+			"religion_id": r.id,
+			"prestige": r.prestige,
+			"provinces": state.province_graph.provinces_with_owner(r.id).size(),
+		})
+	# DESC po prestiżu, tie-break po id ASC
+	entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		if a["prestige"] != b["prestige"]:
+			return a["prestige"] > b["prestige"]
+		return a["religion_id"] < b["religion_id"]
+	)
+	return entries
