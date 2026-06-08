@@ -18,6 +18,9 @@ func process_turn(state: Node) -> void:
 	_process_resources(state)
 	_process_vassal_revolts(state)
 	state.advance_turn()
+	# Spec 12 §6: po advance_turn — sprawdzenie zwycięstwa / przegranej / cap turowego
+	var vm := VictoryManager.new()
+	vm.check(state)
 
 func _apply_passive_pressure(graph: ProvinceGraph) -> void:
 	for province: Province in graph.all_provinces():
