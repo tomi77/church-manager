@@ -285,12 +285,13 @@ func test_compute_strength_terrain_modifier_only_for_defender() -> void:
 	# eastern_christianity vladnie armenia (mountains, pop=200)
 	var target: Province = gs.province_graph.get_province("armenia")
 	var war := _make_war_for("islam", "eastern_christianity", "", gs)
-	# Suma populacji eastern_christianity: lewant(300) + jerozolima(150) + anatolia(400) + konstantynopol(600) + armenia(200) = 1650
-	# Baza: 1650 * 0.1 + 100 * 2.0 = 165 + 200 = 365
+	# Suma populacji eastern_christianity (Plan 14): lewant(300) + jerozolima(150) + anatolia(400)
+	# + konstantynopol(600) + armenia(200) + libia(200) + karthago(300) = 2150
+	# Baza: 2150 * 0.1 + 100 * 2.0 = 215 + 200 = 415
 	# Modyfikator terenu (mountains): +0.15 dla broniącego
-	# 365 * 1.15 = 419.75
+	# 415 * 1.15 = 477.25
 	var strength := wm.compute_army_strength(rel, target, war, gs)
-	assert_almost_eq(strength, 419.75, 0.5)
+	assert_almost_eq(strength, 477.25, 0.5)
 
 func test_compute_strength_terrain_modifier_skipped_for_attacker() -> void:
 	var wm := WarManagerScript.new()
