@@ -213,6 +213,14 @@ func _germanic_ragnarok_satisfied(religion: Religion, state: Node) -> bool:
 	return true
 
 func evaluate_defeat(religion: Religion, state: Node) -> String:
+	# Spec §5: D1 (elimination) i D2 (long_vassalage), oba wymagają ever_owned_province.
+	if not religion.ever_owned_province:
+		return ""
+	var dp: Dictionary = state.defeat_progress.get(religion.id, {})
+	if dp.get("zero_provinces_turns", 0) >= ELIMINATION_TURNS_REQUIRED:
+		return "elimination"
+	if dp.get("vassalage_turns", 0) >= VASSAL_DEFEAT_TURNS_REQUIRED:
+		return "long_vassalage"
 	return ""
 
 func compute_ranking(state: Node, exclude_defeated: bool = true) -> Array:
