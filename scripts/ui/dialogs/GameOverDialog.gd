@@ -30,6 +30,11 @@ const REASON_LABELS: Dictionary = {
 	"turn_limit": "Koniec ery (limit 200 tur)",
 	"elimination": "Eliminacja",
 	"long_vassalage": "Długi wasal",
+	# Plan 13:
+	"total_schism": "Totalna Schizma",
+	"western_reformation": "Reformacja Apostolska (Chrześcijaństwo Zachodnie)",
+	"hindu_dharma": "Dharmiczna Trwałość (Hinduizm)",
+	"buddhism_middle_way": "Środkowa Droga Globalna (Buddyzm)",
 }
 
 var _state: Node = null

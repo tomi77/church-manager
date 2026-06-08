@@ -40,12 +40,30 @@ func test_dialog_maps_all_reasons_to_non_empty_polish_labels():
 	var reasons := ["domination", "prestige_hegemony", "holy_land",
 		"manichaeism_illumination", "judaism_return", "zoroastrianism_renaissance",
 		"east_christianity_pentarchy", "islam_caliphate", "germanic_ragnarok",
-		"turn_limit", "elimination", "long_vassalage"]
+		"turn_limit", "elimination", "long_vassalage",
+		# Plan 13:
+		"total_schism", "western_reformation", "hindu_dharma", "buddhism_middle_way"]
 	for r: String in reasons:
 		var outcome := _make_outcome("islam", r)
 		dialog.show_outcome(outcome)
 		var text: String = dialog.get_reason_text()
 		assert_ne(text, "", "Reason " + r + " powinien mieć etykietę")
+
+func test_dialog_maps_plan13_reasons_to_polish_labels():
+	# Plan 13: weryfikacja polskich etykiet dla 4 nowych reasonów
+	var dialog := _instantiate()
+	var expected_labels := {
+		"total_schism": "Totalna Schizma",
+		"western_reformation": "Reformacja Apostolska",
+		"hindu_dharma": "Dharmiczna Trwałość",
+		"buddhism_middle_way": "Środkowa Droga Globalna",
+	}
+	for reason: String in expected_labels:
+		var outcome := _make_outcome("islam", reason)
+		dialog.show_outcome(outcome)
+		var text: String = dialog.get_reason_text()
+		assert_true(text.contains(expected_labels[reason]),
+			"Reason " + reason + " powinien zawierać '" + expected_labels[reason] + "', miał: " + text)
 
 func test_dialog_shows_end_turn():
 	var dialog := _instantiate()
