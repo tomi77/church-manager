@@ -41,7 +41,25 @@ func check(state: Node) -> void:
 	pass
 
 func update_flags(state: Node) -> void:
-	pass
+	# Spec §6 krok 2: ever_owned_province i ragnarok_triggered są trwałymi flagami
+	# — raz ustawione nigdy nie resetują się. Pomijamy pokonane religie.
+	for religion: Religion in state.all_religions():
+		if religion.defeated_at_turn != -1:
+			continue
+		var owned_count: int = state.province_graph.provinces_with_owner(religion.id).size()
+		if owned_count > 0 and not religion.ever_owned_province:
+			religion.ever_owned_province = true
+		# Ragnarök — tylko germanic_paganism, snapshot niepusty, jeszcze nie wytrigerowane
+		if religion.id == "germanic_paganism" and not religion.ragnarok_triggered \
+				and religion.starting_provinces_snapshot.size() > 0:
+			var current_from_snapshot: int = 0
+			for pid: String in religion.starting_provinces_snapshot:
+				var p: Province = state.province_graph.get_province(pid)
+				if p != null and p.owner == religion.id:
+					current_from_snapshot += 1
+			# Utracone >50% = obecnie kontrolowane ≤ snapshot.size() / 2 (integer division)
+			if current_from_snapshot * 2 <= religion.starting_provinces_snapshot.size():
+				religion.ragnarok_triggered = true
 
 func update_counters(state: Node) -> void:
 	pass
