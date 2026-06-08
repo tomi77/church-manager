@@ -3,10 +3,10 @@
 [ext_resource type="Script" path="res://scripts/ui/MainShell.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/ui/Header.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/ui/TabBar.tscn" id="3"]
-[ext_resource type="PackedScene" path="res://scenes/ui/PlaceholderTab.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/ui/world/WorldTab.tscn" id="5"]
 [ext_resource type="PackedScene" path="res://scenes/ui/map/MapTab.tscn" id="6"]
 [ext_resource type="PackedScene" path="res://scenes/ui/faith/FaithTab.tscn" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/ui/factions/FactionsTab.tscn" id="8"]
 
 [node name="MainShell" type="Control"]
 script = ExtResource("1")
@@ -39,6 +39,6 @@ visible = false
 [node name="WorldTab" parent="VBox/ContentArea" instance=ExtResource("5")]
 unique_name_in_owner = true
 
-[node name="FactionsTab" parent="VBox/ContentArea" instance=ExtResource("4")]
+[node name="FactionsTab" parent="VBox/ContentArea" instance=ExtResource("8")]
 unique_name_in_owner = true
 visible = false

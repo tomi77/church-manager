@@ -34,12 +34,19 @@ func test_shell_tab_change_switches_visible_content():
 	assert_true(shell.get_node("%FaithTab").visible)
 	assert_false(shell.get_node("%WorldTab").visible)
 
-func test_shell_frakcje_placeholder_has_correct_title():
+func test_shell_instantiates_factions_tab_as_real_component():
 	var state := _make_state()
 	add_child_autofree(state)
 	var shell := await _instance_shell(state)
-	var frakcje: PlaceholderTab = shell.get_node("%FactionsTab")
-	assert_string_contains(frakcje.title, "Plan 11")
+	var factions = shell.get_node("%FactionsTab")
+	assert_true(factions is FactionsTab, "FactionsTab should be a FactionsTab instance, not PlaceholderTab")
+
+func test_shell_binds_state_to_factions_tab():
+	var state := _make_state()
+	add_child_autofree(state)
+	var shell := await _instance_shell(state)
+	var factions: FactionsTab = shell.get_node("%FactionsTab")
+	assert_eq(factions.state, state)
 
 func test_shell_instantiates_faith_tab_as_real_component():
 	var state := _make_state()
