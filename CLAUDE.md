@@ -44,7 +44,7 @@ The engine layer is split into **data classes** (resources/data containers — `
 
 ### UI architecture
 
-- **`MainShell`** (`scripts/ui/MainShell.gd` + `.tscn`) is the root Control. Contains `Header` (player info + End Turn) + `TabBar` + 4 tabs in `ContentArea`: `MapTab` (Plan 09), `FaithTab` (Plan 10), `WorldTab` (diplomacy, Plan 08), `FactionsTab` (placeholder). Tab IDs are `"map" / "faith" / "world" / "factions"`. Tab visibility flips via `_on_tab_changed`.
+- **`MainShell`** (`scripts/ui/MainShell.gd` + `.tscn`) is the root Control. Contains `Header` (player info + End Turn) + `TabBar` + 4 tabs in `ContentArea`: `MapTab` (Plan 09), `FaithTab` (Plan 10), `WorldTab` (diplomacy, Plan 08), `FactionsTab` (Plan 11). Tab IDs are `"map" / "faith" / "world" / "factions"`. Tab visibility flips via `_on_tab_changed`.
 - **Cross-tab navigation:** `MapTab` emits `navigate_to_diplomacy(religion_id)` → MainShell switches tab to `"world"` and calls `WorldTab.preselect_religion(id)`.
 - **Refresh model:** every component has `bind_state(state)` and `refresh()`. After engine mutations, the chain `state_changed` signal → `MainShell.refresh()` → tab refresh causes a full rerender (no dirty-tracking). MapTab's `ProvinceDetailPanel` additionally refreshes itself on `war_declared` / `missionaries_sent` for immediate feedback.
 - **Identifier language:** all code identifiers (class names, file names, variables, signal names, religion/trait/faction/doctrine IDs) are English. Polish appears only in user-facing strings (`Label.text`, `display_name` in JSON), comments, commit messages, and `docs/` specs/plans.
