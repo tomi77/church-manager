@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/MainShell.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/ui/Header.tscn" id="2"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/PlaceholderTab.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/ui/world/WorldTab.tscn" id="5"]
 [ext_resource type="PackedScene" path="res://scenes/ui/map/MapaTab.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/ui/wiara/WiaraTab.tscn" id="7"]
 
 [node name="MainShell" type="Control"]
 script = ExtResource("1")
@@ -31,7 +32,7 @@ size_flags_vertical = 3
 unique_name_in_owner = true
 visible = false
 
-[node name="WiaraTab" parent="VBox/ContentArea" instance=ExtResource("4")]
+[node name="WiaraTab" parent="VBox/ContentArea" instance=ExtResource("7")]
 unique_name_in_owner = true
 visible = false
 

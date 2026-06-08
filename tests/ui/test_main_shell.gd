@@ -34,14 +34,26 @@ func test_shell_tab_change_switches_visible_content():
 	assert_true(shell.get_node("%WiaraTab").visible)
 	assert_false(shell.get_node("%SwiatTab").visible)
 
-func test_shell_wiara_frakcje_placeholders_have_correct_titles():
+func test_shell_frakcje_placeholder_has_correct_title():
 	var state := _make_state()
 	add_child_autofree(state)
 	var shell := await _instance_shell(state)
-	var wiara: PlaceholderTab = shell.get_node("%WiaraTab")
 	var frakcje: PlaceholderTab = shell.get_node("%FrakcjeTab")
-	assert_string_contains(wiara.title, "Plan 10")
 	assert_string_contains(frakcje.title, "Plan 11")
+
+func test_shell_instantiates_wiara_tab_as_real_component():
+	var state := _make_state()
+	add_child_autofree(state)
+	var shell := await _instance_shell(state)
+	var wiara = shell.get_node("%WiaraTab")
+	assert_true(wiara is WiaraTab, "WiaraTab should be a WiaraTab instance, not PlaceholderTab")
+
+func test_shell_binds_state_to_wiara_tab():
+	var state := _make_state()
+	add_child_autofree(state)
+	var shell := await _instance_shell(state)
+	var wiara: WiaraTab = shell.get_node("%WiaraTab")
+	assert_eq(wiara.state, state)
 
 func test_main_shell_renders_map_view_in_mapa_tab():
 	var state := _make_state()
