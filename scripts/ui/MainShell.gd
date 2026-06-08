@@ -1,6 +1,8 @@
 class_name MainShell
 extends Control
 
+const GameOverDialogScene := preload("res://scenes/ui/dialogs/GameOverDialog.tscn")
+
 @onready var _header: Header = %Header
 @onready var _tab_bar: UITabBar = %TabBar
 @onready var _content := %ContentArea
@@ -10,6 +12,11 @@ extends Control
 @onready var _factions_tab: FactionsTab = %FactionsTab
 
 var state: Node = null
+
+# Flagi zapobiegające ponownemu pokazaniu modalu przy każdym refresh().
+var _shown_outcome_modal: bool = false
+var _shown_defeat_modal: bool = false
+var _active_dialog: GameOverDialog = null
 
 func _ready() -> void:
 	_tab_bar.tab_changed.connect(_on_tab_changed)
@@ -44,6 +51,65 @@ func refresh() -> void:
 	_factions_tab.refresh()
 	if _world_tab.has_method("refresh"):
 		_world_tab.refresh()
+	_refresh_game_over_state()
+
+func _refresh_game_over_state() -> void:
+	if state == null:
+		return
+	# 1) Sprawdź game_outcome (wygrana / cap turowy)
+	if state.game_outcome != null and not _shown_outcome_modal:
+		_shown_outcome_modal = true
+		_show_outcome_dialog(state.game_outcome)
+		_header.set_end_turn_enabled(false)
+		return
+	# 2) Sprawdź czy gracz przegrał (defeated_at_turn != -1)
+	if not _shown_defeat_modal:
+		var player: Religion = state.get_player_religion()
+		if player != null and player.defeated_at_turn != -1:
+			_shown_defeat_modal = true
+			_show_player_defeat_dialog(player)
+
+func _show_outcome_dialog(outcome: GameOutcome) -> void:
+	_active_dialog = GameOverDialogScene.instantiate()
+	add_child(_active_dialog)
+	_active_dialog.bind_state(state)
+	_active_dialog.show_outcome(outcome)
+	_active_dialog.new_game_pressed.connect(_on_new_game_pressed)
+	_active_dialog.closed.connect(_on_dialog_closed)
+
+func _show_player_defeat_dialog(player: Religion) -> void:
+	_active_dialog = GameOverDialogScene.instantiate()
+	add_child(_active_dialog)
+	_active_dialog.bind_state(state)
+	# Powód deduktujemy z stanu: suzerain_id != "" = long_vassalage, w przeciwnym razie elimination
+	var reason := "elimination"
+	if player.suzerain_id != "":
+		reason = "long_vassalage"
+	_active_dialog.show_player_defeat(player.id, reason)
+	_active_dialog.new_game_pressed.connect(_on_new_game_pressed)
+	_active_dialog.closed.connect(_on_dialog_closed)
+
+func _on_new_game_pressed() -> void:
+	if state != null and state.has_method("reset"):
+		state.reset()
+	get_tree().change_scene_to_file("res://scenes/Main.tscn")
+
+func _on_dialog_closed() -> void:
+	if _active_dialog != null:
+		_active_dialog.queue_free()
+		_active_dialog = null
+
+# Test helpers — publiczne by testy mogły inspekcjonować stan modalu.
+
+func get_active_game_over_dialog_count() -> int:
+	var count: int = 0
+	for child in get_children():
+		if child is GameOverDialog:
+			count += 1
+	return count
+
+func is_end_turn_disabled() -> bool:
+	return _header.is_end_turn_disabled()
 
 func _on_tab_changed(tab_id: String) -> void:
 	_map_tab.visible = tab_id == "map"
