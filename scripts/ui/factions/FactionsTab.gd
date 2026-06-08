@@ -26,7 +26,7 @@ func refresh() -> void:
 		child.queue_free()
 	if state == null:
 		return
-	var religion: Religion = state.get_player_religion() if state.has_method("get_player_religion") else null
+	var religion: Religion = state.get_player_religion()
 	if religion == null:
 		return
 	var dominant: Faction = religion.dominant_faction()

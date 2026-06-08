@@ -125,6 +125,7 @@ func test_tab_refresh_rebuilds_on_faction_removed():
 	assert_eq(_cards(t).size(), 3)
 	state.get_player_religion().factions.pop_back()
 	t.refresh()
+	# queue_free jest deferred — czekamy na frame zeby stare karty zniknely
 	await get_tree().process_frame
 	assert_eq(_cards(t).size(), 2)
 
