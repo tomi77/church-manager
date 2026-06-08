@@ -38,3 +38,114 @@ func test_game_state_all_religions_loaded() -> void:
 	var gs := _make_state()
 	var religions: Array = gs.all_religions()
 	assert_eq(religions.size(), 12)
+
+func _fresh_state() -> Node:
+	# Helper: GameState bez initialize, gołe pola domyślne.
+	return GameStateScript.new()
+
+func test_game_outcome_defaults_to_null():
+	var gs := _fresh_state()
+	assert_null(gs.game_outcome)
+
+func test_victory_progress_defaults_to_empty_dict():
+	var gs := _fresh_state()
+	assert_eq(gs.victory_progress.size(), 0)
+
+func test_defeat_progress_defaults_to_empty_dict():
+	var gs := _fresh_state()
+	assert_eq(gs.defeat_progress.size(), 0)
+
+func test_is_game_over_false_when_outcome_null():
+	var gs := _fresh_state()
+	assert_false(gs.is_game_over())
+
+func test_is_game_over_true_when_outcome_set():
+	var gs := _fresh_state()
+	gs.game_outcome = GameOutcome.new()
+	assert_true(gs.is_game_over())
+
+func test_reset_clears_current_turn_to_one():
+	var gs := _fresh_state()
+	gs.current_turn = 87
+	gs.reset()
+	assert_eq(gs.current_turn, 1)
+
+func test_reset_clears_player_religion_id():
+	var gs := _fresh_state()
+	gs.player_religion_id = "islam"
+	gs.reset()
+	assert_eq(gs.player_religion_id, "")
+
+func test_reset_clears_province_graph():
+	var gs := _fresh_state()
+	gs.province_graph = ProvinceGraph.new()
+	gs.reset()
+	assert_null(gs.province_graph)
+
+func test_reset_clears_religions():
+	var gs := _fresh_state()
+	var r := Religion.new()
+	r.id = "islam"
+	gs.add_religion(r)
+	gs.reset()
+	assert_eq(gs.all_religions().size(), 0)
+
+func test_reset_clears_pending_ideas():
+	var gs := _fresh_state()
+	gs.pending_ideas.append(Idea.new())
+	gs.reset()
+	assert_eq(gs.pending_ideas.size(), 0)
+
+func test_reset_clears_scholar_missions():
+	var gs := _fresh_state()
+	gs.scholar_missions.append({"x": 1})
+	gs.reset()
+	assert_eq(gs.scholar_missions.size(), 0)
+
+func test_reset_clears_active_wars():
+	var gs := _fresh_state()
+	gs.active_wars.append(War.new())
+	gs.reset()
+	assert_eq(gs.active_wars.size(), 0)
+
+func test_reset_clears_pending_defeat_events():
+	var gs := _fresh_state()
+	gs.pending_defeat_events.append(DefeatEvent.new())
+	gs.reset()
+	assert_eq(gs.pending_defeat_events.size(), 0)
+
+func test_reset_clears_relations():
+	var gs := _fresh_state()
+	gs.relations.append(RelationState.new())
+	gs.reset()
+	assert_eq(gs.relations.size(), 0)
+
+func test_reset_clears_active_coalitions():
+	var gs := _fresh_state()
+	gs.active_coalitions.append(Coalition.new())
+	gs.reset()
+	assert_eq(gs.active_coalitions.size(), 0)
+
+func test_reset_clears_missionary_missions():
+	var gs := _fresh_state()
+	gs.missionary_missions.append(MissionaryMission.new())
+	gs.reset()
+	assert_eq(gs.missionary_missions.size(), 0)
+
+func test_reset_clears_game_outcome():
+	var gs := _fresh_state()
+	gs.game_outcome = GameOutcome.new()
+	gs.reset()
+	assert_null(gs.game_outcome)
+
+func test_reset_clears_victory_progress():
+	var gs := _fresh_state()
+	gs.victory_progress["islam"] = {"domination_turns": 5}
+	gs.reset()
+	assert_eq(gs.victory_progress.size(), 0)
+
+func test_reset_clears_defeat_progress():
+	var gs := _fresh_state()
+	gs.defeat_progress["manichaeism"] = {"zero_provinces_turns": 3}
+	gs.reset()
+	assert_eq(gs.defeat_progress.size(), 0)

@@ -13,6 +13,10 @@ var relations: Array[RelationState] = []
 var active_coalitions: Array[Coalition] = []
 var missionary_missions: Array[MissionaryMission] = []
 
+var game_outcome: GameOutcome = null
+var victory_progress: Dictionary = {}	# religion_id → {domination_turns: int, prestige_hegemony_turns: int}
+var defeat_progress: Dictionary = {}	# religion_id → {zero_provinces_turns: int, vassalage_turns: int}
+
 func initialize(player_id: String, religions: Array[Religion], graph: ProvinceGraph) -> void:
 	player_religion_id = player_id
 	province_graph = graph
@@ -37,3 +41,28 @@ func add_religion(religion: Religion) -> void:
 
 func advance_turn() -> void:
 	current_turn += 1
+
+func is_game_over() -> bool:
+	return game_outcome != null
+
+func reset() -> void:
+	# Zeruje wszystkie pola do stanu sprzed initialize(). Wywoływane przez GameOverDialog
+	# "Nowa gra" przed change_scene_to_file. Autoload jest persistent w Godot — brak resetu
+	# powoduje wyciek stanu między grami.
+	#
+	# CRITICAL: gdy w przyszłości dojdzie nowe pole do GameState, MUSI tu trafić.
+	# Test test_reset_* w tests/engine/test_game_state.gd weryfikuje każde pole osobno.
+	current_turn = 1
+	player_religion_id = ""
+	province_graph = null
+	_religions.clear()
+	pending_ideas.clear()
+	scholar_missions.clear()
+	active_wars.clear()
+	pending_defeat_events.clear()
+	relations.clear()
+	active_coalitions.clear()
+	missionary_missions.clear()
+	game_outcome = null
+	victory_progress.clear()
+	defeat_progress.clear()
