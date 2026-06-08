@@ -4,19 +4,15 @@ extends PanelContainer
 @onready var _name_label: Label = %NameLabel
 @onready var _phase_label: Label = %PhaseLabel
 @onready var _influence_value: Label = %InfluenceValue
-@onready var _influence_label: Label = %InfluenceLabel
 @onready var _tension_bar: ProgressBar = %TensionBar
 @onready var _tension_value: Label = %TensionValue
-@onready var _preferences_label: Label = %PreferencesLabel
 @onready var _preferences_list: Label = %PreferencesList
 
 var _faction: Faction = null
-var _religion: Religion = null
 var _is_dominant: bool = false
 
-func bind_faction(faction: Faction, religion: Religion, is_dominant: bool) -> void:
+func bind_faction(faction: Faction, _religion: Religion, is_dominant: bool) -> void:
 	_faction = faction
-	_religion = religion
 	_is_dominant = is_dominant
 	if is_inside_tree():
 		refresh()

@@ -1,14 +1,6 @@
 extends GutTest
 
 const FactionCardScene := preload("res://scenes/ui/factions/FactionCard.tscn")
-const GameStateScript := preload("res://scripts/engine/GameState.gd")
-
-func _make_state(player_id: String = "islam") -> Node:
-	var gs: Node = GameStateScript.new()
-	var religions := ReligionLoader.load_from_file("res://data/religions_historical.json")
-	var graph := ProvinceLoader.load_graph_from_file("res://data/provinces_historical.json")
-	gs.initialize(player_id, religions, graph)
-	return gs
 
 func _instance_card() -> FactionCard:
 	var c: FactionCard = FactionCardScene.instantiate()
