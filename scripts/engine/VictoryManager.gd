@@ -143,7 +143,7 @@ func update_counters(state: Node) -> void:
 		if religion.defeated_at_turn != -1:
 			continue
 		_ensure_progress_entry(state.victory_progress, religion.id, {"domination_turns": 0, "prestige_hegemony_turns": 0})
-		_ensure_progress_entry(state.defeat_progress, religion.id, {"zero_provinces_turns": 0, "vassalage_turns": 0})
+		_ensure_progress_entry(state.defeat_progress, religion.id, {"zero_provinces_turns": 0, "vassalage_turns": 0, "total_schism_turns": 0})
 
 		# Dominacja
 		var owned: int = state.province_graph.provinces_with_owner(religion.id).size()
@@ -172,6 +172,19 @@ func update_counters(state: Node) -> void:
 			state.defeat_progress[religion.id]["vassalage_turns"] += 1
 		else:
 			state.defeat_progress[religion.id]["vassalage_turns"] = 0
+
+		# Plan 13 §4: total_schism — wszystkie 3 frakcje w fazie 3 (tension >= PHASE3_THRESHOLD).
+		# Religie ze schism mają < 3 frakcji (utracona została do nowej religii) — wtedy guard fail.
+		var all_phase_3: bool = religion.factions.size() == 3
+		if all_phase_3:
+			for f: Faction in religion.factions:
+				if f.tension < SchismManager.PHASE3_THRESHOLD:
+					all_phase_3 = false
+					break
+		if all_phase_3:
+			state.defeat_progress[religion.id]["total_schism_turns"] += 1
+		else:
+			state.defeat_progress[religion.id]["total_schism_turns"] = 0
 
 func _ensure_progress_entry(dict: Dictionary, key: String, default: Dictionary) -> void:
 	if not dict.has(key):

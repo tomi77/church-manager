@@ -199,3 +199,68 @@ func test_update_counters_does_not_touch_defeated_religion():
 	vm.update_counters(gs)
 	# Pokonana religia nie podlega aktualizacji liczników
 	assert_false(gs.defeat_progress.has("manichaeism"))
+
+# === Plan 13: total_schism_turns counter ===
+
+func test_update_counters_initializes_total_schism_turns_zero():
+	var gs := _make_state()
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.defeat_progress.get("islam", {})
+	assert_eq(prog.get("total_schism_turns", -1), 0,
+		"po pierwszym update licznik istnieje i jest 0")
+
+func test_update_counters_increments_total_schism_when_all_three_factions_phase_3():
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("islam")
+	# Wszystkie 3 frakcje w fazie 3 (tension >= 85)
+	for f: Faction in rel.factions:
+		f.tension = 90.0
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.defeat_progress.get("islam", {})
+	assert_eq(prog.get("total_schism_turns", 0), 1)
+	vm.update_counters(gs)
+	prog = gs.defeat_progress.get("islam", {})
+	assert_eq(prog.get("total_schism_turns", 0), 2)
+
+func test_update_counters_resets_total_schism_when_one_faction_drops_below_phase_3():
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("islam")
+	# Symulacja: licznik już > 0
+	gs.defeat_progress["islam"] = {"zero_provinces_turns": 0, "vassalage_turns": 0, "total_schism_turns": 1}
+	# Tylko 2 z 3 w fazie 3
+	rel.factions[0].tension = 90.0
+	rel.factions[1].tension = 90.0
+	rel.factions[2].tension = 80.0  # poniżej PHASE3_THRESHOLD
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.defeat_progress.get("islam", {})
+	assert_eq(prog.get("total_schism_turns", 0), 0, "jedna frakcja poniżej → reset")
+
+func test_update_counters_total_schism_requires_exactly_3_factions():
+	# Edge case: religia z != 3 frakcjami (np. po schizmie utraciła frakcję)
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("islam")
+	# Usuwamy jedną frakcję (zostały 2)
+	rel.factions.pop_back()
+	assert_eq(rel.factions.size(), 2)
+	# Obie pozostałe w fazie 3
+	for f: Faction in rel.factions:
+		f.tension = 90.0
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.defeat_progress.get("islam", {})
+	assert_eq(prog.get("total_schism_turns", 0), 0,
+		"religia z mniej niż 3 frakcjami nie inkrementuje (faktyczna schizma już zaszła)")
+
+func test_update_counters_total_schism_does_not_touch_defeated_religion():
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("manichaeism")
+	rel.defeated_at_turn = 50  # pokonana
+	for f: Faction in rel.factions:
+		f.tension = 90.0
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	assert_false(gs.defeat_progress.has("manichaeism"),
+		"pokonana religia nie podlega update_counters")
