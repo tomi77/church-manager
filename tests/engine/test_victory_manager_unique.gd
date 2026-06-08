@@ -322,3 +322,32 @@ func test_islam_caliphate_does_not_crash_when_jerusalem_missing():
 	gs.province_graph._provinces.erase("jerozolima")
 	var vm := VictoryManager.new()
 	assert_eq(vm.evaluate_unique_victory(rel, gs), "")
+
+# === Plan 13: Hinduism ===
+
+func _set_victory_counter(state: Node, rid: String, key: String, value: int) -> void:
+	if not state.victory_progress.has(rid):
+		state.victory_progress[rid] = {"domination_turns": 0, "prestige_hegemony_turns": 0, "dharma_turns": 0}
+	state.victory_progress[rid][key] = value
+
+func test_hindu_dharma_requires_50_turns_counter():
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("hinduism")
+	_set_victory_counter(gs, "hinduism", "dharma_turns", VictoryManager.HINDU_DHARMA_TURNS_REQUIRED)
+	var vm := VictoryManager.new()
+	assert_eq(vm.evaluate_unique_victory(rel, gs), "hindu_dharma")
+
+func test_hindu_dharma_blocked_with_49_turns():
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("hinduism")
+	_set_victory_counter(gs, "hinduism", "dharma_turns", VictoryManager.HINDU_DHARMA_TURNS_REQUIRED - 1)
+	var vm := VictoryManager.new()
+	assert_eq(vm.evaluate_unique_victory(rel, gs), "")
+
+func test_hindu_dharma_blocked_when_counter_missing():
+	# Nigdy nie był aktualizowany counter (np. religia nigdy nie miała ≥ 2 prowincji)
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("hinduism")
+	# victory_progress["hinduism"] nie istnieje
+	var vm := VictoryManager.new()
+	assert_eq(vm.evaluate_unique_victory(rel, gs), "")
