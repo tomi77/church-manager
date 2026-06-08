@@ -28,7 +28,7 @@
       "holy_sites": ["rzym", "jerozolima"],
       "color": "#0a0a2a",
       "accent_color": "#7a7aff",
-      "trait_id": "sukcesja_apostolska",
+      "trait_id": "apostolic_succession",
       "factions": [
         {"id": "papiestwo", "display_name": "Papiestwo", "influence_start": 0.40, "tension_start": 20.0,
          "axis_preferences": [{"axis": "B", "direction": 1}, {"axis": "A", "direction": 1}]},
@@ -47,7 +47,7 @@
       "holy_sites": ["konstantynopol", "jerozolima"],
       "color": "#0a0a22",
       "accent_color": "#6a6aee",
-      "trait_id": "cezaropapizm",
+      "trait_id": "caesaropapism",
       "factions": [
         {"id": "patriarchowie", "display_name": "Patriarchowie", "influence_start": 0.45, "tension_start": 20.0,
          "axis_preferences": [{"axis": "B", "direction": 1}, {"axis": "A", "direction": 1}]},
@@ -85,7 +85,7 @@
       "holy_sites": ["persepolis"],
       "color": "#1a0d00",
       "accent_color": "#cc7a1a",
-      "trait_id": "zmartwychwstanie_saszanskie",
+      "trait_id": "sassanian_resurrection",
       "factions": [
         {"id": "magi_wielcy", "display_name": "Magi Wielcy", "influence_start": 0.45, "tension_start": 20.0,
          "axis_preferences": [{"axis": "B", "direction": 1}, {"axis": "A", "direction": 1}]},
@@ -104,7 +104,7 @@
       "holy_sites": ["aleksandria"],
       "color": "#0d1a10",
       "accent_color": "#4aaa6a",
-      "trait_id": "pamiec_pustynna",
+      "trait_id": "desert_memory",
       "factions": [
         {"id": "papież_aleksandryjski", "display_name": "Papież Aleksandryjski", "influence_start": 0.40, "tension_start": 20.0,
          "axis_preferences": [{"axis": "B", "direction": 1}, {"axis": "A", "direction": 1}]},
@@ -123,7 +123,7 @@
       "holy_sites": [],
       "color": "#180818",
       "accent_color": "#cc55cc",
-      "trait_id": "synkretyzm_radykalny",
+      "trait_id": "radical_syncretism",
       "factions": [
         {"id": "wybrani", "display_name": "Wybrani", "influence_start": 0.45, "tension_start": 20.0,
          "axis_preferences": [{"axis": "D", "direction": 1}, {"axis": "C", "direction": 1}]},
@@ -142,7 +142,7 @@
       "holy_sites": ["mekka"],
       "color": "#1a1000",
       "accent_color": "#dd9922",
-      "trait_id": "pluralizm_plemienny",
+      "trait_id": "tribal_pluralism",
       "factions": [
         {"id": "straznicy_kaaby", "display_name": "Strażnicy Kaaby", "influence_start": 0.40, "tension_start": 20.0,
          "axis_preferences": [{"axis": "C", "direction": 1}, {"axis": "B", "direction": -1}]},
@@ -161,7 +161,7 @@
       "holy_sites": ["varanasi"],
       "color": "#1a0808",
       "accent_color": "#ee5533",
-      "trait_id": "dharma_i_varna",
+      "trait_id": "dharma_and_varna",
       "factions": [
         {"id": "brahmani", "display_name": "Brahmani", "influence_start": 0.45, "tension_start": 20.0,
          "axis_preferences": [{"axis": "B", "direction": 1}, {"axis": "D", "direction": 1}]},
@@ -180,7 +180,7 @@
       "holy_sites": ["bodh_gaja"],
       "color": "#001518",
       "accent_color": "#33bbcc",
-      "trait_id": "srodkowa_droga",
+      "trait_id": "middle_way",
       "factions": [
         {"id": "sangha_monastyczna", "display_name": "Sangha Monastyczna", "influence_start": 0.50, "tension_start": 20.0,
          "axis_preferences": [{"axis": "D", "direction": 1}, {"axis": "B", "direction": -1}]},
@@ -218,7 +218,7 @@
       "holy_sites": ["arkona"],
       "color": "#0a1210",
       "accent_color": "#55bb88",
-      "trait_id": "ziemia_i_krew",
+      "trait_id": "blood_and_soil",
       "factions": [
         {"id": "wolchwi", "display_name": "Wolchwi", "influence_start": 0.45, "tension_start": 20.0,
          "axis_preferences": [{"axis": "D", "direction": 1}, {"axis": "A", "direction": -1}]},

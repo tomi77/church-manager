@@ -70,11 +70,11 @@ const TRAIT_INFO: Dictionary = {
 		"name": "Umma",
 		"description": "Próg CB Dżihadu obniżony o dodatkowe −5 (łącznie −15). Kontrola Mekki: każda prowincja Islamu globalnie +1 prestiż/turę.",
 	},
-	"cezaropapizm": {
+	"caesaropapism": {
 		"name": "Cezaropapizm",
 		"description": "Cesarz może zwołać Sobór raz na epokę za darmo. Napięcie przegranej frakcji ×2.",
 	},
-	"sukcesja_apostolska": {
+	"apostolic_succession": {
 		"name": "Sukcesja Apostolska",
 		"description": "Klienci uznający Rzym jako patrona: −10% odporności na Synkretyzm. Rzym zyskuje +5 prestiżu za każde nowe Uznanie.",
 	},
@@ -82,27 +82,27 @@ const TRAIT_INFO: Dictionary = {
 		"name": "Diaspora",
 		"description": "Prowincje utracone nadal generują +1 prestiż/turę. Synagogi w obcych prowincjach (10 złota): +0.5 presji/turę.",
 	},
-	"zmartwychwstanie_saszanskie": {
+	"sassanian_resurrection": {
 		"name": "Zmartwychwstanie Saszańskie",
 		"description": "Przy <5 prowincjach: pasywna presja sąsiedzka ×2. Kontrola persepolis: +10% Modyfikator CB we wszystkich kampaniach.",
 	},
-	"pamiec_pustynna": {
+	"desert_memory": {
 		"name": "Pamięć Pustynna",
 		"description": "Akcja [Ojciec Pustyni] (15 prestiżu): mnich do prowincji w odległości do 3 kroków grafu. Po 5 turach +20 presji jednorazowo.",
 	},
-	"synkretyzm_radykalny": {
+	"radical_syncretism": {
 		"name": "Synkretyzm Radykalny",
 		"description": "Akcja [Zaakceptuj Ideę] bez kosztu prestiżu. Może absorbować doktryny od 2 religii naraz. +5 napięcia Wybranych.",
 	},
-	"pluralizm_plemienny": {
+	"tribal_pluralism": {
 		"name": "Pluralizm Plemienny",
 		"description": "Misjonarze bez limitu liczby. 40% szansy „schizmy plemiennej\" przy każdym zdobyciu nowej prowincji.",
 	},
-	"dharma_i_varna": {
+	"dharma_and_varna": {
 		"name": "Dharma i Varna",
 		"description": "Immunizacja na obowiązkowe CB doktrynalne. Prowincja kontrolowana 10+ tur: +2 żywność. Konwersja przez najeźdźcę: +20% kosztu presji.",
 	},
-	"srodkowa_droga": {
+	"middle_way": {
 		"name": "Środkowa Droga",
 		"description": "Immunizacja na obowiązkowe CB doktrynalne. Akcja [Dharma-Yatra] (25 prestiżu): pielgrzymi przez do 5 kroków grafu.",
 	},
@@ -110,7 +110,7 @@ const TRAIT_INFO: Dictionary = {
 		"name": "Ragnarök",
 		"description": "Po utracie >50% prowincji startowych: tryb [Zmierzch Bogów] — Modyfikator CB +20%, zmęczenie wojenne narasta 50% wolniej.",
 	},
-	"ziemia_i_krew": {
+	"blood_and_soil": {
 		"name": "Ziemia i Krew",
 		"description": "Prowincje góry/pustynia/żyzne: +1 żywność extra. Atak na słowiańską prowincję: dodatkowe −10% siły najeźdźcy.",
 	},
