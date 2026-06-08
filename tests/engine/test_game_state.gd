@@ -149,3 +149,36 @@ func test_reset_clears_defeat_progress():
 	gs.defeat_progress["manichaeism"] = {"zero_provinces_turns": 3}
 	gs.reset()
 	assert_eq(gs.defeat_progress.size(), 0)
+
+func test_initialize_snapshots_starting_provinces_for_arabian_paganism():
+	# arabian_paganism kontroluje mekka na mapie historycznej (provinces_historical.json)
+	var gs := _make_state()
+	var r: Religion = gs.get_religion("arabian_paganism")
+	assert_true(r.starting_provinces_snapshot.has("mekka"),
+		"arabian_paganism powinno mieć mekka w snapshot, miało: " + str(r.starting_provinces_snapshot))
+
+func test_initialize_snapshots_starting_provinces_for_eastern_christianity():
+	# eastern_christianity kontroluje jerozolima i konstantynopol
+	var gs := _make_state()
+	var r: Religion = gs.get_religion("eastern_christianity")
+	assert_true(r.starting_provinces_snapshot.has("jerozolima"))
+	assert_true(r.starting_provinces_snapshot.has("konstantynopol"))
+
+func test_initialize_sets_ever_owned_true_for_religion_with_starting_provinces():
+	var gs := _make_state()
+	var r: Religion = gs.get_religion("islam")
+	# Islam ma prowincje startowe w historycznym fixture
+	assert_true(r.ever_owned_province, "islam ma startowe prowincje → ever_owned_province == true")
+
+func test_initialize_leaves_ever_owned_false_for_religion_without_starting_provinces():
+	# Manicheizm jest w JSON ale nie ma żadnej prowincji w provinces_historical.json
+	var gs := _make_state()
+	var r: Religion = gs.get_religion("manichaeism")
+	assert_false(r.ever_owned_province, "manichaeism bez prowincji startowych → ever_owned_province == false")
+	assert_eq(r.starting_provinces_snapshot.size(), 0)
+
+func test_initialize_leaves_ever_owned_false_for_germanic_paganism():
+	var gs := _make_state()
+	var r: Religion = gs.get_religion("germanic_paganism")
+	assert_false(r.ever_owned_province)
+	assert_eq(r.starting_provinces_snapshot.size(), 0)

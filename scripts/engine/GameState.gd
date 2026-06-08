@@ -23,6 +23,16 @@ func initialize(player_id: String, religions: Array[Religion], graph: ProvinceGr
 	_religions.clear()
 	for r: Religion in religions:
 		_religions[r.id] = r
+	# Po wpisaniu wszystkich religii i grafu — snapshot startowych prowincji per religia
+	# (potrzebny dla warunku Ragnarök w spec 12 §4.2) oraz ustawienie ever_owned_province
+	# (prereq dla D1/D2 w spec 12 §5).
+	for r: Religion in religions:
+		var owned: Array[String] = []
+		for province in graph.provinces_with_owner(r.id):
+			owned.append(province.id)
+		r.starting_provinces_snapshot = owned
+		if not owned.is_empty():
+			r.ever_owned_province = true
 
 func get_player_religion() -> Religion:
 	return get_religion(player_religion_id)
