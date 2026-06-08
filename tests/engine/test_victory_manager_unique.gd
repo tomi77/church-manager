@@ -218,10 +218,72 @@ func test_germanic_ragnarok_unreachable_with_empty_snapshot():
 	var vm := VictoryManager.new()
 	assert_eq(vm.evaluate_unique_victory(rel, gs), "")
 
+# === Plan 13: Western Christianity ===
+
+func test_western_reformation_requires_rome_4_vassals_and_prestige_600():
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("western_christianity")
+	# Rzym jest startowo Western — sanity
+	assert_eq(gs.province_graph.get_province("rzym").owner, "western_christianity")
+	# 4 wasali
+	gs.get_religion("coptic_christianity").suzerain_id = "western_christianity"
+	gs.get_religion("judaism").suzerain_id = "western_christianity"
+	gs.get_religion("zoroastrianism").suzerain_id = "western_christianity"
+	gs.get_religion("islam").suzerain_id = "western_christianity"
+	rel.prestige = 600
+	var vm := VictoryManager.new()
+	assert_eq(vm.evaluate_unique_victory(rel, gs), "western_reformation")
+
+func test_western_reformation_blocked_without_rome():
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("western_christianity")
+	gs.province_graph.get_province("rzym").owner = "islam"  # utrata Rzymu
+	gs.get_religion("coptic_christianity").suzerain_id = "western_christianity"
+	gs.get_religion("judaism").suzerain_id = "western_christianity"
+	gs.get_religion("zoroastrianism").suzerain_id = "western_christianity"
+	gs.get_religion("islam").suzerain_id = "western_christianity"
+	rel.prestige = 600
+	var vm := VictoryManager.new()
+	assert_eq(vm.evaluate_unique_victory(rel, gs), "")
+
+func test_western_reformation_blocked_with_3_vassals():
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("western_christianity")
+	gs.get_religion("coptic_christianity").suzerain_id = "western_christianity"
+	gs.get_religion("judaism").suzerain_id = "western_christianity"
+	gs.get_religion("zoroastrianism").suzerain_id = "western_christianity"
+	rel.prestige = 600
+	var vm := VictoryManager.new()
+	assert_eq(vm.evaluate_unique_victory(rel, gs), "")
+
+func test_western_reformation_blocked_with_prestige_599():
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("western_christianity")
+	gs.get_religion("coptic_christianity").suzerain_id = "western_christianity"
+	gs.get_religion("judaism").suzerain_id = "western_christianity"
+	gs.get_religion("zoroastrianism").suzerain_id = "western_christianity"
+	gs.get_religion("islam").suzerain_id = "western_christianity"
+	rel.prestige = VictoryManager.WESTERN_PRESTIGE_REQUIRED - 1
+	var vm := VictoryManager.new()
+	assert_eq(vm.evaluate_unique_victory(rel, gs), "")
+
+func test_western_reformation_safe_when_rome_missing_from_graph():
+	# Null guard — custom map bez Rzymu nie crashuje
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("western_christianity")
+	gs.province_graph._provinces.erase("rzym")
+	rel.prestige = 600
+	gs.get_religion("coptic_christianity").suzerain_id = "western_christianity"
+	gs.get_religion("judaism").suzerain_id = "western_christianity"
+	gs.get_religion("zoroastrianism").suzerain_id = "western_christianity"
+	gs.get_religion("islam").suzerain_id = "western_christianity"
+	var vm := VictoryManager.new()
+	assert_eq(vm.evaluate_unique_victory(rel, gs), "")
+
 # === No unique victory dla innych religii ===
 
 func test_no_unique_victory_for_western_christianity():
-	# ChrZ nie ma unikalnego warunku w Plan 12 (in-scope to ChrW)
+	# ChrZ bez wasali / wystarczającego prestiżu nie spełnia warunku Reformacji.
 	var gs := _make_state()
 	var rel: Religion = gs.get_religion("western_christianity")
 	var vm := VictoryManager.new()

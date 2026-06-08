@@ -253,6 +253,9 @@ func evaluate_unique_victory(religion: Religion, state: Node) -> String:
 		"germanic_paganism":
 			if _germanic_ragnarok_satisfied(religion, state):
 				return "germanic_ragnarok"
+		"western_christianity":
+			if _western_reformation_satisfied(religion, state):
+				return "western_reformation"
 	return ""
 
 func _judaism_return_satisfied(religion: Religion, state: Node) -> bool:
@@ -301,6 +304,19 @@ func _germanic_ragnarok_satisfied(religion: Religion, state: Node) -> bool:
 		if p == null or p.owner != religion.id:
 			return false
 	return true
+
+func _western_reformation_satisfied(religion: Religion, state: Node) -> bool:
+	# Spec 13 §5.1: kontrola Rzymu + ≥ WESTERN_VASSALS_REQUIRED wasali + prestiż ≥ WESTERN_PRESTIGE_REQUIRED.
+	var rome: Province = state.province_graph.get_province(WESTERN_ROME_ID)
+	if rome == null or rome.owner != religion.id:
+		return false
+	if religion.prestige < WESTERN_PRESTIGE_REQUIRED:
+		return false
+	var vassal_count: int = 0
+	for r: Religion in state.all_religions():
+		if r.suzerain_id == religion.id:
+			vassal_count += 1
+	return vassal_count >= WESTERN_VASSALS_REQUIRED
 
 func evaluate_defeat(religion: Religion, state: Node) -> String:
 	# Spec §5: D1 (elimination) i D2 (long_vassalage), oba wymagają ever_owned_province.
