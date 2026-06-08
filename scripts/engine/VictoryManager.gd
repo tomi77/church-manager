@@ -116,7 +116,37 @@ func _ensure_progress_entry(dict: Dictionary, key: String, default: Dictionary) 
 		dict[key] = default.duplicate()
 
 func evaluate_universal_victory(religion: Religion, state: Node) -> String:
+	# Spec §4.1: trzy uniwersalne warunki. Sprawdzane w fixed order.
+	var vp: Dictionary = state.victory_progress.get(religion.id, {})
+
+	# (1) Dominacja terytorialna
+	if vp.get("domination_turns", 0) >= DOMINATION_TURNS_REQUIRED:
+		return "domination"
+
+	# (2) Hegemonia prestiżu
+	if vp.get("prestige_hegemony_turns", 0) >= PRESTIGE_HEGEMONY_TURNS_REQUIRED:
+		return "prestige_hegemony"
+
+	# (3) Święta Ziemia
+	if _evaluate_holy_land(religion, state):
+		return "holy_land"
+
 	return ""
+
+func _evaluate_holy_land(religion: Religion, state: Node) -> bool:
+	# Prerequisite: religia musi mieć przynajmniej jedno własne święte miejsce.
+	if religion.holy_sites.is_empty():
+		return false
+	# Wszystkie własne holy_sites pod kontrolą
+	for site_id: String in religion.holy_sites:
+		var p: Province = state.province_graph.get_province(site_id)
+		if p == null or p.owner != religion.id:
+			return false
+	# Plus ≥1 cudze święte miejsce
+	for p: Province in state.province_graph.all_provinces():
+		if p.is_holy_site and p.owner == religion.id and not religion.holy_sites.has(p.id):
+			return true
+	return false
 
 func evaluate_unique_victory(religion: Religion, state: Node) -> String:
 	return ""
