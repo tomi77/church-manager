@@ -338,12 +338,15 @@ func _buddhism_middle_way_satisfied(religion: Religion, state: Node) -> bool:
 	return religion.absorbed_idea_sources.size() >= BUDDHISM_DISTINCT_SOURCES_REQUIRED
 
 func evaluate_defeat(religion: Religion, state: Node) -> String:
-	# Spec §5: D1 (elimination) i D2 (long_vassalage), oba wymagają ever_owned_province.
+	# Spec §5 (Plan 12) + Plan 13 §4: D1 → D3 → D2 (precedencja).
+	# D1 elimination jest najdefinitywniejsza, D3 total_schism bardziej dramatyczna od D2 long_vassalage.
 	if not religion.ever_owned_province:
 		return ""
 	var dp: Dictionary = state.defeat_progress.get(religion.id, {})
 	if dp.get("zero_provinces_turns", 0) >= ELIMINATION_TURNS_REQUIRED:
 		return "elimination"
+	if dp.get("total_schism_turns", 0) >= SCHISM_TOTAL_TURNS_REQUIRED:
+		return "total_schism"
 	if dp.get("vassalage_turns", 0) >= VASSAL_DEFEAT_TURNS_REQUIRED:
 		return "long_vassalage"
 	return ""
