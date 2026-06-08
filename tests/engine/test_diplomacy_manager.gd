@@ -879,7 +879,7 @@ func test_missionary_exclusivity_bumps_faction_tension() -> void:
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 30
 	# Pin osie islam tak żeby JEGO dominująca frakcja nie dryfowała w _update_faction_tensions:
-	# islam dominant faction = "ulema" (prefs A+1, B+1), nie diverged przy A=80,B=80.
+	# islam dominant faction = "ulama" (prefs A+1, B+1), nie diverged przy A=80,B=80.
 	_pin_axes(src, 80.0, 80.0, 50.0, 50.0)	# Ekskluzywizm 50 (nie >70), brak dryfu napięcia
 	var dst: Religion = gs.get_religion("chr_zachodnie")
 	# Pin chr_zachodnie tak by: (a) C=20 → Ekskluzywizm 80 (>70) wywoła bump,

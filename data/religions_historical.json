@@ -11,11 +11,11 @@
       "accent_color": "#5aaa5a",
       "trait_id": "umma",
       "factions": [
-        {"id": "ulema", "display_name": "Ulema", "influence_start": 0.40, "tension_start": 20.0,
+        {"id": "ulama", "display_name": "Ulema", "influence_start": 0.40, "tension_start": 20.0,
          "axis_preferences": [{"axis": "A", "direction": 1}, {"axis": "B", "direction": 1}]},
-        {"id": "sufici", "display_name": "Sufici", "influence_start": 0.30, "tension_start": 20.0,
+        {"id": "sufis", "display_name": "Sufici", "influence_start": 0.30, "tension_start": 20.0,
          "axis_preferences": [{"axis": "A", "direction": -1}, {"axis": "D", "direction": 1}]},
-        {"id": "wojownicy_wiary", "display_name": "Wojownicy Wiary", "influence_start": 0.30, "tension_start": 20.0,
+        {"id": "warriors_of_faith", "display_name": "Wojownicy Wiary", "influence_start": 0.30, "tension_start": 20.0,
          "axis_preferences": [{"axis": "C", "direction": -1}, {"axis": "D", "direction": -1}]}
       ]
     },

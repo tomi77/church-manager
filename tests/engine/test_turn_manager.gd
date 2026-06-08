@@ -56,11 +56,11 @@ func test_faction_tension_increases_when_axis_diverges() -> void:
 	var tm := TurnManager.new()
 	var gs := _make_state()
 	var islam: Religion = gs.get_religion("islam")
-	var sufici := islam.get_faction("sufici")
+	var sufis := islam.get_faction("sufis")
 	islam.axes["A"] = 90.0
-	var initial_tension := sufici.tension
+	var initial_tension := sufis.tension
 	tm.process_turn(gs)
-	assert_gt(sufici.tension, initial_tension)
+	assert_gt(sufis.tension, initial_tension)
 
 func test_process_turn_decrements_scholar_mission_turns() -> void:
 	var tm := TurnManager.new()

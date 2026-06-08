@@ -7,16 +7,16 @@ func _make_test_religion() -> Religion:
 	r.axes = {"A": 70.0, "B": 65.0, "C": 30.0, "D": 75.0}
 	r.prestige = 300
 	r.holy_sites = ["mekka", "jerozolima"]
-	var ulema := Faction.new()
-	ulema.id = "ulema"
-	ulema.influence = 0.40
-	ulema.tension = 20.0
-	ulema.axis_preferences = [{"axis": "A", "direction": 1}, {"axis": "B", "direction": 1}]
-	var sufici := Faction.new()
-	sufici.id = "sufici"
-	sufici.influence = 0.30
-	sufici.tension = 20.0
-	r.factions = [ulema, sufici]
+	var ulama := Faction.new()
+	ulama.id = "ulama"
+	ulama.influence = 0.40
+	ulama.tension = 20.0
+	ulama.axis_preferences = [{"axis": "A", "direction": 1}, {"axis": "B", "direction": 1}]
+	var sufis := Faction.new()
+	sufis.id = "sufis"
+	sufis.influence = 0.30
+	sufis.tension = 20.0
+	r.factions = [ulama, sufis]
 	return r
 
 func test_religion_has_four_axes() -> void:
@@ -40,9 +40,9 @@ func test_religion_axis_shift_clamps_to_range() -> void:
 
 func test_religion_get_faction_by_id() -> void:
 	var r := _make_test_religion()
-	var f := r.get_faction("ulema")
+	var f := r.get_faction("ulama")
 	assert_not_null(f)
-	assert_eq(f.id, "ulema")
+	assert_eq(f.id, "ulama")
 
 func test_religion_get_faction_missing_returns_null() -> void:
 	var r := _make_test_religion()
@@ -50,7 +50,7 @@ func test_religion_get_faction_missing_returns_null() -> void:
 
 func test_religion_dominant_faction_is_highest_influence() -> void:
 	var r := _make_test_religion()
-	assert_eq(r.dominant_faction().id, "ulema")
+	assert_eq(r.dominant_faction().id, "ulama")
 
 func test_religion_prestige_cannot_go_below_zero() -> void:
 	var r := _make_test_religion()
