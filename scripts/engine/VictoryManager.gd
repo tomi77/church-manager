@@ -65,6 +65,7 @@ func check(state: Node) -> void:
 		var defeat_reason: String = evaluate_defeat(religion, state)
 		if defeat_reason != "":
 			religion.defeated_at_turn = state.current_turn
+			religion.defeated_reason = defeat_reason
 
 	# Krok 6: turn limit fallback. Gdy ranking pusty (wszyscy pokonani), wciąż ustaw outcome
 	# z pustym winner_id — inaczej TurnManager wpada w nieskończoną pętlę po TURN_LIMIT.

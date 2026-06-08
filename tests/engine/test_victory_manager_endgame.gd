@@ -186,6 +186,31 @@ func test_compute_ranking_sorts_desc_by_prestige_then_id_asc():
 	assert_eq(ranking[0]["religion_id"], "islam")
 	assert_eq(ranking[1]["religion_id"], "zoroastrianism")
 
+func test_check_sets_defeated_reason_on_elimination():
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("islam")
+	rel.ever_owned_province = true
+	for p in gs.province_graph.provinces_with_owner("islam"):
+		p.owner = ""
+	gs.defeat_progress["islam"] = {"zero_provinces_turns": VictoryManager.ELIMINATION_TURNS_REQUIRED - 1, "vassalage_turns": 0}
+	gs.current_turn = 50
+	var vm := VictoryManager.new()
+	vm.check(gs)
+	assert_eq(rel.defeated_at_turn, 50)
+	assert_eq(rel.defeated_reason, "elimination")
+
+func test_check_sets_defeated_reason_on_long_vassalage():
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("islam")
+	rel.ever_owned_province = true
+	rel.suzerain_id = "western_christianity"
+	gs.defeat_progress["islam"] = {"zero_provinces_turns": 0, "vassalage_turns": VictoryManager.VASSAL_DEFEAT_TURNS_REQUIRED - 1}
+	gs.current_turn = 50
+	var vm := VictoryManager.new()
+	vm.check(gs)
+	assert_eq(rel.defeated_at_turn, 50)
+	assert_eq(rel.defeated_reason, "long_vassalage")
+
 func test_check_turn_limit_sets_outcome_even_when_all_religions_defeated():
 	# Edge case: cała mapa pokonana w tej samej turze. Bez tego guardu gra wisiała
 	# po TURN_LIMIT (TurnManager wywoływany w nieskończoność).

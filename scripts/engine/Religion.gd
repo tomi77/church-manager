@@ -19,6 +19,7 @@ extends Resource
 @export var interdict_grievance_from_id: String = ""	# ostatnia religia która rzuciła na nas Interdykt (Plan 07)
 @export var interdict_grievance_until: int = 0			# tura do której (wyłącznie) CB Rewanż jest dostępny
 @export var defeated_at_turn: int = -1					 # -1 = w grze, inaczej numer tury przegranej
+@export var defeated_reason: String = ""				 # spec 12 §5: zapisany reason gdy defeated_at_turn ustawiony (elimination/long_vassalage)
 @export var birth_turn: int = 0							 # 0 = od startu gry, inaczej numer tury narodzin ze schizmy
 @export var starting_provinces_snapshot: Array[String] = []	 # snapshot owner-prowincji w turze init
 @export var ever_owned_province: bool = false			 # trwała flaga: religia kontrolowała ≥1 prowincję w jakimś momencie

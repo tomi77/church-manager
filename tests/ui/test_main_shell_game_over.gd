@@ -67,6 +67,7 @@ func test_main_shell_keeps_end_turn_enabled_after_player_defeat():
 	add_child_autofree(gs)
 	var rel: Religion = gs.get_religion("islam")
 	rel.defeated_at_turn = 30
+	rel.defeated_reason = "elimination"
 	var shell := await _instantiate_with_state(gs)
 	shell.refresh()
 	assert_false(shell.is_end_turn_disabled())
@@ -76,6 +77,7 @@ func test_main_shell_shows_defeat_dialog_when_player_defeated():
 	add_child_autofree(gs)
 	var rel: Religion = gs.get_religion("islam")
 	rel.defeated_at_turn = 30
+	rel.defeated_reason = "elimination"
 	var shell := await _instantiate_with_state(gs)
 	shell.refresh()
 	assert_eq(shell.get_active_game_over_dialog_count(), 1)
@@ -85,6 +87,7 @@ func test_main_shell_shows_player_defeat_dialog_only_once():
 	add_child_autofree(gs)
 	var rel: Religion = gs.get_religion("islam")
 	rel.defeated_at_turn = 30
+	rel.defeated_reason = "elimination"
 	var shell := await _instantiate_with_state(gs)
 	shell.refresh()
 	shell.refresh()

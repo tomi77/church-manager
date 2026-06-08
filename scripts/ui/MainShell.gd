@@ -81,10 +81,9 @@ func _show_player_defeat_dialog(player: Religion) -> void:
 	_active_dialog = GameOverDialogScene.instantiate()
 	add_child(_active_dialog)
 	_active_dialog.bind_state(state)
-	# Powód deduktujemy z stanu: suzerain_id != "" = long_vassalage, w przeciwnym razie elimination
-	var reason := "elimination"
-	if player.suzerain_id != "":
-		reason = "long_vassalage"
+	# Spec 12 I3: powód zapisany na Religion przez VictoryManager w momencie wykrycia przegranej.
+	# Fallback "elimination" dla retrofitu — religie pokonane przed wprowadzeniem pola.
+	var reason: String = player.defeated_reason if player.defeated_reason != "" else "elimination"
 	_active_dialog.show_player_defeat(player.id, reason)
 	_active_dialog.new_game_pressed.connect(_on_new_game_pressed)
 	_active_dialog.closed.connect(_on_dialog_closed)

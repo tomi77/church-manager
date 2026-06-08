@@ -92,6 +92,10 @@ func test_new_field_absorbed_idea_sources_defaults_to_empty():
 	var r := Religion.new()
 	assert_eq(r.absorbed_idea_sources.size(), 0)
 
+func test_new_field_defeated_reason_defaults_to_empty():
+	var r := Religion.new()
+	assert_eq(r.defeated_reason, "")
+
 func test_starting_provinces_snapshot_is_string_array():
 	var r := Religion.new()
 	r.starting_provinces_snapshot = ["mekka", "lewant"]
