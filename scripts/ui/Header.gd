@@ -80,6 +80,13 @@ func _on_end_turn_pressed() -> void:
 	refresh()
 	emit_signal("turn_ended")
 
+func set_end_turn_enabled(enabled: bool) -> void:
+	if is_inside_tree():
+		_end_turn_btn.disabled = not enabled
+
+func is_end_turn_disabled() -> bool:
+	return _end_turn_btn.disabled if is_inside_tree() else false
+
 # Polish plural: 0 → brak, 1 → wojna, 2-4 (except 12-14) → wojny, else → wojen.
 func _wars_label(n: int) -> String:
 	if n == 0:
