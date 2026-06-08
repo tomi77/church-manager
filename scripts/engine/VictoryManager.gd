@@ -62,7 +62,58 @@ func update_flags(state: Node) -> void:
 				religion.ragnarok_triggered = true
 
 func update_counters(state: Node) -> void:
-	pass
+	# Spec §7: liczniki "przez N tur" — kumulatywne tylko po sobie, reset przy chwilowej utracie warunku.
+	# Iterujemy religie z defeated_at_turn == -1; pokonane są pomijane.
+	var total_provinces: int = state.province_graph.all_provinces().size()
+	var domination_threshold: float = DOMINATION_PROVINCE_SHARE * total_provinces
+
+	# Drugi najwyższy prestiż (potrzebny do warunku Hegemonia Prestiżu).
+	# Pomijamy pokonane religie ze second_highest.
+	var prestiges: Array = []
+	for r: Religion in state.all_religions():
+		if r.defeated_at_turn == -1:
+			prestiges.append(r.prestige)
+	prestiges.sort()
+	prestiges.reverse()
+	var second_highest: int = prestiges[1] if prestiges.size() >= 2 else 0
+
+	for religion: Religion in state.all_religions():
+		if religion.defeated_at_turn != -1:
+			continue
+		_ensure_progress_entry(state.victory_progress, religion.id, {"domination_turns": 0, "prestige_hegemony_turns": 0})
+		_ensure_progress_entry(state.defeat_progress, religion.id, {"zero_provinces_turns": 0, "vassalage_turns": 0})
+
+		# Dominacja
+		var owned: int = state.province_graph.provinces_with_owner(religion.id).size()
+		if float(owned) >= domination_threshold:
+			state.victory_progress[religion.id]["domination_turns"] += 1
+		else:
+			state.victory_progress[religion.id]["domination_turns"] = 0
+
+		# Hegemonia prestiżu
+		var has_hegemony: bool = religion.prestige >= PRESTIGE_HEGEMONY_RATIO * float(second_highest)
+		# Edge case: jedna religia w grze → second_highest = 0, każda > 0 spełnia automatycznie.
+		# To jest zamierzone — gdy zostaje tylko jedna religia, wygrywa hegemonią natychmiast.
+		# Dodatkowy guard: hegemonia wymaga prestiżu > 0 (inaczej trywialnie spełnione przy wszystkich 0).
+		if has_hegemony and religion.prestige > 0:
+			state.victory_progress[religion.id]["prestige_hegemony_turns"] += 1
+		else:
+			state.victory_progress[religion.id]["prestige_hegemony_turns"] = 0
+
+		# Defeat counters
+		if owned == 0:
+			state.defeat_progress[religion.id]["zero_provinces_turns"] += 1
+		else:
+			state.defeat_progress[religion.id]["zero_provinces_turns"] = 0
+
+		if religion.suzerain_id != "":
+			state.defeat_progress[religion.id]["vassalage_turns"] += 1
+		else:
+			state.defeat_progress[religion.id]["vassalage_turns"] = 0
+
+func _ensure_progress_entry(dict: Dictionary, key: String, default: Dictionary) -> void:
+	if not dict.has(key):
+		dict[key] = default.duplicate()
 
 func evaluate_universal_victory(religion: Religion, state: Node) -> String:
 	return ""

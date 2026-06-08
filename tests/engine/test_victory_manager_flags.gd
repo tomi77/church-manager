@@ -100,3 +100,102 @@ func test_update_flags_ragnarok_persists_after_recovery():
 	gs.province_graph.get_province("p1").owner = "germanic_paganism"
 	vm.update_flags(gs)
 	assert_true(rel.ragnarok_triggered, "raz ustawiona flaga nie resetuje się")
+
+func test_update_counters_increments_domination_when_above_threshold():
+	var gs := _make_state()
+	# Daj islamowi >=50% prowincji (6/12). Sprawdź ile islam już ma.
+	var current: int = gs.province_graph.provinces_with_owner("islam").size()
+	var needed: int = int(ceil(VictoryManager.DOMINATION_PROVINCE_SHARE * gs.province_graph.all_provinces().size())) - current
+	var available: Array = []
+	for p in gs.province_graph.all_provinces():
+		if p.owner != "islam":
+			available.append(p)
+	for i in range(needed):
+		available[i].owner = "islam"
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("islam", {})
+	assert_eq(prog.get("domination_turns", 0), 1)
+	vm.update_counters(gs)
+	prog = gs.victory_progress.get("islam", {})
+	assert_eq(prog.get("domination_turns", 0), 2)
+
+func test_update_counters_resets_domination_on_drop_below_threshold():
+	var gs := _make_state()
+	# Symulacja: licznik już > 0
+	gs.victory_progress["islam"] = {"domination_turns": 5, "prestige_hegemony_turns": 0}
+	# Islam startowo nie ma 50% prowincji → po update licznik dominacji powinien wrócić do 0
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("islam", {})
+	assert_eq(prog.get("domination_turns", 0), 0, "spadek poniżej progu → reset")
+
+func test_update_counters_increments_prestige_hegemony_when_2x_second():
+	var gs := _make_state()
+	# Ustaw islam prestige = 1000, wszyscy inni < 500
+	for r in gs.all_religions():
+		r.prestige = 100 if r.id != "islam" else 1000
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("islam", {})
+	assert_eq(prog.get("prestige_hegemony_turns", 0), 1)
+
+func test_update_counters_resets_prestige_hegemony_when_below_ratio():
+	var gs := _make_state()
+	# Wszyscy mają taki sam prestiż — żadna religia nie ma 2× drugiej
+	for r in gs.all_religions():
+		r.prestige = 100
+	gs.victory_progress["islam"] = {"domination_turns": 0, "prestige_hegemony_turns": 5}
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("islam", {})
+	assert_eq(prog.get("prestige_hegemony_turns", 0), 0)
+
+func test_update_counters_increments_zero_provinces_when_religion_has_no_provinces():
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("islam")
+	rel.ever_owned_province = true
+	for p in gs.province_graph.provinces_with_owner("islam"):
+		p.owner = ""
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.defeat_progress.get("islam", {})
+	assert_eq(prog.get("zero_provinces_turns", 0), 1)
+
+func test_update_counters_resets_zero_provinces_on_reconquest():
+	var gs := _make_state()
+	gs.defeat_progress["islam"] = {"zero_provinces_turns": 4, "vassalage_turns": 0}
+	# Islam wciąż ma prowincje
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.defeat_progress.get("islam", {})
+	assert_eq(prog.get("zero_provinces_turns", 0), 0, "ma prowincje → reset")
+
+func test_update_counters_increments_vassalage_when_suzerain_set():
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("islam")
+	rel.suzerain_id = "western_christianity"
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.defeat_progress.get("islam", {})
+	assert_eq(prog.get("vassalage_turns", 0), 1)
+
+func test_update_counters_resets_vassalage_on_independence():
+	var gs := _make_state()
+	gs.defeat_progress["islam"] = {"zero_provinces_turns": 0, "vassalage_turns": 15}
+	var rel: Religion = gs.get_religion("islam")
+	rel.suzerain_id = ""  # niezależna
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.defeat_progress.get("islam", {})
+	assert_eq(prog.get("vassalage_turns", 0), 0)
+
+func test_update_counters_does_not_touch_defeated_religion():
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("manichaeism")
+	rel.defeated_at_turn = 50
+	rel.suzerain_id = "islam"
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	# Pokonana religia nie podlega aktualizacji liczników
+	assert_false(gs.defeat_progress.has("manichaeism"))
