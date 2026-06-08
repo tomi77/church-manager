@@ -11,7 +11,7 @@ extends PanelContainer
 var _faction: Faction = null
 var _is_dominant: bool = false
 
-func bind_faction(faction: Faction, _religion: Religion, is_dominant: bool) -> void:
+func bind_faction(faction: Faction, is_dominant: bool) -> void:
 	_faction = faction
 	_is_dominant = is_dominant
 	if is_inside_tree():

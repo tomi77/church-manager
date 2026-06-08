@@ -34,7 +34,7 @@ func refresh() -> void:
 	for f: Faction in sorted_factions:
 		var card: FactionCard = FactionCardScene.instantiate()
 		_cards_container.add_child(card)
-		card.bind_faction(f, religion, f == dominant)
+		card.bind_faction(f, f == dominant)
 
 func _sort_factions_stable(factions: Array) -> Array:
 	# Stable sort: influence DESC, tie-break = original index ASC (zachowuje JSON order).
