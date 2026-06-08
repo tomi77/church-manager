@@ -193,3 +193,17 @@ func test_trigger_schism_sets_parent_religion_id() -> void:
 	var new_rel := sm.trigger_schism(faction, rel, gs)
 	assert_not_null(new_rel)
 	assert_eq(new_rel.parent_religion_id, rel.id)
+
+func test_trigger_schism_sets_birth_turn_to_current_turn() -> void:
+	# spec 12 §6: nowa religia ze schizmy startuje z birth_turn == state.current_turn,
+	# VictoryManager używa tego do nakładania 10-turowego schism grace.
+	var sm := SchismManagerScript.new()
+	var gs := _make_state()
+	gs.current_turn = 42
+	var rel: Religion = gs.get_religion("islam")
+	var faction := rel.factions[0]
+	faction.tension = 90.0
+	faction.influence = 0.5
+	var new_rel := sm.trigger_schism(faction, rel, gs)
+	assert_not_null(new_rel, "schism powinien się powieść (influence >= SCHISM_MIN_INFLUENCE)")
+	assert_eq(new_rel.birth_turn, 42, "nowa religia powinna mieć birth_turn == state.current_turn")

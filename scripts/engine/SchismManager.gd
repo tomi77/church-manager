@@ -53,6 +53,7 @@ func trigger_schism(faction: Faction, religion: Religion, state: Node) -> Religi
 	new_rel.parent_religion_id = religion.id
 	new_rel.display_name = faction.display_name + " (Schizma)"
 	new_rel.prestige = SCHISM_INITIAL_PRESTIGE
+	new_rel.birth_turn = state.current_turn	# spec 12 §6: schism grace 10 tur od narodzin
 	new_rel.color = religion.color
 	new_rel.accent_color = religion.accent_color
 	for axis: String in religion.axes.keys():
