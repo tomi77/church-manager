@@ -159,3 +159,29 @@ const DOCTRINE_INFO: Dictionary = {
 		"description": "Można rzucić klątwę na heretyka.",
 	},
 }
+
+# Faction phase colors — keys 0..3 muszą pokrywać wartości SchismManager.get_phase()
+# Test parytetu: tests/ui/test_faction_phase_parity.gd
+const FACTION_PHASE_COLORS: Dictionary = {
+	0: Color(0.3, 0.7, 0.3),	# zielony — spokój (<40)
+	1: Color(0.85, 0.7, 0.15),	# żółty — ruch heretycki (40..64)
+	2: Color(0.95, 0.55, 0.1),	# pomarańczowy — odpływ wiernych (65..84)
+	3: Color(0.85, 0.2, 0.2),	# czerwony — pełna schizma (>=85)
+}
+
+# Etykiety faz — kapitalizacja: wielka pierwsza litera, fraza po dwukropku z małej.
+const FACTION_PHASE_LABELS: Dictionary = {
+	0: "Spokój",
+	1: "Faza 1: ruch heretycki",
+	2: "Faza 2: odpływ wiernych",
+	3: "Faza 3: pełna schizma",
+}
+
+# Bieguny osi (spec 01 §1): direction=+1 = wartość 100, direction=-1 = wartość 0.
+# Spójne z Religion.shift_axis (mnoży delta * direction) i SchismManager.respond_dialoguj.
+const AXIS_POLE_NAMES: Dictionary = {
+	"A": {1: "Dogmatyzm",     -1: "Mistycyzm"},
+	"B": {1: "Hierarchia",    -1: "Równouprawnienie"},
+	"C": {1: "Synkretyzm",    -1: "Ekskluzywizm"},
+	"D": {1: "Transcendencja", -1: "Doczesność"},
+}
