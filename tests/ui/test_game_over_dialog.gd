@@ -42,7 +42,9 @@ func test_dialog_maps_all_reasons_to_non_empty_polish_labels():
 		"east_christianity_pentarchy", "islam_caliphate", "germanic_ragnarok",
 		"turn_limit", "elimination", "long_vassalage",
 		# Plan 13:
-		"total_schism", "western_reformation", "hindu_dharma", "buddhism_middle_way"]
+		"total_schism", "western_reformation", "hindu_dharma", "buddhism_middle_way",
+		# Plan 14:
+		"coptic_citadel"]
 	for r: String in reasons:
 		var outcome := _make_outcome("islam", r)
 		dialog.show_outcome(outcome)
@@ -104,3 +106,9 @@ func test_dialog_player_defeat_mode_emits_close_signal():
 	watch_signals(dialog)
 	dialog.press_close()
 	assert_signal_emitted(dialog, "closed")
+
+func test_coptic_citadel_label_contains_polish_religion_name() -> void:
+	var label: String = GameOverDialog.REASON_LABELS.get("coptic_citadel", "")
+	assert_ne(label, "", "coptic_citadel ma etykietę")
+	assert_true(label.findn("koptyjski") != -1 or label.findn("coptic") != -1,
+		"etykieta zawiera 'Koptyjski' lub 'Coptic'")

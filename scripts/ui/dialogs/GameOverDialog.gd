@@ -35,6 +35,8 @@ const REASON_LABELS: Dictionary = {
 	"western_reformation": "Reformacja Apostolska (Chrześcijaństwo Zachodnie)",
 	"hindu_dharma": "Dharmiczna Trwałość (Hinduizm)",
 	"buddhism_middle_way": "Środkowa Droga Globalna (Buddyzm)",
+	# Plan 14:
+	"coptic_citadel": "Cytadela Pustelnicza (Koptyjski Kościół)",
 }
 
 var _state: Node = null
