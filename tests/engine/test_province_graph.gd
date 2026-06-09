@@ -51,3 +51,23 @@ func test_graph_provinces_with_owner() -> void:
 func test_graph_border_provinces_returns_own_provinces_adjacent_to_foreign() -> void:
 	var borders := graph.border_provinces("eastern_christianity")
 	assert_true(borders.has("anatolia"))
+
+# === Plan 14: ghost edge integrity ===
+
+func test_no_ghost_edges_in_full_graph() -> void:
+	var full_graph := ProvinceLoader.load_graph_from_file("res://data/provinces_historical.json")
+	# Allowlist: znane pre-existing out-of-scope ghost edges (mapa nie obejmuje italia północna, jemen, tracja).
+	# Po Plan 14 'afryka_polnocna' nie powinna być w allowlist — została zastąpiona przez karthago.
+	var allowed_ghosts := ["jemen", "italia_polnocna", "tracja"]
+	var actual_ghosts: Array[String] = []
+	for p: Province in full_graph.all_provinces():
+		for n: String in p.neighbors:
+			if full_graph.get_province(n) == null and not (n in actual_ghosts):
+				actual_ghosts.append(n)
+	# Każdy znaleziony ghost MUSI być w allowlist.
+	for ghost: String in actual_ghosts:
+		assert_true(ghost in allowed_ghosts,
+			"Ghost edge '%s' nie jest w allowlist %s — usuń edge lub uzasadnij w spec 14 §4.7" % [ghost, allowed_ghosts])
+	# Walidacja że afryka_polnocna NIE jest już ghostem (sanity check Plan 14 fix).
+	assert_false("afryka_polnocna" in actual_ghosts,
+		"afryka_polnocna ghost edge powinien zostać naprawiony przez karthago w Plan 14")
