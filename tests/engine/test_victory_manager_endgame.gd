@@ -2,11 +2,11 @@ extends GutTest
 
 const GameStateScript := preload("res://scripts/engine/GameState.gd")
 
-func _make_state() -> Node:
+func _make_state(player_id: String = "islam") -> Node:
 	var gs: Node = GameStateScript.new()
 	var religions := ReligionLoader.load_from_file("res://data/religions_historical.json")
 	var graph := ProvinceLoader.load_graph_from_file("res://data/provinces_historical.json")
-	gs.initialize("islam", religions, graph)
+	gs.initialize(player_id, religions, graph)
 	return gs
 
 func test_check_sets_outcome_when_universal_victory_met():
@@ -239,3 +239,22 @@ func test_check_turn_limit_sets_outcome_even_when_all_religions_defeated():
 	assert_eq(gs.game_outcome.reason, "turn_limit")
 	assert_eq(gs.game_outcome.winner_id, "", "brak kandydatów → pusty winner_id (legalny stan)")
 	assert_eq(gs.game_outcome.end_turn, VictoryManager.TURN_LIMIT)
+
+# === Plan 14: integracja coptic_citadel z check ===
+
+func test_check_marks_coptic_citadel_with_game_outcome() -> void:
+	var gs := _make_state("coptic_christianity")
+	var coptic: Religion = gs.get_religion("coptic_christianity")
+	# Spełnij wszystkie 5 warunków (po Task 4 counter będzie inkrementował).
+	coptic.axes["D"] = 90.0
+	for f: Faction in coptic.factions:
+		f.tension = 20.0
+	# Aleksandria, egipt, abisynia już są coptic z fixture.
+	var vm := VictoryManager.new()
+	# 20 tur update_counters + check (po Plan 12 check ustawia game_outcome).
+	for i in range(20):
+		vm.update_counters(gs)
+		vm.check(gs)
+	assert_not_null(gs.game_outcome, "game_outcome ustawione po 20 turach")
+	assert_eq(gs.game_outcome.winner_id, "coptic_christianity")
+	assert_eq(gs.game_outcome.reason, "coptic_citadel")
