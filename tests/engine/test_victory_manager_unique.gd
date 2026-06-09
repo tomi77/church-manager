@@ -387,3 +387,36 @@ func test_buddhism_can_win_with_zero_provinces():
 	assert_false(rel.ever_owned_province, "buddhism startuje bez prowincji w fixture")
 	var vm := VictoryManager.new()
 	assert_eq(vm.evaluate_unique_victory(rel, gs), "buddhism_middle_way")
+
+# === Plan 14: coptic_citadel predykat ===
+
+func test_coptic_citadel_requires_20_turns_counter() -> void:
+	var gs := _make_state("coptic_christianity")
+	var coptic: Religion = gs.get_religion("coptic_christianity")
+	gs.victory_progress["coptic_christianity"] = {
+		"domination_turns": 0, "prestige_hegemony_turns": 0,
+		"dharma_turns": 0, "coptic_citadel_turns": 20}
+	var vm := VictoryManager.new()
+	assert_eq(vm.evaluate_unique_victory(coptic, gs), "coptic_citadel",
+		"counter == 20 → coptic_citadel reason")
+
+func test_coptic_citadel_blocked_with_19_turns() -> void:
+	var gs := _make_state("coptic_christianity")
+	var coptic: Religion = gs.get_religion("coptic_christianity")
+	gs.victory_progress["coptic_christianity"] = {
+		"domination_turns": 0, "prestige_hegemony_turns": 0,
+		"dharma_turns": 0, "coptic_citadel_turns": 19}
+	var vm := VictoryManager.new()
+	assert_eq(vm.evaluate_unique_victory(coptic, gs), "",
+		"counter == 19 → brak unique victory (próg ostry >=)")
+
+func test_coptic_citadel_other_religion_never_returns_reason() -> void:
+	# Sanity: Islam z wstrzykniętym counterem nie zwraca coptic_citadel (brak case'a w match).
+	var gs := _make_state("islam")
+	var islam: Religion = gs.get_religion("islam")
+	gs.victory_progress["islam"] = {
+		"domination_turns": 0, "prestige_hegemony_turns": 0,
+		"dharma_turns": 0, "coptic_citadel_turns": 999}
+	var vm := VictoryManager.new()
+	assert_ne(vm.evaluate_unique_victory(islam, gs), "coptic_citadel",
+		"Islam nigdy nie zwraca coptic_citadel — match case jest tylko dla coptic")

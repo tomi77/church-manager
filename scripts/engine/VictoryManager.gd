@@ -296,6 +296,9 @@ func evaluate_unique_victory(religion: Religion, state: Node) -> String:
 		"buddhism":
 			if _buddhism_middle_way_satisfied(religion, state):
 				return "buddhism_middle_way"
+		"coptic_christianity":
+			if _coptic_citadel_satisfied(religion, state):
+				return "coptic_citadel"
 	return ""
 
 func _judaism_return_satisfied(religion: Religion, state: Node) -> bool:
@@ -370,6 +373,13 @@ func _buddhism_middle_way_satisfied(religion: Religion, state: Node) -> bool:
 	if religion.get_axis("D") < BUDDHISM_AXIS_D_REQUIRED:
 		return false
 	return religion.absorbed_idea_sources.size() >= BUDDHISM_DISTINCT_SOURCES_REQUIRED
+
+func _coptic_citadel_satisfied(religion: Religion, state: Node) -> bool:
+	# Counter coptic_citadel_turns aktualizowany w update_counters (Plan 14 Task 4).
+	# Helper reads tylko counter — faktyczne 5 warunków waliduje update_counters,
+	# co gwarantuje że "20 tur" nie da się "udać" w jednej turze.
+	var vp: Dictionary = state.victory_progress.get(religion.id, {})
+	return vp.get("coptic_citadel_turns", 0) >= COPTIC_CITADEL_TURNS_REQUIRED
 
 func evaluate_defeat(religion: Religion, state: Node) -> String:
 	# Spec §5 (Plan 12) + Plan 13 §4: D1 → D3 → D2 (precedencja).
