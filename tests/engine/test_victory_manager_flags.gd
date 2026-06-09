@@ -2,11 +2,11 @@ extends GutTest
 
 const GameStateScript := preload("res://scripts/engine/GameState.gd")
 
-func _make_state() -> Node:
+func _make_state(player_id: String = "islam") -> Node:
 	var gs: Node = GameStateScript.new()
 	var religions := ReligionLoader.load_from_file("res://data/religions_historical.json")
 	var graph := ProvinceLoader.load_graph_from_file("res://data/provinces_historical.json")
-	gs.initialize("islam", religions, graph)
+	gs.initialize(player_id, religions, graph)
 	return gs
 
 func _grant_province_to(state: Node, religion_id: String, province_id: String) -> void:
@@ -309,3 +309,106 @@ func test_update_counters_only_increments_dharma_for_hinduism():
 	var prog: Dictionary = gs.victory_progress.get("islam", {})
 	# Klucz dharma_turns istnieje (default 0) ale nie inkrementuje dla islamu
 	assert_eq(prog.get("dharma_turns", -1), 0)
+
+# === Plan 14: coptic_citadel_turns counter ===
+
+func test_update_counters_initializes_coptic_citadel_turns_zero() -> void:
+	var gs := _make_state("coptic_christianity")
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("coptic_christianity", {})
+	assert_eq(prog.get("coptic_citadel_turns", -1), 0,
+		"po pierwszym update licznik istnieje i jest 0")
+
+func test_update_counters_increments_coptic_citadel_when_all_conditions_met() -> void:
+	var gs := _make_state("coptic_christianity")
+	var coptic: Religion = gs.get_religion("coptic_christianity")
+	# Wszystkie 3 prowincje Coptic (już z fixture: egipt + aleksandria + abisynia są coptic)
+	# Axis D ≥ 85
+	coptic.axes["D"] = 90.0
+	# Wszystkie frakcje tension < 50 (już z fixture: tension_start = 20.0)
+	for f: Faction in coptic.factions:
+		f.tension = 20.0
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("coptic_christianity", {})
+	assert_eq(prog.get("coptic_citadel_turns", 0), 1)
+	vm.update_counters(gs)
+	prog = gs.victory_progress.get("coptic_christianity", {})
+	assert_eq(prog.get("coptic_citadel_turns", 0), 2)
+
+func test_update_counters_resets_coptic_citadel_when_aleksandria_lost() -> void:
+	var gs := _make_state("coptic_christianity")
+	var coptic: Religion = gs.get_religion("coptic_christianity")
+	coptic.axes["D"] = 90.0
+	for f: Faction in coptic.factions:
+		f.tension = 20.0
+	gs.victory_progress["coptic_christianity"] = {
+		"domination_turns": 0, "prestige_hegemony_turns": 0,
+		"dharma_turns": 0, "coptic_citadel_turns": 5}
+	# Utrata aleksandrii
+	gs.province_graph.get_province("aleksandria").owner = "eastern_christianity"
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("coptic_christianity", {})
+	assert_eq(prog.get("coptic_citadel_turns", -1), 0, "utrata aleksandrii → reset")
+
+func test_update_counters_resets_coptic_citadel_when_axis_d_below_threshold() -> void:
+	var gs := _make_state("coptic_christianity")
+	var coptic: Religion = gs.get_religion("coptic_christianity")
+	coptic.axes["D"] = 84.99  # tuż poniżej progu
+	for f: Faction in coptic.factions:
+		f.tension = 20.0
+	gs.victory_progress["coptic_christianity"] = {
+		"domination_turns": 0, "prestige_hegemony_turns": 0,
+		"dharma_turns": 0, "coptic_citadel_turns": 5}
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("coptic_christianity", {})
+	assert_eq(prog.get("coptic_citadel_turns", -1), 0, "axis D < 85 → reset")
+
+func test_update_counters_resets_coptic_citadel_when_faction_tension_at_threshold() -> void:
+	# Próg ostry: < 50 (nie <=). Tension = 50.0 powinien blokować.
+	var gs := _make_state("coptic_christianity")
+	var coptic: Religion = gs.get_religion("coptic_christianity")
+	coptic.axes["D"] = 90.0
+	coptic.factions[0].tension = 50.0
+	coptic.factions[1].tension = 20.0
+	coptic.factions[2].tension = 20.0
+	gs.victory_progress["coptic_christianity"] = {
+		"domination_turns": 0, "prestige_hegemony_turns": 0,
+		"dharma_turns": 0, "coptic_citadel_turns": 5}
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("coptic_christianity", {})
+	assert_eq(prog.get("coptic_citadel_turns", -1), 0, "tension == 50 → reset (próg ostry)")
+
+func test_update_counters_resets_coptic_citadel_when_faction_lost_via_schism() -> void:
+	# Edge case: factions.size() < 3 (np. po schizmie) — vacuous truth blocked przez guard.
+	var gs := _make_state("coptic_christianity")
+	var coptic: Religion = gs.get_religion("coptic_christianity")
+	coptic.axes["D"] = 90.0
+	coptic.factions.pop_back()  # zostały 2 frakcje
+	for f: Faction in coptic.factions:
+		f.tension = 20.0
+	gs.victory_progress["coptic_christianity"] = {
+		"domination_turns": 0, "prestige_hegemony_turns": 0,
+		"dharma_turns": 0, "coptic_citadel_turns": 5}
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("coptic_christianity", {})
+	assert_eq(prog.get("coptic_citadel_turns", -1), 0,
+		"factions.size() < 3 → reset (schizma już zaszła, jedność zburzona)")
+
+func test_update_counters_only_increments_coptic_citadel_for_coptic_christianity() -> void:
+	# Inne religie nie inkrementują coptic_citadel_turns nawet jeśli "spełniają" warunki Coptic.
+	var gs := _make_state("islam")
+	var islam: Religion = gs.get_religion("islam")
+	islam.axes["D"] = 100.0  # axis D bardzo wysoki
+	for f: Faction in islam.factions:
+		f.tension = 10.0
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("islam", {})
+	assert_eq(prog.get("coptic_citadel_turns", -1), 0,
+		"Islam nie inkrementuje coptic_citadel_turns (counter jest religion-scoped do Coptic)")

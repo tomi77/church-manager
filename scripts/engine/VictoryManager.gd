@@ -150,7 +150,7 @@ func update_counters(state: Node) -> void:
 	for religion: Religion in state.all_religions():
 		if religion.defeated_at_turn != -1:
 			continue
-		_ensure_progress_entry(state.victory_progress, religion.id, {"domination_turns": 0, "prestige_hegemony_turns": 0, "dharma_turns": 0})
+		_ensure_progress_entry(state.victory_progress, religion.id, {"domination_turns": 0, "prestige_hegemony_turns": 0, "dharma_turns": 0, "coptic_citadel_turns": 0})
 		_ensure_progress_entry(state.defeat_progress, religion.id, {"zero_provinces_turns": 0, "vassalage_turns": 0, "total_schism_turns": 0})
 
 		# Dominacja
@@ -177,6 +177,32 @@ func update_counters(state: Node) -> void:
 				state.victory_progress[religion.id]["dharma_turns"] += 1
 			else:
 				state.victory_progress[religion.id]["dharma_turns"] = 0
+
+		# Plan 14 §5.5: coptic_citadel_turns — kontrola 3 prowincji + axis D + faction unity.
+		if religion.id == "coptic_christianity":
+			var citadel_active: bool = true
+			var aleksandria: Province = state.province_graph.get_province(COPTIC_ALEKSANDRIA_ID)
+			var egipt: Province = state.province_graph.get_province(COPTIC_EGIPT_ID)
+			var abisynia: Province = state.province_graph.get_province(COPTIC_ABISYNIA_ID)
+			if aleksandria == null or aleksandria.owner != religion.id:
+				citadel_active = false
+			elif egipt == null or egipt.owner != religion.id:
+				citadel_active = false
+			elif abisynia == null or abisynia.owner != religion.id:
+				citadel_active = false
+			elif religion.get_axis("D") < COPTIC_AXIS_D_REQUIRED:
+				citadel_active = false
+			elif religion.factions.size() < 3:
+				citadel_active = false
+			else:
+				for f: Faction in religion.factions:
+					if f.tension >= COPTIC_FACTION_TENSION_MAX:
+						citadel_active = false
+						break
+			if citadel_active:
+				state.victory_progress[religion.id]["coptic_citadel_turns"] += 1
+			else:
+				state.victory_progress[religion.id]["coptic_citadel_turns"] = 0
 
 		# Defeat counters
 		if owned == 0:
