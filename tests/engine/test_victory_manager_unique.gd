@@ -327,7 +327,7 @@ func test_islam_caliphate_does_not_crash_when_jerusalem_missing():
 
 func _set_victory_counter(state: Node, rid: String, key: String, value: int) -> void:
 	if not state.victory_progress.has(rid):
-		state.victory_progress[rid] = {"domination_turns": 0, "prestige_hegemony_turns": 0, "dharma_turns": 0}
+		state.victory_progress[rid] = {"domination_turns": 0, "prestige_hegemony_turns": 0, "dharma_turns": 0, "coptic_citadel_turns": 0}
 	state.victory_progress[rid][key] = value
 
 func test_hindu_dharma_requires_50_turns_counter():

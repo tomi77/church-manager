@@ -103,7 +103,7 @@ func test_update_flags_ragnarok_persists_after_recovery():
 
 func test_update_counters_increments_domination_when_above_threshold():
 	var gs := _make_state()
-	# Daj islamowi >=50% prowincji (6/12). Sprawdź ile islam już ma.
+	# Daj islamowi >=50% prowincji (8/16). Sprawdź ile islam już ma.
 	var current: int = gs.province_graph.provinces_with_owner("islam").size()
 	var needed: int = int(ceil(VictoryManager.DOMINATION_PROVINCE_SHARE * gs.province_graph.all_provinces().size())) - current
 	var available: Array = []
