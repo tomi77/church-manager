@@ -395,7 +395,7 @@ func test_coptic_citadel_requires_20_turns_counter() -> void:
 	var coptic: Religion = gs.get_religion("coptic_christianity")
 	gs.victory_progress["coptic_christianity"] = {
 		"domination_turns": 0, "prestige_hegemony_turns": 0,
-		"dharma_turns": 0, "coptic_citadel_turns": 20}
+		"dharma_turns": 0, "coptic_citadel_turns": VictoryManager.COPTIC_CITADEL_TURNS_REQUIRED}
 	var vm := VictoryManager.new()
 	assert_eq(vm.evaluate_unique_victory(coptic, gs), "coptic_citadel",
 		"counter == 20 → coptic_citadel reason")
@@ -405,7 +405,7 @@ func test_coptic_citadel_blocked_with_19_turns() -> void:
 	var coptic: Religion = gs.get_religion("coptic_christianity")
 	gs.victory_progress["coptic_christianity"] = {
 		"domination_turns": 0, "prestige_hegemony_turns": 0,
-		"dharma_turns": 0, "coptic_citadel_turns": 19}
+		"dharma_turns": 0, "coptic_citadel_turns": VictoryManager.COPTIC_CITADEL_TURNS_REQUIRED - 1}
 	var vm := VictoryManager.new()
 	assert_eq(vm.evaluate_unique_victory(coptic, gs), "",
 		"counter == 19 → brak unique victory (próg ostry >=)")

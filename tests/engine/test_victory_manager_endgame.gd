@@ -252,7 +252,7 @@ func test_check_marks_coptic_citadel_with_game_outcome() -> void:
 	# Aleksandria, egipt, abisynia już są coptic z fixture.
 	var vm := VictoryManager.new()
 	# 20 tur update_counters + check (po Plan 12 check ustawia game_outcome).
-	for i in range(20):
+	for _i in range(VictoryManager.COPTIC_CITADEL_TURNS_REQUIRED):
 		vm.update_counters(gs)
 		vm.check(gs)
 	assert_not_null(gs.game_outcome, "game_outcome ustawione po 20 turach")
