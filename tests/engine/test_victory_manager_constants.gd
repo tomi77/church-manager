@@ -43,3 +43,11 @@ func test_plan13_constants_exist():
 	# Buddhism Środkowa Droga
 	assert_almost_eq(VictoryManager.BUDDHISM_AXIS_D_REQUIRED, 90.0, 0.001)
 	assert_eq(VictoryManager.BUDDHISM_DISTINCT_SOURCES_REQUIRED, 4)
+
+func test_plan14_constants_exist() -> void:
+	assert_eq(VictoryManager.COPTIC_ALEKSANDRIA_ID, "aleksandria")
+	assert_eq(VictoryManager.COPTIC_EGIPT_ID, "egipt")
+	assert_eq(VictoryManager.COPTIC_ABISYNIA_ID, "abisynia")
+	assert_almost_eq(VictoryManager.COPTIC_AXIS_D_REQUIRED, 85.0, 0.001)
+	assert_almost_eq(VictoryManager.COPTIC_FACTION_TENSION_MAX, 50.0, 0.001)
+	assert_eq(VictoryManager.COPTIC_CITADEL_TURNS_REQUIRED, 20)

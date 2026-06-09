@@ -5,7 +5,7 @@ extends RefCounted
 # Spec: docs/superpowers/specs/12-victory-conditions-design.md
 # Wywoływany przez TurnManager.process_turn na końcu, po state.advance_turn().
 
-# === Stałe uniwersalne — kalibracja do mapy historycznej (12 prowincji) ===
+# === Stałe uniwersalne — kalibracja do mapy historycznej (16 prowincji po Plan 14) ===
 
 const TURN_LIMIT := 200								# hard cap; po tym tura wygrywa religia z najwyższym prestiżem
 const DOMINATION_PROVINCE_SHARE := 0.5				# ≥50% wszystkich prowincji
@@ -49,6 +49,14 @@ const HINDU_DHARMA_TURNS_REQUIRED := 50
 # === Plan 13: unikalne warunki — Buddhism ===
 const BUDDHISM_AXIS_D_REQUIRED := 90.0
 const BUDDHISM_DISTINCT_SOURCES_REQUIRED := 4
+
+# === Plan 14: unikalne warunki — Coptic Christianity (Cytadela Pustelnicza) ===
+const COPTIC_ALEKSANDRIA_ID := "aleksandria"
+const COPTIC_EGIPT_ID := "egipt"
+const COPTIC_ABISYNIA_ID := "abisynia"
+const COPTIC_AXIS_D_REQUIRED := 85.0					# axis D (Transcendencja) — Coptic startuje 70, lift +15
+const COPTIC_FACTION_TENSION_MAX := 50.0				# wszystkie 3 frakcje < 50 (poniżej phase 1)
+const COPTIC_CITADEL_TURNS_REQUIRED := 20				# trwałość 5 warunków przez 20 tur
 
 # === Public API (implementacja w kolejnych taskach) ===
 
