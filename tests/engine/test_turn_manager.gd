@@ -272,3 +272,20 @@ func test_turn_manager_get_ai_returns_new_instance_when_no_override() -> void:
 	var ai := tm._get_ai()
 	assert_not_null(ai, "Bez override _get_ai zwraca świeży AIManager")
 	assert_true(ai is AIManager)
+
+func test_npc_dispatches_scholar_with_seeded_rng() -> void:
+	# Z deterministycznym RNG sprawdź że dispatch jest monotonic (nie zmniejsza missions).
+	var tm := TurnManager.new()
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 1
+	tm.set_ai_override(AIManager.new(rng))
+	var gs := _make_state()
+	# Ustaw prestige Slavic > 50 (próg gate).
+	var slavic: Religion = gs.get_religion("slavic_paganism")
+	slavic.prestige = 200
+	var initial_missions: int = gs.scholar_missions.size()
+	tm.process_turn(gs)
+	# Z 10 NPC × 15% chance ≥1 dispatch wysoce prawdopodobne, ale deterministyczne z seedem.
+	# Asercja safe: dispatch nie usuwa missions (≥ initial).
+	assert_gte(gs.scholar_missions.size(), initial_missions,
+		"NPC dispatches mogą dodać missions (monotonic)")

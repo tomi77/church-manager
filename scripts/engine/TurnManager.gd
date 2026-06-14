@@ -26,6 +26,7 @@ func process_turn(state: Node) -> void:
 	_apply_passive_pressure(state.province_graph)
 	_apply_holy_site_prestige(state)
 	_update_faction_tensions(state)
+	_npc_dispatch_scholars(state)
 	_process_scholar_missions(state)
 	_apply_believer_exodus(state)
 	_process_active_wars(state)
@@ -81,6 +82,19 @@ func _compute_faction_tension_delta(religion: Religion, faction: Faction) -> flo
 		if diverged:
 			delta += FACTION_TENSION_PER_DIVERGED_AXIS
 	return delta
+
+func _npc_dispatch_scholars(state: Node) -> void:
+	# Plan 18 §6.1: per-turn NPC scholar dispatch.
+	var ai := _get_ai()
+	var dm := DoctrineManager.new()
+	for religion: Religion in state.all_religions():
+		if religion.id == state.player_religion_id:
+			continue
+		if not ai.should_dispatch_scholar(religion):
+			continue
+		var target_id: String = ai.choose_scholar_target(state, religion)
+		if target_id != "":
+			dm.dispatch_scholar(state, religion.id, target_id)
 
 func _process_scholar_missions(state: Node) -> void:
 	var dm := DoctrineManager.new()
