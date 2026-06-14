@@ -52,22 +52,28 @@ func test_graph_border_provinces_returns_own_provinces_adjacent_to_foreign() -> 
 	var borders := graph.border_provinces("eastern_christianity")
 	assert_true(borders.has("anatolia"))
 
-# === Plan 14: ghost edge integrity ===
+# === Plan 15: ghost edge integrity — wszystkie znane ghost edges naprawione ===
 
 func test_no_ghost_edges_in_full_graph() -> void:
 	var full_graph := ProvinceLoader.load_graph_from_file("res://data/provinces_historical.json")
-	# Allowlist: znane pre-existing out-of-scope ghost edges (mapa nie obejmuje italia północna, jemen, tracja).
-	# Po Plan 14 'afryka_polnocna' nie powinna być w allowlist — została zastąpiona przez karthago.
-	var allowed_ghosts := ["jemen", "italia_polnocna", "tracja"]
+	# Po Plan 15 allowlist jest pusty — wszystkie znane ghost edges naprawione (jemen, italia_polnocna, tracja).
+	var allowed_ghosts: Array[String] = []
 	var actual_ghosts: Array[String] = []
 	for p: Province in full_graph.all_provinces():
 		for n: String in p.neighbors:
 			if full_graph.get_province(n) == null and not (n in actual_ghosts):
 				actual_ghosts.append(n)
-	# Każdy znaleziony ghost MUSI być w allowlist.
+	# Każdy znaleziony ghost MUSI być w allowlist (po Plan 15: zero ghost edges).
 	for ghost: String in actual_ghosts:
 		assert_true(ghost in allowed_ghosts,
-			"Ghost edge '%s' nie jest w allowlist %s — usuń edge lub uzasadnij w spec 14 §4.7" % [ghost, allowed_ghosts])
-	# Walidacja że afryka_polnocna NIE jest już ghostem (sanity check Plan 14 fix).
+			"Ghost edge '%s' nie jest w allowlist %s — usuń edge lub uzasadnij w spec 15" % [ghost, allowed_ghosts])
+	# Sanity: 3 prowincje Plan 15 NIE są ghostami (dodane w Task 1-3).
+	assert_false("jemen" in actual_ghosts,
+		"jemen ghost edge powinien zostać naprawiony przez Task 1 w Plan 15")
+	assert_false("italia_polnocna" in actual_ghosts,
+		"italia_polnocna ghost edge powinien zostać naprawiony przez Task 2 w Plan 15")
+	assert_false("tracja" in actual_ghosts,
+		"tracja ghost edge powinien zostać naprawiony przez Task 3 w Plan 15")
+	# Zachowane z Plan 14 — sanity check, że afryka_polnocna nadal naprawiona.
 	assert_false("afryka_polnocna" in actual_ghosts,
 		"afryka_polnocna ghost edge powinien zostać naprawiony przez karthago w Plan 14")
