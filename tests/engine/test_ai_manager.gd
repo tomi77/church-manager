@@ -119,3 +119,33 @@ func test_should_dispatch_deterministic_with_seeded_rng() -> void:
 	var ai_b := AIManagerScript.new(_seeded_rng(1))
 	assert_eq(ai_a.should_dispatch_scholar(rel), ai_b.should_dispatch_scholar(rel),
 		"Identyczne seedy → identyczne decyzje (deterministic)")
+
+# === Plan 18: choose_scholar_target ===
+
+func test_choose_scholar_target_returns_non_self() -> void:
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("slavic_paganism")
+	var ai := AIManagerScript.new(_seeded_rng(42))
+	var target := ai.choose_scholar_target(gs, rel)
+	assert_ne(target, "")
+	assert_ne(target, "slavic_paganism", "Target nie może być self")
+
+func test_choose_scholar_target_skips_defeated_religions() -> void:
+	var gs := _make_state()
+	for r: Religion in gs.all_religions():
+		if r.id != "slavic_paganism" and r.id != "islam":
+			r.defeated_at_turn = 1
+	var rel: Religion = gs.get_religion("slavic_paganism")
+	var ai := AIManagerScript.new(_seeded_rng(42))
+	var target := ai.choose_scholar_target(gs, rel)
+	assert_eq(target, "islam", "Jedyny żywy non-self target to islam")
+
+func test_choose_scholar_target_returns_empty_when_no_candidates() -> void:
+	var gs := _make_state()
+	for r: Religion in gs.all_religions():
+		if r.id != "slavic_paganism":
+			r.defeated_at_turn = 1
+	var rel: Religion = gs.get_religion("slavic_paganism")
+	var ai := AIManagerScript.new(_seeded_rng(42))
+	var target := ai.choose_scholar_target(gs, rel)
+	assert_eq(target, "", "Brak żywych kandydatów → empty string")

@@ -38,3 +38,16 @@ func should_dispatch_scholar(religion: Religion) -> bool:
 	if religion.prestige < AI_SCHOLAR_MIN_PRESTIGE:
 		return false
 	return rng.randf() < AI_SCHOLAR_DISPATCH_CHANCE
+
+func choose_scholar_target(state: Node, religion: Religion) -> String:
+	# Plan 18 §5.2: random non-self, non-defeated.
+	var candidates: Array[String] = []
+	for r: Religion in state.all_religions():
+		if r.id == religion.id:
+			continue
+		if r.defeated_at_turn != -1:
+			continue
+		candidates.append(r.id)
+	if candidates.is_empty():
+		return ""
+	return candidates[rng.randi() % candidates.size()]
