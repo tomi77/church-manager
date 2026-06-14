@@ -56,9 +56,8 @@ func test_graph_border_provinces_returns_own_provinces_adjacent_to_foreign() -> 
 
 func test_no_ghost_edges_in_full_graph() -> void:
 	var full_graph := ProvinceLoader.load_graph_from_file("res://data/provinces_historical.json")
-	# Po Plan 15 allowlist był pusty. Plan 17 Task 1 dodaje arkona z sąsiadem gnieszno,
-	# który zostanie dodany w Task 2 — tymczasowy ghost edge dopuszczony do Task 2.
-	var allowed_ghosts: Array[String] = ["gnieszno"]
+	# Po Plan 15 allowlist jest pusty — wszystkie znane ghost edges naprawione (jemen, italia_polnocna, tracja).
+	var allowed_ghosts: Array[String] = []
 	var actual_ghosts: Array[String] = []
 	for p: Province in full_graph.all_provinces():
 		for n: String in p.neighbors:

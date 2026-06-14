@@ -123,10 +123,10 @@ func test_jemen_abisynia_mutual_edge() -> void:
 	assert_true("jemen" in abisynia.neighbors, "abisynia.neighbors zawiera jemen (Task 4 patch)")
 
 # Regression guard: chroni przed przypadkowym usunięciem prowincji w przyszłych edycjach.
-# Nie jest red-test — po Plan 17 Task 1 fixture ma 20 prowincji (19 + arkona).
-func test_provinces_total_count_20() -> void:
+# Nie jest red-test — po Task 1-4 fixture ma już 19 prowincji.
+func test_provinces_total_count_19() -> void:
 	var graph := ProvinceLoader.load_graph_from_file("res://data/provinces_historical.json")
-	assert_eq(graph.province_count(), 20, "Plan 17 Task 1: mapa ma 20 prowincji (19 z Plan 15 + arkona)")
+	assert_eq(graph.province_count(), 19, "Plan 15: mapa ma 19 prowincji (16 z Plan 14 + 3 nowe z Plan 15)")
 
 # === Plan 17: Slavic heartland ===
 
