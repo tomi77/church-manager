@@ -39,6 +39,8 @@ const REASON_LABELS: Dictionary = {
 	"coptic_citadel": "Cytadela Pustelnicza (Koptyjski Kościół)",
 	# Plan 16:
 	"arabian_submission": "Przyjęcie Islamu (Religie Arabskie)",
+	# Plan 17:
+	"slavic_sacred_groves": "Ziemia Świętych Gajów (Religie Słowiańskie)",
 }
 
 var _state: Node = null
