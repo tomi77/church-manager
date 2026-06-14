@@ -420,3 +420,33 @@ func test_coptic_citadel_other_religion_never_returns_reason() -> void:
 	var vm := VictoryManager.new()
 	assert_ne(vm.evaluate_unique_victory(islam, gs), "coptic_citadel",
 		"Islam nigdy nie zwraca coptic_citadel — match case jest tylko dla coptic")
+
+# === Plan 16: Arabian Submission ===
+
+func test_arabian_submission_requires_15_turns_counter() -> void:
+	var gs := _make_state("arabian_paganism")
+	var rel: Religion = gs.get_religion("arabian_paganism")
+	gs.victory_progress["arabian_paganism"] = {"domination_turns": 0, "prestige_hegemony_turns": 0,
+		"dharma_turns": 0, "coptic_citadel_turns": 0, "arabian_submission_turns": 15}
+	var vm := VictoryManager.new()
+	assert_eq(vm.evaluate_unique_victory(rel, gs), "arabian_submission")
+
+func test_arabian_submission_blocked_with_14_turns() -> void:
+	var gs := _make_state("arabian_paganism")
+	var rel: Religion = gs.get_religion("arabian_paganism")
+	gs.victory_progress["arabian_paganism"] = {"domination_turns": 0, "prestige_hegemony_turns": 0,
+		"dharma_turns": 0, "coptic_citadel_turns": 0, "arabian_submission_turns": 14}
+	var vm := VictoryManager.new()
+	assert_eq(vm.evaluate_unique_victory(rel, gs), "", "14 tur < próg 15 → brak victory")
+
+func test_arabian_submission_other_religion_never_returns_reason() -> void:
+	# Sanity: spreparowany counter dla Islam nie zwraca arabian_submission (brak case'a w match).
+	var gs := _make_state("islam")
+	var rel: Religion = gs.get_religion("islam")
+	gs.victory_progress["islam"] = {"domination_turns": 0, "prestige_hegemony_turns": 0,
+		"dharma_turns": 0, "coptic_citadel_turns": 0, "arabian_submission_turns": 30}
+	var vm := VictoryManager.new()
+	# Islam może zwrócić islam_caliphate jeśli warunki spełnione, ale NIGDY arabian_submission.
+	var result: String = vm.evaluate_unique_victory(rel, gs)
+	assert_ne(result, "arabian_submission",
+		"Islam nie może zwrócić arabian_submission (klauzula tylko dla arabian_paganism)")

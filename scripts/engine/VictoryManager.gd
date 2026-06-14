@@ -332,6 +332,9 @@ func evaluate_unique_victory(religion: Religion, state: Node) -> String:
 		"coptic_christianity":
 			if _coptic_citadel_satisfied(religion, state):
 				return "coptic_citadel"
+		"arabian_paganism":
+			if _arabian_submission_satisfied(religion, state):
+				return "arabian_submission"
 	return ""
 
 func _judaism_return_satisfied(religion: Religion, state: Node) -> bool:
@@ -413,6 +416,12 @@ func _coptic_citadel_satisfied(religion: Religion, state: Node) -> bool:
 	# co gwarantuje że "20 tur" nie da się "udać" w jednej turze.
 	var vp: Dictionary = state.victory_progress.get(religion.id, {})
 	return vp.get("coptic_citadel_turns", 0) >= COPTIC_CITADEL_TURNS_REQUIRED
+
+func _arabian_submission_satisfied(religion: Religion, state: Node) -> bool:
+	# Plan 16 §4.6: counter arabian_submission_turns aktualizowany w update_counters.
+	# Pattern z _hindu_dharma_satisfied i _coptic_citadel_satisfied.
+	var vp: Dictionary = state.victory_progress.get(religion.id, {})
+	return vp.get("arabian_submission_turns", 0) >= ARABIAN_SUBMISSION_TURNS_REQUIRED
 
 func evaluate_defeat(religion: Religion, state: Node) -> String:
 	# Spec §5 (Plan 12) + Plan 13 §4: D1 → D3 → D2 (precedencja).
