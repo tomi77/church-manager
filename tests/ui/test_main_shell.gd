@@ -70,7 +70,7 @@ func test_main_shell_renders_map_view_in_map_tab():
 	var mapa_tab: MapTab = shell.get_node("%MapTab")
 	assert_not_null(mapa_tab)
 	assert_true(mapa_tab.visible)
-	assert_eq(mapa_tab.get_node("%MapView").get_node_count(), 19)
+	assert_eq(mapa_tab.get_node("%MapView").get_node_count(), 26)
 
 func test_main_shell_hides_map_view_in_other_tabs():
 	var state := _make_state()
