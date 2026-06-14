@@ -16,3 +16,17 @@ func _init(injected_rng: RandomNumberGenerator = null) -> void:
 	else:
 		rng = RandomNumberGenerator.new()
 		rng.randomize()
+
+func decide_accept_idea(religion: Religion, idea: Idea) -> bool:
+	# Plan 18 §4.1: faction-weighted sum > 0 → accept.
+	# sign_match = pref.direction × sign(idea.delta).
+	# net_support = Σ faction.influence × sign_match.
+	var net_support: float = 0.0
+	var shift_direction: int = 1 if idea.delta > 0.0 else -1
+	for faction: Faction in religion.factions:
+		for pref: Dictionary in faction.axis_preferences:
+			if pref.get("axis", "") == idea.axis:
+				var pref_dir: int = pref.get("direction", 0)
+				net_support += faction.influence * pref_dir * shift_direction
+				break
+	return net_support > 0.0
