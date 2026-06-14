@@ -112,3 +112,18 @@ func test_loader_loads_tracja_eastern_owner_with_slavic_pressure_25() -> void:
 	assert_eq(tracja.resources.get("gold", 0), 1)
 	assert_eq(tracja.neighbors.size(), 1)
 	assert_true("konstantynopol" in tracja.neighbors)
+
+func test_jemen_abisynia_mutual_edge() -> void:
+	var graph := ProvinceLoader.load_graph_from_file("res://data/provinces_historical.json")
+	var jemen := graph.get_province("jemen")
+	var abisynia := graph.get_province("abisynia")
+	assert_not_null(jemen)
+	assert_not_null(abisynia)
+	assert_true("abisynia" in jemen.neighbors, "jemen.neighbors zawiera abisynia (Task 1)")
+	assert_true("jemen" in abisynia.neighbors, "abisynia.neighbors zawiera jemen (Task 4 patch)")
+
+# Regression guard: chroni przed przypadkowym usunięciem prowincji w przyszłych edycjach.
+# Nie jest red-test — po Task 1-4 fixture ma już 19 prowincji.
+func test_provinces_total_count_19() -> void:
+	var graph := ProvinceLoader.load_graph_from_file("res://data/provinces_historical.json")
+	assert_eq(graph.province_count(), 19, "Plan 15: mapa ma 19 prowincji (16 z Plan 14 + 3 nowe z Plan 15)")
