@@ -184,3 +184,40 @@ func test_should_attack_in_war_returns_false_when_attacker_defeated() -> void:
 	var war := _make_war("slavic_paganism", "eastern_christianity", "BATTLING")
 	var ai := AIManagerScript.new()
 	assert_false(ai.should_attack_in_war(rel, war), "Defeated attacker → false")
+
+# === Plan 19: choose_attack_target ===
+
+func test_choose_attack_target_picks_border_adjacent_when_available() -> void:
+	# Slavic atakuje Eastern. Tracja jest jedyną Eastern border-adjacent do panonia (Slavic).
+	var gs := _make_state()
+	var attacker: Religion = gs.get_religion("slavic_paganism")
+	var ai := AIManagerScript.new(_seeded_rng(42))
+	var target := ai.choose_attack_target(gs, attacker, "eastern_christianity")
+	assert_eq(target, "tracja", "Tracja border-adjacent do panonia (Slavic)")
+
+func test_choose_attack_target_falls_back_to_random_when_no_border() -> void:
+	# Slavic atakuje Islam (mezopotamia — non-adjacent do Slavic).
+	var gs := _make_state()
+	var attacker: Religion = gs.get_religion("slavic_paganism")
+	var ai := AIManagerScript.new(_seeded_rng(42))
+	var target := ai.choose_attack_target(gs, attacker, "islam")
+	assert_eq(target, "mezopotamia", "Fallback: jedyna Islam province")
+
+func test_choose_attack_target_returns_empty_when_defender_has_no_provinces() -> void:
+	var gs := _make_state()
+	var attacker: Religion = gs.get_religion("slavic_paganism")
+	# Wyzeruj Islam — ma tylko mezopotamia.
+	gs.province_graph.get_province("mezopotamia").owner = ""
+	var ai := AIManagerScript.new(_seeded_rng(42))
+	var target := ai.choose_attack_target(gs, attacker, "islam")
+	assert_eq(target, "", "Defender 0 provinces → empty target")
+
+func test_choose_attack_target_skips_non_defender_provinces() -> void:
+	# Target MUSI być defender province (eastern_christianity).
+	var gs := _make_state()
+	var attacker: Religion = gs.get_religion("slavic_paganism")
+	var ai := AIManagerScript.new(_seeded_rng(42))
+	var target := ai.choose_attack_target(gs, attacker, "eastern_christianity")
+	var target_prov: Province = gs.province_graph.get_province(target)
+	assert_not_null(target_prov)
+	assert_eq(target_prov.owner, "eastern_christianity", "Target = defender province")
