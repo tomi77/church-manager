@@ -98,16 +98,30 @@ func _npc_dispatch_scholars(state: Node) -> void:
 
 func _process_scholar_missions(state: Node) -> void:
 	var dm := DoctrineManager.new()
+	var ai := _get_ai()
 	var still_active: Array = []
 	for mission: Dictionary in state.scholar_missions:
 		mission["turns_remaining"] -= 1
 		if mission["turns_remaining"] <= 0:
 			var idea := dm.generate_idea(mission["from_religion_id"], mission["to_religion_id"], state)
 			if idea != null:
-				state.pending_ideas.append(idea)
+				_resolve_idea(idea, mission["from_religion_id"], state, dm, ai)
 		else:
 			still_active.append(mission)
 	state.scholar_missions = still_active
+
+func _resolve_idea(idea: Idea, dispatcher_id: String, state: Node, dm: DoctrineManager, ai: AIManager) -> void:
+	# Plan 18 §6.2: rozróżnij player vs NPC.
+	if dispatcher_id == state.player_religion_id:
+		state.pending_ideas.append(idea)
+		return
+	var dispatcher: Religion = state.get_religion(dispatcher_id)
+	if dispatcher == null or dispatcher.defeated_at_turn != -1:
+		return  # NPC defeated mid-mission — drop idea.
+	if ai.decide_accept_idea(dispatcher, idea):
+		dm.accept_idea(idea, dispatcher, state)
+	else:
+		dm.reject_idea(idea, state)
 
 func _apply_believer_exodus(state: Node) -> void:
 	var sm := SchismManager.new()

@@ -65,6 +65,10 @@ func test_faction_tension_increases_when_axis_diverges() -> void:
 func test_process_turn_decrements_scholar_mission_turns() -> void:
 	var tm := TurnManager.new()
 	var gs := _make_state()
+	# Plan 18: pin NPC prestige=0 by block NPC scholar dispatch (gate blocks all).
+	for r: Religion in gs.all_religions():
+		if r.id != gs.player_religion_id:
+			r.prestige = 0
 	gs.scholar_missions.append({
 		"from_religion_id": "islam",
 		"to_religion_id": "western_christianity",
@@ -77,6 +81,10 @@ func test_process_turn_decrements_scholar_mission_turns() -> void:
 func test_process_turn_generates_idea_when_mission_completes() -> void:
 	var tm := TurnManager.new()
 	var gs := _make_state()
+	# Plan 18: pin NPC prestige=0 by block NPC scholar dispatch (gate blocks all).
+	for r: Religion in gs.all_religions():
+		if r.id != gs.player_religion_id:
+			r.prestige = 0
 	var islam: Religion = gs.get_religion("islam")
 	var chr: Religion = gs.get_religion("western_christianity")
 	# Pinuj wszystkie osie żeby A miała największą różnicę
@@ -289,3 +297,63 @@ func test_npc_dispatches_scholar_with_seeded_rng() -> void:
 	# Asercja safe: dispatch nie usuwa missions (≥ initial).
 	assert_gte(gs.scholar_missions.size(), initial_missions,
 		"NPC dispatches mogą dodać missions (monotonic)")
+
+func test_player_scholar_mission_lands_in_pending_ideas() -> void:
+	# Islam = player. Mission islam → western generuje idea, ląduje w pending_ideas.
+	var tm := TurnManager.new()
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 0
+	tm.set_ai_override(AIManager.new(rng))
+	var gs := _make_state()
+	# Pin NPC prestige=0 by isolation.
+	for r: Religion in gs.all_religions():
+		if r.id != gs.player_religion_id:
+			r.prestige = 0
+	var islam: Religion = gs.get_religion("islam")
+	var chr: Religion = gs.get_religion("western_christianity")
+	islam.axes["A"] = 20.0
+	chr.axes["A"] = 80.0
+	for axis: String in ["B", "C", "D"]:
+		islam.axes[axis] = 50.0
+		chr.axes[axis] = 50.0
+	gs.scholar_missions.append({
+		"from_religion_id": "islam",
+		"to_religion_id": "western_christianity",
+		"turns_remaining": 1,
+	})
+	var initial_pending: int = gs.pending_ideas.size()
+	tm.process_turn(gs)
+	assert_eq(gs.pending_ideas.size(), initial_pending + 1, "Player idea ląduje w pending_ideas")
+
+func test_npc_scholar_mission_auto_resolves_via_ai() -> void:
+	# Slavic = NPC. Mission slavic → western generuje idea, AI decide → nie pending_ideas.
+	var tm := TurnManager.new()
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 0
+	tm.set_ai_override(AIManager.new(rng))
+	var gs := _make_state()  # player="islam"
+	# Pin NPC prestige=0 by isolation (Slavic dostanie scholar manualnie poniżej).
+	for r: Religion in gs.all_religions():
+		if r.id != gs.player_religion_id:
+			r.prestige = 0
+	var slavic: Religion = gs.get_religion("slavic_paganism")
+	var chr: Religion = gs.get_religion("western_christianity")
+	slavic.axes["A"] = 20.0
+	chr.axes["A"] = 80.0
+	for axis: String in ["B", "C", "D"]:
+		slavic.axes[axis] = 50.0
+		chr.axes[axis] = 50.0
+	gs.scholar_missions.append({
+		"from_religion_id": "slavic_paganism",
+		"to_religion_id": "western_christianity",
+		"turns_remaining": 1,
+	})
+	var initial_pending: int = gs.pending_ideas.size()
+	tm.process_turn(gs)
+	# Mission resolved (zniknął z scholar_missions) AND nie w pending_ideas (auto-resolved).
+	var matching_missions: int = 0
+	for m: Dictionary in gs.scholar_missions:
+		if m["from_religion_id"] == "slavic_paganism" and m["to_religion_id"] == "western_christianity":
+			matching_missions += 1
+	assert_eq(matching_missions, 0, "Mission slavic→western resolved")
+	assert_eq(gs.pending_ideas.size(), initial_pending, "NPC idea NIE w pending_ideas (auto-resolved)")

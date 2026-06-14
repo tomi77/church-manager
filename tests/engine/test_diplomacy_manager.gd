@@ -823,6 +823,10 @@ func test_missionary_decrement_per_turn() -> void:
 func test_missionary_returns_after_three_turns_spawns_ideas() -> void:
 	var gs := _make_state()
 	var tm := TurnManagerScript.new()
+	# Plan 18: pin NPC prestige=0 by block NPC scholar dispatch (gate blocks all).
+	for r: Religion in gs.all_religions():
+		if r.id != gs.player_religion_id:
+			r.prestige = 0
 	var src: Religion = gs.get_religion("islam")
 	src.prestige = 30
 	_pin_axes(src, 50.0, 50.0, 50.0, 50.0)
@@ -995,6 +999,10 @@ func test_integration_council_missionaries_coalition_lifecycle() -> void:
 	var gs := _make_state()
 	var tm := TurnManagerScript.new()
 	var dm := DiplomacyManager.new()
+	# Plan 18: pin NPC prestige=0 by block NPC scholar dispatch (gate blocks all).
+	for r: Religion in gs.all_religions():
+		if r.id != gs.player_religion_id:
+			r.prestige = 0
 
 	var islam: Religion = gs.get_religion("islam")
 	islam.prestige = 200
