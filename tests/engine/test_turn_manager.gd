@@ -258,3 +258,17 @@ func test_turn_evaluates_coalitions() -> void:
 	tm.process_turn(state)
 	assert_eq(state.active_coalitions.size(), 1)
 	assert_eq(state.active_coalitions[0].target_id, "islam")
+
+# === Plan 18: AI override infrastructure ===
+
+func test_turn_manager_set_ai_override_replaces_default() -> void:
+	var tm := TurnManager.new()
+	var custom_ai := AIManager.new()
+	tm.set_ai_override(custom_ai)
+	assert_eq(tm._get_ai(), custom_ai, "set_ai_override pinuje AIManager dla testów")
+
+func test_turn_manager_get_ai_returns_new_instance_when_no_override() -> void:
+	var tm := TurnManager.new()
+	var ai := tm._get_ai()
+	assert_not_null(ai, "Bez override _get_ai zwraca świeży AIManager")
+	assert_true(ai is AIManager)
