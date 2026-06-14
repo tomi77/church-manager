@@ -484,60 +484,79 @@ git commit -m "test(graph): Plan 15 — allowlist=[] + 3 negative assertions po 
 
 ---
 
-## Task 6: UI patches — `16` → `19`
+## Task 6: UI patches — `16` → `19` + dangling neighbor assertion
 
-**Cel:** Zaktualizować 2 istniejące testy UI assertujące liczbę prowincji.
+**Cel:** Zaktualizować 3 istniejące testy UI: 2 assertujące liczbę prowincji (16 → 19) + 1 assertujący że `mekka↔jemen` jest dangling neighbor (po Plan 15 to valid edge).
 
 **Files:**
-- Modify: `tests/ui/test_map_view.gd` — rename testu + asercja
-- Modify: `tests/ui/test_main_shell.gd` — asercja
+- Modify: `tests/ui/test_map_view.gd` — rename testu + asercja count + flip dangling assertion
+- Modify: `tests/ui/test_main_shell.gd` — asercja count
 
 - [ ] **Step 1: Sprawdź lokalizacje**
 
 ```bash
-grep -n "16" tests/ui/test_map_view.gd tests/ui/test_main_shell.gd
+grep -n "16\|jemen" tests/ui/test_map_view.gd tests/ui/test_main_shell.gd
 ```
 
-Expected:
-- `tests/ui/test_map_view.gd:24` (ok. linii 24 po Plan 14): `func test_view_renders_16_province_nodes` + asercja `16`.
-- `tests/ui/test_main_shell.gd:~73`: asercja porównująca liczbę prowincji z `16`.
+Expected (stan po Plan 14):
+- `tests/ui/test_map_view.gd:20`: `func test_view_renders_16_province_nodes()`.
+- `tests/ui/test_map_view.gd:24`: `assert_eq(mv.get_node_count(), 16)`.
+- `tests/ui/test_map_view.gd:32`: `assert_false(mv.has_edge("mekka", "jemen"), "Dangling neighbor must be skipped")` w `test_view_renders_edges_between_valid_neighbors`.
+- `tests/ui/test_main_shell.gd:73`: `assert_eq(mapa_tab.get_node("%MapView").get_node_count(), 16)`.
 
-- [ ] **Step 2: Run istniejące UI testy — expect 2 FAILS**
+- [ ] **Step 2: Run istniejące UI testy — expect 3 FAILS**
 
 ```bash
 godot --headless --path . -s res://addons/gut/gut_cmdln.gd -gdir=res://tests/ui -gexit
 ```
 
-Expected: 2 testy fail (`test_view_renders_16_province_nodes`, oraz test w `test_main_shell.gd`) — bo mapa ma teraz 19 prowincji (z Task 1-4), nie 16.
+Expected: 3 testy fail po Task 1-4:
+- `test_view_renders_16_province_nodes` — count asercja `16`, mapa ma 19.
+- `test_view_renders_edges_between_valid_neighbors` — `assert_false(mv.has_edge("mekka", "jemen"))` failuje, bo po Task 1 mekka↔jemen to valid edge.
+- `test_main_shell_renders_map_view_in_map_tab` (lub równoważny) — count asercja `16`, mapa ma 19.
 
-Jeśli te 2 testy NIE failują → STOP, zweryfikuj że Task 1-4 zostały zacommitowane i fixture rzeczywiście ma 19 prowincji.
+Jeśli te 3 testy NIE failują → STOP, zweryfikuj że Task 1-4 zostały zacommitowane.
 
-- [ ] **Step 3: Patch `test_map_view.gd`**
+- [ ] **Step 3: Patch `test_map_view.gd` — count test**
 
 W `tests/ui/test_map_view.gd`:
 - Rename funkcji: `test_view_renders_16_province_nodes` → `test_view_renders_19_province_nodes`.
-- Update asercji: `assert_eq(mv.get_node_count(), 16)` → `assert_eq(mv.get_node_count(), 19)` (lub równoważna asercja — wzorzec z Plan 14).
-- Update komentarza (jeśli istnieje wzmianka "16 prowincji").
+- Update asercji: `assert_eq(mv.get_node_count(), 16)` → `assert_eq(mv.get_node_count(), 19)`.
 
-- [ ] **Step 4: Patch `test_main_shell.gd`**
+- [ ] **Step 4: Patch `test_map_view.gd` — dangling neighbor → valid edge**
 
-W `tests/ui/test_main_shell.gd` (linia ~73 lub gdziekolwiek po Plan 14):
+W `tests/ui/test_map_view.gd:32` (wewnątrz `test_view_renders_edges_between_valid_neighbors`):
+
+Zmień:
+```gdscript
+assert_false(mv.has_edge("mekka", "jemen"), "Dangling neighbor must be skipped")
+```
+
+Na:
+```gdscript
+assert_true(mv.has_edge("mekka", "jemen"), "Po Plan 15 mekka↔jemen to valid edge")
+```
+
+**Rationale:** Po Plan 15 allowlist ghost edges = `[]` (Task 5). Brak dangling neighbors w fixturze, więc nie da się jednym testem sprawdzić "skip dangling" — zamiast tego asercja waliduje że MapView poprawnie renderuje fixowaną krawędź (positive assertion zamiast negative). Logika `has_edge` skip-dla-null-province pozostaje w produkcji nietknięta — wciąż chroni przed bugiem w przyszłości.
+
+- [ ] **Step 5: Patch `test_main_shell.gd`**
+
+W `tests/ui/test_main_shell.gd:73`:
 - Zmień asercję `16` → `19`.
-- Update komentarza jeśli istnieje.
 
-- [ ] **Step 5: Run — expect PASS**
+- [ ] **Step 6: Run — expect PASS**
 
 ```bash
 godot --headless --path . -s res://addons/gut/gut_cmdln.gd -gdir=res://tests/ui -gexit
 ```
 
-Expected: oba testy pass; reszta UI suite bez regresji.
+Expected: 3 zmodyfikowane testy pass; reszta UI suite bez regresji.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
 git add tests/ui/test_map_view.gd tests/ui/test_main_shell.gd
-git commit -m "test(ui): Plan 15 — count prowincji 16 → 19"
+git commit -m "test(ui): Plan 15 — count 16→19 + dangling neighbor assertion flip"
 ```
 
 ---
