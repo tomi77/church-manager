@@ -79,6 +79,11 @@
      "pressure": {"eastern_christianity": 55.0, "western_christianity": 20.0}, "population": 300,
      "resources": {"food": 2, "gold": 3}, "terrain": "coast",
      "neighbors": ["libia", "rzym"], "is_holy_site": false,
-     "position": {"x": 60, "y": 320}}
+     "position": {"x": 60, "y": 320}},
+    {"id": "jemen", "display_name": "Jemen", "owner": "arabian_paganism",
+     "pressure": {"arabian_paganism": 65.0, "eastern_christianity": 15.0}, "population": 250,
+     "resources": {"food": 1, "gold": 3}, "terrain": "mountains",
+     "neighbors": ["mekka", "abisynia"], "is_holy_site": false,
+     "position": {"x": 480, "y": 530}}
   ]
 }

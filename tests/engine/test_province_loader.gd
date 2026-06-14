@@ -62,3 +62,21 @@ func test_rzym_neighbors_karthago_not_afryka_polnocna() -> void:
 	assert_true(graph.are_neighbors("rzym", "karthago"), "rzym ↔ karthago")
 	assert_null(graph.get_province("afryka_polnocna"),
 		"afryka_polnocna nie powinna istnieć — została zastąpiona przez karthago")
+
+# === Plan 15: ghost edges cleanup ===
+
+func test_loader_loads_jemen_arabian_owner_with_eastern_pressure_15() -> void:
+	var graph := ProvinceLoader.load_graph_from_file("res://data/provinces_historical.json")
+	var jemen := graph.get_province("jemen")
+	assert_not_null(jemen, "Plan 15: jemen powinien istnieć w fixturze")
+	assert_eq(jemen.display_name, "Jemen")
+	assert_eq(jemen.owner, "arabian_paganism")
+	assert_eq(jemen.population, 250)
+	assert_eq(jemen.terrain, "mountains")
+	assert_false(jemen.is_holy_site)
+	assert_eq(jemen.pressure.get("arabian_paganism", 0.0), 65.0)
+	assert_eq(jemen.pressure.get("eastern_christianity", 0.0), 15.0)
+	assert_eq(jemen.resources.get("food", 0), 1)
+	assert_eq(jemen.resources.get("gold", 0), 3)
+	assert_true("mekka" in jemen.neighbors, "jemen ma sąsiada mekka")
+	assert_true("abisynia" in jemen.neighbors, "jemen ma sąsiada abisynia")
