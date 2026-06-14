@@ -99,6 +99,11 @@
      "pressure": {"slavic_paganism": 80.0}, "population": 200,
      "resources": {"food": 1, "gold": 2}, "terrain": "coast",
      "neighbors": ["gnieszno"], "is_holy_site": true,
-     "position": {"x": 40, "y": 0}}
+     "position": {"x": 40, "y": 0}},
+    {"id": "gnieszno", "display_name": "Gniezno", "owner": "slavic_paganism",
+     "pressure": {"slavic_paganism": 70.0, "germanic_paganism": 15.0}, "population": 280,
+     "resources": {"food": 3, "gold": 1}, "terrain": "plains",
+     "neighbors": ["arkona", "morawy", "gardariki"], "is_holy_site": false,
+     "position": {"x": 140, "y": 10}}
   ]
 }
