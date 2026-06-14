@@ -104,6 +104,11 @@
      "pressure": {"slavic_paganism": 70.0, "germanic_paganism": 15.0}, "population": 280,
      "resources": {"food": 3, "gold": 1}, "terrain": "plains",
      "neighbors": ["arkona", "morawy", "gardariki"], "is_holy_site": false,
-     "position": {"x": 140, "y": 10}}
+     "position": {"x": 140, "y": 10}},
+    {"id": "morawy", "display_name": "Morawy", "owner": "slavic_paganism",
+     "pressure": {"slavic_paganism": 65.0, "western_christianity": 15.0}, "population": 230,
+     "resources": {"food": 2, "gold": 1}, "terrain": "mountains",
+     "neighbors": ["gnieszno", "panonia"], "is_holy_site": false,
+     "position": {"x": 140, "y": 70}}
   ]
 }
