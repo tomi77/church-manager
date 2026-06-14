@@ -62,3 +62,20 @@ func test_plan16_constants_exist() -> void:
 	assert_eq(VictoryManager.ARABIAN_AXIS_D_REQUIRED, 70.0)
 	assert_eq(VictoryManager.ARABIAN_ACTIVE_FACTIONS_REQUIRED, 3)
 	assert_eq(VictoryManager.ARABIAN_SUBMISSION_TURNS_REQUIRED, 15)
+
+# === Plan 17: stałe Slavic Sacred Groves ===
+
+func test_plan17_constants_exist() -> void:
+	# 7 prowincji w stałej liście (Array[String])
+	var ids := VictoryManager.SLAVIC_SACRED_GROVES_IDS
+	assert_eq(ids.size(), 7)
+	assert_true("arkona" in ids)
+	assert_true("gnieszno" in ids)
+	assert_true("morawy" in ids)
+	assert_true("panonia" in ids)
+	assert_true("gardariki" in ids)
+	assert_true("nowogrod" in ids)
+	assert_true("kijow" in ids)
+	assert_eq(VictoryManager.SLAVIC_AXIS_A_MAX, 30.0)
+	assert_eq(VictoryManager.SLAVIC_AXIS_B_MAX, 30.0)
+	assert_eq(VictoryManager.SLAVIC_SACRED_GROVES_TURNS_REQUIRED, 20)

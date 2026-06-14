@@ -67,6 +67,12 @@ const ARABIAN_AXIS_D_REQUIRED := 70.0					# Islam reference 75 — margin 5
 const ARABIAN_ACTIVE_FACTIONS_REQUIRED := 3				# wszystkie 3 startowe frakcje muszą żyć (brak schizmy)
 const ARABIAN_SUBMISSION_TURNS_REQUIRED := 15			# trwałość 6 warunków przez 15 tur
 
+# === Plan 17: unikalne warunki — Slavic Paganism (Ziemia Świętych Gajów) ===
+const SLAVIC_SACRED_GROVES_IDS: Array[String] = ["arkona", "gnieszno", "morawy", "panonia", "gardariki", "nowogrod", "kijow"]
+const SLAVIC_AXIS_A_MAX := 30.0							# anti-dogmatism preserved (start 20, próg 30)
+const SLAVIC_AXIS_B_MAX := 30.0							# anti-hierarchy preserved (start 25, próg 30)
+const SLAVIC_SACRED_GROVES_TURNS_REQUIRED := 20			# trwałość 9 warunków przez 20 tur
+
 # === Public API (implementacja w kolejnych taskach) ===
 
 func check(state: Node) -> void:
