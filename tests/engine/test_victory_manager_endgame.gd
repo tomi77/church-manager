@@ -278,3 +278,16 @@ func test_check_marks_arabian_submission_with_game_outcome() -> void:
 	assert_not_null(gs.game_outcome, "game_outcome ustawione po 15 turach")
 	assert_eq(gs.game_outcome.winner_id, "arabian_paganism")
 	assert_eq(gs.game_outcome.reason, "arabian_submission")
+
+# === Plan 17: integracja slavic_sacred_groves z check ===
+
+func test_check_marks_slavic_sacred_groves_with_game_outcome() -> void:
+	var gs := _make_state("slavic_paganism")
+	# 7 prowincji Slavic z fixture, osie startowe A=20 B=25 (oba ≤ 30) — warunki spełnione.
+	var vm := VictoryManager.new()
+	for _i in range(VictoryManager.SLAVIC_SACRED_GROVES_TURNS_REQUIRED):
+		vm.update_counters(gs)
+		vm.check(gs)
+	assert_not_null(gs.game_outcome, "game_outcome ustawione po 20 turach")
+	assert_eq(gs.game_outcome.winner_id, "slavic_paganism")
+	assert_eq(gs.game_outcome.reason, "slavic_sacred_groves")
