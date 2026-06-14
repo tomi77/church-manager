@@ -130,7 +130,7 @@ Każda prowincja zgodna z `Province.from_dict` — pola: `id`, `display_name`, `
 - **Owner Western Christianity:** mimo inwazji Lombardów (568), katolicka większość populacji łacińskiej; Lombardowie sami przeszli na katolicyzm pod koniec VII w.
 - **Pressure 60 Western, 20 Germanic:** sygnał dla przyszłej dynamiki crusades / Lombard wars — Plan 15 nie implementuje mechaniki, ale pressure tworzy podatność na missionary i casus belli.
 - **Resources `{food: 3, gold: 2}` + plains:** żyzna dolina Padu (food 3 najwyższy obok mezopotamii), umiarkowane gold.
-- **Population 350:** średnia, większa niż Rzym (350 vs Rzym 350) — historycznie północ Italii silniej zaludniona niż Latium w VII w.
+- **Population 350:** średnia, równa Rzymowi — historycznie północ Italii porównywalnie zaludniona z Latium w VII w. (Mediolan, Pawia, Werona vs depopulowany Rzym po wojnach gotyckich).
 - **Neighbors `[rzym]`:** izolowana geograficznie w fixturze — brak prowincji frankijskich/germańskich na północy. Dopuszczalne (1 sąsiad jak abisynia przed Plan 15).
 
 ### 4.4 Tracja
