@@ -51,3 +51,12 @@ func choose_scholar_target(state: Node, religion: Religion) -> String:
 	if candidates.is_empty():
 		return ""
 	return candidates[rng.randi() % candidates.size()]
+
+func should_attack_in_war(attacker: Religion, war: War) -> bool:
+	# Plan 19 §4.1: gating attacker AI per war.
+	# MVP: zawsze true gdy attacker żyje + war.state == BATTLING.
+	if attacker == null or attacker.defeated_at_turn != -1:
+		return false
+	if war.state != "BATTLING":
+		return false
+	return true

@@ -149,3 +149,38 @@ func test_choose_scholar_target_returns_empty_when_no_candidates() -> void:
 	var ai := AIManagerScript.new(_seeded_rng(42))
 	var target := ai.choose_scholar_target(gs, rel)
 	assert_eq(target, "", "Brak żywych kandydatów → empty string")
+
+# === Plan 19: should_attack_in_war ===
+
+const WarScript := preload("res://scripts/engine/War.gd")
+
+func _make_war(attacker_id: String, defender_id: String, war_state: String = "BATTLING") -> War:
+	var war := WarScript.new()
+	war.attacker_id = attacker_id
+	war.defender_id = defender_id
+	war.casus_belli = "wojna_sprawiedliwa"
+	war.state = war_state
+	return war
+
+func test_should_attack_in_war_returns_true_when_battling() -> void:
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("slavic_paganism")
+	var war := _make_war("slavic_paganism", "eastern_christianity", "BATTLING")
+	var ai := AIManagerScript.new()
+	assert_true(ai.should_attack_in_war(rel, war), "BATTLING + alive → true")
+
+func test_should_attack_in_war_returns_false_when_not_battling() -> void:
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("slavic_paganism")
+	var ai := AIManagerScript.new()
+	for non_battling: String in ["MOBILIZING", "OCCUPYING", "ENDED"]:
+		var war := _make_war("slavic_paganism", "eastern_christianity", non_battling)
+		assert_false(ai.should_attack_in_war(rel, war), "state %s → false" % non_battling)
+
+func test_should_attack_in_war_returns_false_when_attacker_defeated() -> void:
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("slavic_paganism")
+	rel.defeated_at_turn = 50
+	var war := _make_war("slavic_paganism", "eastern_christianity", "BATTLING")
+	var ai := AIManagerScript.new()
+	assert_false(ai.should_attack_in_war(rel, war), "Defeated attacker → false")
