@@ -94,6 +94,11 @@
      "pressure": {"eastern_christianity": 60.0, "slavic_paganism": 25.0}, "population": 300,
      "resources": {"food": 2, "gold": 1}, "terrain": "plains",
      "neighbors": ["konstantynopol"], "is_holy_site": false,
-     "position": {"x": 200, "y": 60}}
+     "position": {"x": 200, "y": 60}},
+    {"id": "arkona", "display_name": "Arkona", "owner": "slavic_paganism",
+     "pressure": {"slavic_paganism": 80.0}, "population": 200,
+     "resources": {"food": 1, "gold": 2}, "terrain": "coast",
+     "neighbors": ["gnieszno"], "is_holy_site": true,
+     "position": {"x": 40, "y": 0}}
   ]
 }

@@ -17,11 +17,11 @@ func _instance_view(state: Node) -> MapView:
 	mv.bind_state(state)
 	return mv
 
-func test_view_renders_19_province_nodes():
+func test_view_renders_20_province_nodes():
 	var state := _make_state()
 	add_child_autofree(state)
 	var mv := await _instance_view(state)
-	assert_eq(mv.get_node_count(), 19)
+	assert_eq(mv.get_node_count(), 20)
 
 func test_view_renders_edges_between_valid_neighbors():
 	var state := _make_state()

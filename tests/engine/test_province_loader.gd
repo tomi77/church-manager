@@ -123,7 +123,24 @@ func test_jemen_abisynia_mutual_edge() -> void:
 	assert_true("jemen" in abisynia.neighbors, "abisynia.neighbors zawiera jemen (Task 4 patch)")
 
 # Regression guard: chroni przed przypadkowym usunięciem prowincji w przyszłych edycjach.
-# Nie jest red-test — po Task 1-4 fixture ma już 19 prowincji.
-func test_provinces_total_count_19() -> void:
+# Nie jest red-test — po Plan 17 Task 1 fixture ma 20 prowincji (19 + arkona).
+func test_provinces_total_count_20() -> void:
 	var graph := ProvinceLoader.load_graph_from_file("res://data/provinces_historical.json")
-	assert_eq(graph.province_count(), 19, "Plan 15: mapa ma 19 prowincji (16 z Plan 14 + 3 nowe z Plan 15)")
+	assert_eq(graph.province_count(), 20, "Plan 17 Task 1: mapa ma 20 prowincji (19 z Plan 15 + arkona)")
+
+# === Plan 17: Slavic heartland ===
+
+func test_loader_loads_arkona_with_holy_site_and_slavic_owner() -> void:
+	var graph := ProvinceLoader.load_graph_from_file("res://data/provinces_historical.json")
+	var arkona := graph.get_province("arkona")
+	assert_not_null(arkona, "Plan 17: arkona powinna istnieć")
+	assert_eq(arkona.display_name, "Arkona")
+	assert_eq(arkona.owner, "slavic_paganism")
+	assert_eq(arkona.population, 200)
+	assert_eq(arkona.terrain, "coast")
+	assert_true(arkona.is_holy_site, "arkona jest holy site Slavic")
+	assert_eq(arkona.pressure.get("slavic_paganism", 0.0), 80.0)
+	assert_eq(arkona.resources.get("food", 0), 1)
+	assert_eq(arkona.resources.get("gold", 0), 2)
+	assert_eq(arkona.neighbors.size(), 1)
+	assert_true("gnieszno" in arkona.neighbors)
