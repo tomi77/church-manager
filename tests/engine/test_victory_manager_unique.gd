@@ -450,3 +450,34 @@ func test_arabian_submission_other_religion_never_returns_reason() -> void:
 	var result: String = vm.evaluate_unique_victory(rel, gs)
 	assert_ne(result, "arabian_submission",
 		"Islam nie może zwrócić arabian_submission (klauzula tylko dla arabian_paganism)")
+
+# === Plan 17: Slavic Sacred Groves ===
+
+func test_slavic_sacred_groves_requires_20_turns_counter() -> void:
+	var gs := _make_state("slavic_paganism")
+	var rel: Religion = gs.get_religion("slavic_paganism")
+	gs.victory_progress["slavic_paganism"] = {"domination_turns": 0, "prestige_hegemony_turns": 0,
+		"dharma_turns": 0, "coptic_citadel_turns": 0, "arabian_submission_turns": 0,
+		"slavic_sacred_groves_turns": 20}
+	var vm := VictoryManager.new()
+	assert_eq(vm.evaluate_unique_victory(rel, gs), "slavic_sacred_groves")
+
+func test_slavic_sacred_groves_blocked_with_19_turns() -> void:
+	var gs := _make_state("slavic_paganism")
+	var rel: Religion = gs.get_religion("slavic_paganism")
+	gs.victory_progress["slavic_paganism"] = {"domination_turns": 0, "prestige_hegemony_turns": 0,
+		"dharma_turns": 0, "coptic_citadel_turns": 0, "arabian_submission_turns": 0,
+		"slavic_sacred_groves_turns": 19}
+	var vm := VictoryManager.new()
+	assert_eq(vm.evaluate_unique_victory(rel, gs), "", "19 tur < 20 → brak victory")
+
+func test_slavic_sacred_groves_other_religion_never_returns_reason() -> void:
+	var gs := _make_state("islam")
+	var rel: Religion = gs.get_religion("islam")
+	gs.victory_progress["islam"] = {"domination_turns": 0, "prestige_hegemony_turns": 0,
+		"dharma_turns": 0, "coptic_citadel_turns": 0, "arabian_submission_turns": 0,
+		"slavic_sacred_groves_turns": 30}
+	var vm := VictoryManager.new()
+	var result: String = vm.evaluate_unique_victory(rel, gs)
+	assert_ne(result, "slavic_sacred_groves",
+		"Islam nie może zwrócić slavic_sacred_groves (klauzula tylko dla slavic_paganism)")
