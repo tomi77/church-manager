@@ -159,7 +159,7 @@ func update_counters(state: Node) -> void:
 	for religion: Religion in state.all_religions():
 		if religion.defeated_at_turn != -1:
 			continue
-		_ensure_progress_entry(state.victory_progress, religion.id, {"domination_turns": 0, "prestige_hegemony_turns": 0, "dharma_turns": 0, "coptic_citadel_turns": 0})
+		_ensure_progress_entry(state.victory_progress, religion.id, {"domination_turns": 0, "prestige_hegemony_turns": 0, "dharma_turns": 0, "coptic_citadel_turns": 0, "arabian_submission_turns": 0})
 		_ensure_progress_entry(state.defeat_progress, religion.id, {"zero_provinces_turns": 0, "vassalage_turns": 0, "total_schism_turns": 0})
 
 		# Dominacja
@@ -212,6 +212,30 @@ func update_counters(state: Node) -> void:
 				state.victory_progress[religion.id]["coptic_citadel_turns"] += 1
 			else:
 				state.victory_progress[religion.id]["coptic_citadel_turns"] = 0
+
+		# Plan 16 §4.5: arabian_submission_turns — kontrola mekki + axes islamskie + faction survival.
+		if religion.id == "arabian_paganism":
+			var submission_active: bool = true
+			# Warunek 1: kontrola mekki (null guard).
+			var mekka: Province = state.province_graph.get_province(ARABIAN_MEKKA_ID)
+			if mekka == null or mekka.owner != religion.id:
+				submission_active = false
+			# Warunki 2-5: osie islamskie.
+			elif religion.get_axis("A") < ARABIAN_AXIS_A_REQUIRED:
+				submission_active = false
+			elif religion.get_axis("B") < ARABIAN_AXIS_B_REQUIRED:
+				submission_active = false
+			elif religion.get_axis("C") > ARABIAN_AXIS_C_MAX:
+				submission_active = false
+			elif religion.get_axis("D") < ARABIAN_AXIS_D_REQUIRED:
+				submission_active = false
+			# Warunek 6: faction survival.
+			elif religion.factions.size() < ARABIAN_ACTIVE_FACTIONS_REQUIRED:
+				submission_active = false
+			if submission_active:
+				state.victory_progress[religion.id]["arabian_submission_turns"] += 1
+			else:
+				state.victory_progress[religion.id]["arabian_submission_turns"] = 0
 
 		# Defeat counters
 		if owned == 0:

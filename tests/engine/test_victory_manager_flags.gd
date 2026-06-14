@@ -412,3 +412,104 @@ func test_update_counters_only_increments_coptic_citadel_for_coptic_christianity
 	var prog: Dictionary = gs.victory_progress.get("islam", {})
 	assert_eq(prog.get("coptic_citadel_turns", -1), 0,
 		"Islam nie inkrementuje coptic_citadel_turns (counter jest religion-scoped do Coptic)")
+
+# === Plan 16: arabian_submission_turns counter ===
+
+func test_update_counters_initializes_arabian_submission_turns_zero() -> void:
+	var gs := _make_state("arabian_paganism")
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("arabian_paganism", {})
+	assert_eq(prog.get("arabian_submission_turns", -1), 0,
+		"counter inicjuje się na 0 dla Arabian")
+
+func test_update_counters_increments_arabian_submission_when_all_6_conditions_met() -> void:
+	var gs := _make_state("arabian_paganism")
+	var rel: Religion = gs.get_religion("arabian_paganism")
+	# Mekka już jest Arabian z fixture. Pozostaje ustawić osie i upewnić się że 3 frakcje żyją.
+	rel.axes["A"] = 70.0
+	rel.axes["B"] = 65.0
+	rel.axes["C"] = 30.0
+	rel.axes["D"] = 75.0
+	assert_eq(rel.factions.size(), 3, "Arabian startuje z 3 frakcjami")
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("arabian_paganism", {})
+	assert_eq(prog.get("arabian_submission_turns", 0), 1)
+	vm.update_counters(gs)
+	assert_eq(prog.get("arabian_submission_turns", 0), 2, "counter inkrementuje per turn")
+
+func test_update_counters_resets_arabian_submission_when_mekka_lost() -> void:
+	var gs := _make_state("arabian_paganism")
+	var rel: Religion = gs.get_religion("arabian_paganism")
+	rel.axes["A"] = 70.0
+	rel.axes["B"] = 65.0
+	rel.axes["C"] = 30.0
+	rel.axes["D"] = 75.0
+	# Pre-set counter = 5, by check reset
+	gs.victory_progress["arabian_paganism"] = {"domination_turns": 0, "prestige_hegemony_turns": 0,
+		"dharma_turns": 0, "coptic_citadel_turns": 0, "arabian_submission_turns": 5}
+	gs.province_graph.get_province("mekka").owner = "islam"  # utrata mekki
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("arabian_paganism", {})
+	assert_eq(prog.get("arabian_submission_turns", -1), 0, "utrata mekki → reset")
+
+func test_update_counters_resets_arabian_submission_when_axis_A_drops_to_64() -> void:
+	var gs := _make_state("arabian_paganism")
+	var rel: Religion = gs.get_religion("arabian_paganism")
+	rel.axes["A"] = 64.0  # poniżej ARABIAN_AXIS_A_REQUIRED=65
+	rel.axes["B"] = 65.0
+	rel.axes["C"] = 30.0
+	rel.axes["D"] = 75.0
+	gs.victory_progress["arabian_paganism"] = {"domination_turns": 0, "prestige_hegemony_turns": 0,
+		"dharma_turns": 0, "coptic_citadel_turns": 0, "arabian_submission_turns": 5}
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("arabian_paganism", {})
+	assert_eq(prog.get("arabian_submission_turns", -1), 0, "A=64 → reset (próg ostry ≥65)")
+
+func test_update_counters_resets_arabian_submission_when_axis_C_rises_to_36() -> void:
+	var gs := _make_state("arabian_paganism")
+	var rel: Religion = gs.get_religion("arabian_paganism")
+	rel.axes["A"] = 70.0
+	rel.axes["B"] = 65.0
+	rel.axes["C"] = 36.0  # powyżej ARABIAN_AXIS_C_MAX=35
+	rel.axes["D"] = 75.0
+	gs.victory_progress["arabian_paganism"] = {"domination_turns": 0, "prestige_hegemony_turns": 0,
+		"dharma_turns": 0, "coptic_citadel_turns": 0, "arabian_submission_turns": 5}
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("arabian_paganism", {})
+	assert_eq(prog.get("arabian_submission_turns", -1), 0, "C=36 → reset (próg ostry ≤35)")
+
+func test_update_counters_resets_arabian_submission_when_faction_count_drops_to_2() -> void:
+	var gs := _make_state("arabian_paganism")
+	var rel: Religion = gs.get_religion("arabian_paganism")
+	rel.axes["A"] = 70.0
+	rel.axes["B"] = 65.0
+	rel.axes["C"] = 30.0
+	rel.axes["D"] = 75.0
+	# Symuluj utratę 1 frakcji przez schizmę.
+	rel.factions.pop_back()
+	assert_eq(rel.factions.size(), 2)
+	gs.victory_progress["arabian_paganism"] = {"domination_turns": 0, "prestige_hegemony_turns": 0,
+		"dharma_turns": 0, "coptic_citadel_turns": 0, "arabian_submission_turns": 5}
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("arabian_paganism", {})
+	assert_eq(prog.get("arabian_submission_turns", -1), 0,
+		"factions.size()<3 → reset (utrata frakcji przez schizmę)")
+
+func test_update_counters_only_increments_arabian_submission_for_arabian_paganism() -> void:
+	# Inne religie nie inkrementują arabian_submission_turns nawet jeśli "spełniają" warunki.
+	var gs := _make_state("islam")
+	var rel: Religion = gs.get_religion("islam")
+	# Islam już ma osie islamskie (70/65/30/75) — gdyby gałąź nie filtrowała, counter rósłby.
+	# Islam też ma mekka (startowo nie, ale ustawmy).
+	gs.province_graph.get_province("mekka").owner = "islam"
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("islam", {})
+	assert_eq(prog.get("arabian_submission_turns", -1), 0,
+		"Islam nie inkrementuje arabian_submission_turns (counter jest religion-scoped do Arabian)")
