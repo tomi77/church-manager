@@ -37,6 +37,8 @@ const REASON_LABELS: Dictionary = {
 	"buddhism_middle_way": "Środkowa Droga Globalna (Buddyzm)",
 	# Plan 14:
 	"coptic_citadel": "Cytadela Pustelnicza (Koptyjski Kościół)",
+	# Plan 16:
+	"arabian_submission": "Przyjęcie Islamu (Religie Arabskie)",
 }
 
 var _state: Node = null
