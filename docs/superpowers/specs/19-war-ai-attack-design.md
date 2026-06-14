@@ -240,9 +240,13 @@ Pre-existing testy używające `process_turn` z active wars — sprawdzić w Tas
 
 Każdy może mieć NPC attacker — wtedy nowy etap `_npc_attack_wars` doda attacks i może zaburzyć asercje (e.g. `assert war.state == BATTLING` może failować jeśli atak success → OCCUPYING).
 
-**Mitigacja:** dla każdego z 4 testów, ustawić `state.player_religion_id = war.attacker_id` (gracz to atakujący — Plan 19 skip). Lub: ustawić wszystkim attacker religiom `defeated_at_turn = X > 0` (skip via gate). Najprostsze: pin `player_religion_id`.
+**Task 0 scope rozszerzony:** Reviewer Plan 19 spec advisory note 1 — Task 0 MUST grep wszystkie test files (nie tylko test_turn_manager.gd) za pattern `process_turn` + `active_wars`. Komenda:
+```bash
+grep -l "process_turn" tests/**/*.gd | xargs grep -l "active_wars\|declare_war\|attack_province"
+```
+Enumerate konkretne testy, decide isolation per-test.
 
-Task 0 enumerate konkretne kolizje, plan zdecyduje per-test.
+**Mitigacja:** dla każdego z 4 testów, ustawić `state.player_religion_id = war.attacker_id` (gracz to atakujący — Plan 19 skip). Lub: ustawić wszystkim attacker religiom `defeated_at_turn = X > 0` (skip via gate). Najprostsze: pin `player_religion_id`.
 
 ### Backward compatibility
 
