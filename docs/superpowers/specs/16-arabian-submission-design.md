@@ -86,7 +86,7 @@ Pattern naming spójny z istniejącymi reason IDs (manichaeism_illumination, hin
 
 Religia `arabian_paganism` spełnia warunek gdy **wszystkie z poniższych** są true:
 
-1. `mekka` istnieje w ProvinceGraph i `mekka.owner == "arabian_paganism"`.
+1. `mekka` istnieje w ProvinceGraph (null guard: custom mapy mogą jej nie zawierać → wtedy warunek niespełniony) i `mekka.owner == "arabian_paganism"`.
 2. `religion.get_axis("A") >= 65.0` (Islam reference: 70.0).
 3. `religion.get_axis("B") >= 60.0` (Islam reference: 65.0).
 4. `religion.get_axis("C") <= 35.0` (Islam reference: 30.0).
@@ -114,12 +114,12 @@ const ARABIAN_SUBMISSION_TURNS_REQUIRED := 15
 - C: −20 do ≤35 (Syncretism — KIERUNEK PRZECIWNY do C=55 start)
 - D: +25 do ≥70 (Transcendence)
 
-**Mechanika opozycji frakcji** — kluczowa design tension:
+**Mechanika opozycji frakcji** — kluczowa design tension. Wszystkie 3 frakcje opozycjonują przynajmniej jeden komponent profilu islamskiego (B↑ lub C↓):
 - Strażnicy Kaaby (40% influence): `axis_preferences C+1, B−1` — PRZECIWNE do C≤35 oraz B≥60.
 - Kapłani Plemienni (35%): `B−1` — PRZECIWNE do B≥60.
 - Kupcy i Wędrowcy (25%): `C+1` — PRZECIWNE do C≤35.
 
-Każda akcja shifting axis "w stronę islamską" konfliktuje z preferencjami któreś z frakcji → tension rośnie → ryzyko phase escalation (Plan 13 §5: phase 1 ≥60, phase 2 ≥80, phase 3 ≥95 + 2-turn trigger).
+Żadna frakcja nie opozycjonuje bezpośrednio A↑ ani D↑ — te osie shift'uje się "swobodniej". Ale każda akcja podnosząca B lub obniżająca C (potrzebne dla mimikry) konfliktuje z preferencjami któreś z frakcji → tension rośnie → ryzyko phase escalation (Plan 13 §5: phase 1 ≥60, phase 2 ≥80, phase 3 ≥95 + 2-turn trigger).
 
 **Próg 15 tur** (vs Coptic 20, Hindu 50) — kompensuje wyższą trudność. Zestaw 6 warunków jednocześnie + dynamika opposition + zagrożenie D3 defeat = bardzo wymagający warunek.
 
@@ -300,12 +300,7 @@ Plan 16 jest gotowy do merge gdy:
 - **R2: Utrata mekki podczas 15-turowego okna.** Mekka sąsiaduje z lewant (Eastern), arabia_polnocna (Arabian sąsiad), jemen (Arabian — Plan 15). Bezpośredni sąsiedzi nie są Islam. Ale: Islam (mezopotamia) sąsiaduje z arabia_polnocna → indirect threat path. War, missionary pressure z Islam mogą podgryzać Arabian core.
   - **Mitigacja:** Arabian uses war system, alliances, vassalage do obrony. Out of Plan 16 scope.
 
-- **R3: Counter race z D1 defeat (zero provinces, 3 tury).** Jeśli Arabian straci 3 prowincje, D1 defeat triggers przed unique victory. Kolejność check w `VictoryManager.check()`:
-  1. `evaluate_defeat` (D1/D2/D3)
-  2. `evaluate_unique_victory` (per religia)
-  3. `evaluate_universal_victory` (domination/hegemony/holy_land)
-
-  Defeat wygrywa kolejnościowo. To intended — gracz "przegrał" zanim mógłby "wygrać".
+- **R3: Counter wzajemnie wykluczający się z D1 defeat.** D1 (zero provinces) wymagałoby utraty wszystkich 3 prowincji, w tym mekki. Utrata mekki resetuje counter `arabian_submission_turns` natychmiast (warunek 1 z §4.2). Submission requires `factions.size() >= 3` — vs D3 total_schism (3 frakcje w phase 3 przez 2 tury): jeśli któraś z 3 frakcji schismuje, count spada do 2 → submission counter reset, ale D3 wymaga FULL phase 3 escalation bez schismy. Submission i D3 mogą zatem "wyścigować się" o pierwszy trigger — w `check()` (lines 77+) unique victories ewaluowane PRZED defeat'ami, więc submission wygrywa jeśli oba trigger w tej samej turze. Intended: nagroda za przetrwanie pomimo presji.
 
 - **R4: Player może triwializować przez idea spamming.** Jeśli player ma dostęp do idei z impactem A+1 B+1 C-1 D+1, może pumpować osie szybko ignorując frakcje (do pewnego stopnia).
   - **Mitigacja:** Idea acceptance mechanic z Plan 02/13 — idee wymagają faction approval lub dają faction tension. System samoreguluje (do tuningu).
