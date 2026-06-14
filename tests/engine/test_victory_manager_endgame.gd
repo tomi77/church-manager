@@ -258,3 +258,23 @@ func test_check_marks_coptic_citadel_with_game_outcome() -> void:
 	assert_not_null(gs.game_outcome, "game_outcome ustawione po 20 turach")
 	assert_eq(gs.game_outcome.winner_id, "coptic_christianity")
 	assert_eq(gs.game_outcome.reason, "coptic_citadel")
+
+# === Plan 16: integracja arabian_submission z check ===
+
+func test_check_marks_arabian_submission_with_game_outcome() -> void:
+	var gs := _make_state("arabian_paganism")
+	var arabian: Religion = gs.get_religion("arabian_paganism")
+	# Spełnij wszystkie 6 warunków (po Task 2 counter będzie inkrementował).
+	arabian.axes["A"] = 70.0
+	arabian.axes["B"] = 65.0
+	arabian.axes["C"] = 30.0
+	arabian.axes["D"] = 75.0
+	# Mekka już Arabian, 3 frakcje istnieją z fixture.
+	var vm := VictoryManager.new()
+	# 15 tur update_counters + check (po Plan 12 check ustawia game_outcome).
+	for _i in range(VictoryManager.ARABIAN_SUBMISSION_TURNS_REQUIRED):
+		vm.update_counters(gs)
+		vm.check(gs)
+	assert_not_null(gs.game_outcome, "game_outcome ustawione po 15 turach")
+	assert_eq(gs.game_outcome.winner_id, "arabian_paganism")
+	assert_eq(gs.game_outcome.reason, "arabian_submission")
