@@ -5,7 +5,7 @@ extends RefCounted
 # Spec: docs/superpowers/specs/12-victory-conditions-design.md
 # Wywoływany przez TurnManager.process_turn na końcu, po state.advance_turn().
 
-# === Stałe uniwersalne — kalibracja do mapy historycznej (16 prowincji po Plan 14) ===
+# === Stałe uniwersalne — kalibracja do mapy historycznej (26 prowincji po Plan 17) ===
 
 const TURN_LIMIT := 200								# hard cap; po tym tura wygrywa religia z najwyższym prestiżem
 const DOMINATION_PROVINCE_SHARE := 0.5				# ≥50% wszystkich prowincji
