@@ -114,6 +114,11 @@
      "pressure": {"slavic_paganism": 55.0, "eastern_christianity": 20.0}, "population": 320,
      "resources": {"food": 3, "gold": 2}, "terrain": "plains",
      "neighbors": ["morawy", "gardariki", "tracja"], "is_holy_site": false,
-     "position": {"x": 260, "y": 10}}
+     "position": {"x": 260, "y": 10}},
+    {"id": "gardariki", "display_name": "Gardariki", "owner": "slavic_paganism",
+     "pressure": {"slavic_paganism": 70.0}, "population": 250,
+     "resources": {"food": 2, "gold": 1}, "terrain": "plains",
+     "neighbors": ["gnieszno", "panonia", "nowogrod", "kijow"], "is_holy_site": false,
+     "position": {"x": 360, "y": 10}}
   ]
 }
