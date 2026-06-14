@@ -161,7 +161,7 @@ func should_dispatch_scholar(religion: Religion) -> bool:
 
 **Rationale:**
 - `defeated_at_turn != -1`: pokonane religie nie działają.
-- `prestige < 50`: scholar misja kosztuje budżet (TODO sprawdzić jeśli dispatch_scholar kosztuje prestige — obecnie nie kosztuje, ale realistycznie wymaga budżetu kulturalnego). Próg 50 = startowe minimum (najuboższy startowy prestige to Manichaeism = 100, Slavic = 120, więc próg 50 jest niski).
+- `prestige < 50`: `dispatch_scholar` w obecnym DoctrineManager.gd **nie kosztuje prestige** (tylko dodaje do `state.scholar_missions`). Próg 50 w AI to **AI-only gate** — chroni przed dispatch'em religii w opłakanym stanie. Najuboższy startowy prestige to Manichaeism=100, Slavic=120, więc próg 50 jest niski (wszyscy startowo pass).
 - 15% chance per turn → ~30 dispatch eventów per NPC na 200 turach.
 
 ### 5.2 Target selection: `choose_scholar_target`
@@ -265,7 +265,7 @@ func _resolve_idea(idea: Idea, dispatcher_id: String, state: Node, dm: DoctrineM
 		dm.reject_idea(idea, state)
 ```
 
-**Note:** `idea.from_religion_id` ≠ dispatcher_id (semantyczna niespójność istniejąca przed Plan 18 — Plan 18 jej nie naprawia, używa `mission["from_religion_id"]` jako kanonicznego "dispatcher"). Patrz §10 known issues.
+**Note:** `idea.from_religion_id == mission["from_religion_id"] == dispatcher_id` — generate_idea ustawia `idea.from_religion_id = from_religion_id` (czyli dispatcher). Plan 18 używa `mission["from_religion_id"]` jako kanonicznego dispatcher dla czytelności. (Niestandardowa subtelność: `accept_idea` self-guard `idea.from_religion_id != religion.id` skips `absorbed_idea_sources` append gdy dispatcher absorbs own idea — to **intentional**, nie bug.)
 
 ### 6.3 Pipeline order po Plan 18
 
@@ -349,10 +349,13 @@ func _make_idea(from_id: String, axis: String, delta: float) -> Idea:
 
 **Konkretna potencjalna kolizja:** Jeśli `test_turn_manager.gd` ma test wywołujący `tm.process_turn(state)` N razy i asercjujący że `state.scholar_missions.size() == 0`, ten test pęknie po Plan 18 (NPC dispatchują).
 
-**Mitigacja:** Sprawdzić istniejące testy przed implementacją (Task 0 / pre-flight). Jeśli kolizja → dodać izolację:
-1. Option A: TurnManager przyjmuje opcjonalny `ai: AIManager` parameter; testy mogą injectować "disabled" AI.
-2. Option B: Stała `AI_SCHOLAR_DISPATCH_CHANCE` może być modyfikowana w teście (set to 0).
-3. Option C: Test używa `_make_state(...)` z helperem do disable AI via seed (rng z bardzo wysokim float threshold).
+**Mitigacja — MANDATORY Task 0 pre-flight:** Enumerate wszystkie `process_turn` call sites w `test_turn_manager.gd` (przewidywane linie 15, 24, 35, 44, 52, 62, 73, 96, 110, 127, 139, 159, 162, 176, 179, 195, 210, 227, 241, 258 — sprawdzić aktualne). Dla każdego: zdecydować czy NPC behavior wpływa na asercje. Opcje izolacji:
+1. **Option A (Rekomendowane):** TurnManager przyjmuje opcjonalny `ai: AIManager` w konstruktorze lub jako field z setter. Testy injectują "disabled" AI z `rng.seed = 0` + `randf()` zwraca > 0.15 (efektywnie nigdy dispatch). Production: domyślny `var ai := AIManager.new()`.
+2. **Option B:** Test injektuje seeded RNG i pinuje prestige=0 dla NPC religii — gate prestige zablokuje wszystkie dispatch'e.
+
+Wybór architektoniczny: **Option A** (injectable) — wymaga zmiany w pipeline (zamiast `var ai := AIManager.new()` per `_npc_dispatch_scholars` i `_process_scholar_missions`, TurnManager utrzymuje `ai` jako field z lazy-init lub setter). To deviacja od existing pattern (per-step instancjowanie managerów), ale czystość testowania uzasadnia.
+
+**Compromise (Option C):** Zachowaj per-step `AIManager.new()` w produkcji, ale dodaj `_test_ai_override: AIManager` field z setter `set_ai_override(ai)` — production ignoruje (null override → new instance), testy ustawiają via setter. Najmniej inwazyjne.
 
 ### Łącznie
 
@@ -369,7 +372,7 @@ func _make_idea(from_id: String, axis: String, delta: float) -> Idea:
 3. **15% dispatch chance, 50 min prestige** — początkowe wartości do playtestingu.
 4. **Per-turn AI instancjowanie** — spójne z innymi managerami (`var ai := AIManager.new()` per pipeline step), nie persistent field w TurnManager.
 5. **`pending_ideas` queue dla gracza pozostaje orphan** — Plan 18 nie dodaje UI accept/reject. Future plan UI.
-6. **Idea semantic clarity** — Plan 18 NIE naprawia istniejącej niejasności w `idea.from_religion_id` (czy to dispatcher, czy source?). Używa `mission["from_religion_id"]` jako kanonicznego dispatcher. Naprawa semantic to osobny refactor plan.
+6. **Idea semantics** — `idea.from_religion_id` to dispatcher (ustawiony przez `generate_idea(from_religion_id, ...)`). Identyczne z `mission["from_religion_id"]`. Plan 18 używa `mission` jako kanonicznego źródła dla czytelności. Self-guard w `accept_idea` jest intentional (skip self-source absorption).
 
 ### Poza zakresem Plan 18
 
