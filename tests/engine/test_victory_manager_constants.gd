@@ -51,3 +51,14 @@ func test_plan14_constants_exist() -> void:
 	assert_almost_eq(VictoryManager.COPTIC_AXIS_D_REQUIRED, 85.0, 0.001)
 	assert_almost_eq(VictoryManager.COPTIC_FACTION_TENSION_MAX, 50.0, 0.001)
 	assert_eq(VictoryManager.COPTIC_CITADEL_TURNS_REQUIRED, 20)
+
+# === Plan 16: stałe Arabian Submission ===
+
+func test_plan16_constants_exist() -> void:
+	assert_eq(VictoryManager.ARABIAN_MEKKA_ID, "mekka")
+	assert_eq(VictoryManager.ARABIAN_AXIS_A_REQUIRED, 65.0)
+	assert_eq(VictoryManager.ARABIAN_AXIS_B_REQUIRED, 60.0)
+	assert_eq(VictoryManager.ARABIAN_AXIS_C_MAX, 35.0)
+	assert_eq(VictoryManager.ARABIAN_AXIS_D_REQUIRED, 70.0)
+	assert_eq(VictoryManager.ARABIAN_ACTIVE_FACTIONS_REQUIRED, 3)
+	assert_eq(VictoryManager.ARABIAN_SUBMISSION_TURNS_REQUIRED, 15)

@@ -58,6 +58,15 @@ const COPTIC_AXIS_D_REQUIRED := 85.0					# axis D (Transcendencja) — Coptic st
 const COPTIC_FACTION_TENSION_MAX := 50.0				# wszystkie 3 frakcje < 50 (poniżej phase 1)
 const COPTIC_CITADEL_TURNS_REQUIRED := 20				# trwałość 5 warunków przez 20 tur
 
+# === Plan 16: unikalne warunki — Arabian Paganism (Przyjęcie Islamu) ===
+const ARABIAN_MEKKA_ID := "mekka"
+const ARABIAN_AXIS_A_REQUIRED := 65.0					# Islam reference 70 — margin 5
+const ARABIAN_AXIS_B_REQUIRED := 60.0					# Islam reference 65 — margin 5
+const ARABIAN_AXIS_C_MAX := 35.0						# Islam reference 30 — margin 5 (próg górny)
+const ARABIAN_AXIS_D_REQUIRED := 70.0					# Islam reference 75 — margin 5
+const ARABIAN_ACTIVE_FACTIONS_REQUIRED := 3				# wszystkie 3 startowe frakcje muszą żyć (brak schizmy)
+const ARABIAN_SUBMISSION_TURNS_REQUIRED := 15			# trwałość 6 warunków przez 15 tur
+
 # === Public API (implementacja w kolejnych taskach) ===
 
 func check(state: Node) -> void:
