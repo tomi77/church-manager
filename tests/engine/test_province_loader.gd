@@ -110,7 +110,6 @@ func test_loader_loads_tracja_eastern_owner_with_slavic_pressure_25() -> void:
 	assert_eq(tracja.pressure.get("slavic_paganism", 0.0), 25.0)
 	assert_eq(tracja.resources.get("food", 0), 2)
 	assert_eq(tracja.resources.get("gold", 0), 1)
-	assert_eq(tracja.neighbors.size(), 1)
 	assert_true("konstantynopol" in tracja.neighbors)
 
 func test_jemen_abisynia_mutual_edge() -> void:
@@ -161,6 +160,32 @@ func test_loader_loads_gnieszno_slavic_owner_with_germanic_pressure_15() -> void
 	assert_true("arkona" in gnieszno.neighbors)
 	assert_true("morawy" in gnieszno.neighbors)
 	assert_true("gardariki" in gnieszno.neighbors)
+
+func test_loader_loads_panonia_slavic_owner_with_eastern_pressure_20() -> void:
+	var graph := ProvinceLoader.load_graph_from_file("res://data/provinces_historical.json")
+	var panonia := graph.get_province("panonia")
+	assert_not_null(panonia)
+	assert_eq(panonia.display_name, "Panonia")
+	assert_eq(panonia.owner, "slavic_paganism")
+	assert_eq(panonia.population, 320)
+	assert_eq(panonia.terrain, "plains")
+	assert_false(panonia.is_holy_site)
+	assert_eq(panonia.pressure.get("slavic_paganism", 0.0), 55.0)
+	assert_eq(panonia.pressure.get("eastern_christianity", 0.0), 20.0)
+	assert_eq(panonia.resources.get("food", 0), 3)
+	assert_eq(panonia.resources.get("gold", 0), 2)
+	assert_true("morawy" in panonia.neighbors)
+	assert_true("gardariki" in panonia.neighbors)
+	assert_true("tracja" in panonia.neighbors)
+
+func test_panonia_tracja_mutual_edge() -> void:
+	var graph := ProvinceLoader.load_graph_from_file("res://data/provinces_historical.json")
+	var panonia := graph.get_province("panonia")
+	var tracja := graph.get_province("tracja")
+	assert_not_null(panonia)
+	assert_not_null(tracja)
+	assert_true("tracja" in panonia.neighbors, "panonia.neighbors zawiera tracja")
+	assert_true("panonia" in tracja.neighbors, "tracja.neighbors zawiera panonia (Task 4 patch)")
 
 func test_loader_loads_morawy_slavic_owner_with_western_pressure_15() -> void:
 	var graph := ProvinceLoader.load_graph_from_file("res://data/provinces_historical.json")

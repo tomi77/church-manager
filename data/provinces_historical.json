@@ -93,7 +93,7 @@
     {"id": "tracja", "display_name": "Tracja", "owner": "eastern_christianity",
      "pressure": {"eastern_christianity": 60.0, "slavic_paganism": 25.0}, "population": 300,
      "resources": {"food": 2, "gold": 1}, "terrain": "plains",
-     "neighbors": ["konstantynopol"], "is_holy_site": false,
+     "neighbors": ["konstantynopol", "panonia"], "is_holy_site": false,
      "position": {"x": 200, "y": 60}},
     {"id": "arkona", "display_name": "Arkona", "owner": "slavic_paganism",
      "pressure": {"slavic_paganism": 80.0}, "population": 200,
@@ -109,6 +109,11 @@
      "pressure": {"slavic_paganism": 65.0, "western_christianity": 15.0}, "population": 230,
      "resources": {"food": 2, "gold": 1}, "terrain": "mountains",
      "neighbors": ["gnieszno", "panonia"], "is_holy_site": false,
-     "position": {"x": 140, "y": 70}}
+     "position": {"x": 140, "y": 70}},
+    {"id": "panonia", "display_name": "Panonia", "owner": "slavic_paganism",
+     "pressure": {"slavic_paganism": 55.0, "eastern_christianity": 20.0}, "population": 320,
+     "resources": {"food": 3, "gold": 2}, "terrain": "plains",
+     "neighbors": ["morawy", "gardariki", "tracja"], "is_holy_site": false,
+     "position": {"x": 260, "y": 10}}
   ]
 }
