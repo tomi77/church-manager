@@ -165,7 +165,7 @@ func update_counters(state: Node) -> void:
 	for religion: Religion in state.all_religions():
 		if religion.defeated_at_turn != -1:
 			continue
-		_ensure_progress_entry(state.victory_progress, religion.id, {"domination_turns": 0, "prestige_hegemony_turns": 0, "dharma_turns": 0, "coptic_citadel_turns": 0, "arabian_submission_turns": 0})
+		_ensure_progress_entry(state.victory_progress, religion.id, {"domination_turns": 0, "prestige_hegemony_turns": 0, "dharma_turns": 0, "coptic_citadel_turns": 0, "arabian_submission_turns": 0, "slavic_sacred_groves_turns": 0})
 		_ensure_progress_entry(state.defeat_progress, religion.id, {"zero_provinces_turns": 0, "vassalage_turns": 0, "total_schism_turns": 0})
 
 		# Dominacja
@@ -242,6 +242,25 @@ func update_counters(state: Node) -> void:
 				state.victory_progress[religion.id]["arabian_submission_turns"] += 1
 			else:
 				state.victory_progress[religion.id]["arabian_submission_turns"] = 0
+
+		# Plan 17 §5.5: slavic_sacred_groves_turns — kontrola 7 prowincji + osie preserved.
+		if religion.id == "slavic_paganism":
+			var groves_active: bool = true
+			# Warunek 1: kontrola wszystkich 7 prowincji (null guard każda).
+			for pid: String in SLAVIC_SACRED_GROVES_IDS:
+				var p: Province = state.province_graph.get_province(pid)
+				if p == null or p.owner != religion.id:
+					groves_active = false
+					break
+			# Warunki 2-3: osie A i B preserved (tylko jeśli groves_active wciąż true).
+			if groves_active and religion.get_axis("A") > SLAVIC_AXIS_A_MAX:
+				groves_active = false
+			if groves_active and religion.get_axis("B") > SLAVIC_AXIS_B_MAX:
+				groves_active = false
+			if groves_active:
+				state.victory_progress[religion.id]["slavic_sacred_groves_turns"] += 1
+			else:
+				state.victory_progress[religion.id]["slavic_sacred_groves_turns"] = 0
 
 		# Defeat counters
 		if owned == 0:

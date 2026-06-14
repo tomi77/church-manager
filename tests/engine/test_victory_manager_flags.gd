@@ -513,3 +513,79 @@ func test_update_counters_only_increments_arabian_submission_for_arabian_paganis
 	var prog: Dictionary = gs.victory_progress.get("islam", {})
 	assert_eq(prog.get("arabian_submission_turns", -1), 0,
 		"Islam nie inkrementuje arabian_submission_turns (counter jest religion-scoped do Arabian)")
+
+# === Plan 17: slavic_sacred_groves_turns counter ===
+
+func test_update_counters_initializes_slavic_sacred_groves_turns_zero() -> void:
+	var gs := _make_state("slavic_paganism")
+	# Łamiemy warunek (axis A powyżej progu) by counter trzymał się na 0,
+	# żeby przetestować że klucz w schema istnieje (default -1 = missing key).
+	var rel: Religion = gs.get_religion("slavic_paganism")
+	rel.axes["A"] = 50.0
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("slavic_paganism", {})
+	assert_eq(prog.get("slavic_sacred_groves_turns", -1), 0,
+		"counter inicjuje się na 0 dla Slavic")
+
+func test_update_counters_increments_slavic_sacred_groves_when_all_conditions_met() -> void:
+	var gs := _make_state("slavic_paganism")
+	var rel: Religion = gs.get_religion("slavic_paganism")
+	# 7 prowincji już Slavic z fixture (Plan 17 Tasks 1-7). Osie startowe: A=20, B=25.
+	assert_eq(rel.get_axis("A"), 20.0, "Slavic start A=20")
+	assert_eq(rel.get_axis("B"), 25.0, "Slavic start B=25")
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("slavic_paganism", {})
+	assert_eq(prog.get("slavic_sacred_groves_turns", 0), 1)
+	vm.update_counters(gs)
+	assert_eq(prog.get("slavic_sacred_groves_turns", 0), 2)
+
+func test_update_counters_resets_slavic_sacred_groves_when_arkona_lost() -> void:
+	var gs := _make_state("slavic_paganism")
+	gs.victory_progress["slavic_paganism"] = {"domination_turns": 0, "prestige_hegemony_turns": 0,
+		"dharma_turns": 0, "coptic_citadel_turns": 0, "arabian_submission_turns": 0,
+		"slavic_sacred_groves_turns": 5}
+	gs.province_graph.get_province("arkona").owner = "western_christianity"
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("slavic_paganism", {})
+	assert_eq(prog.get("slavic_sacred_groves_turns", -1), 0,
+		"utrata arkony → reset (province at start of list)")
+
+func test_update_counters_resets_slavic_sacred_groves_when_kijow_lost() -> void:
+	var gs := _make_state("slavic_paganism")
+	gs.victory_progress["slavic_paganism"] = {"domination_turns": 0, "prestige_hegemony_turns": 0,
+		"dharma_turns": 0, "coptic_citadel_turns": 0, "arabian_submission_turns": 0,
+		"slavic_sacred_groves_turns": 5}
+	gs.province_graph.get_province("kijow").owner = "islam"
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("slavic_paganism", {})
+	assert_eq(prog.get("slavic_sacred_groves_turns", -1), 0,
+		"utrata kijow → reset (province at end of list — for...break iterates fully)")
+
+func test_update_counters_resets_slavic_sacred_groves_when_axis_A_rises_to_31() -> void:
+	var gs := _make_state("slavic_paganism")
+	var rel: Religion = gs.get_religion("slavic_paganism")
+	rel.axes["A"] = 31.0
+	gs.victory_progress["slavic_paganism"] = {"domination_turns": 0, "prestige_hegemony_turns": 0,
+		"dharma_turns": 0, "coptic_citadel_turns": 0, "arabian_submission_turns": 0,
+		"slavic_sacred_groves_turns": 5}
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("slavic_paganism", {})
+	assert_eq(prog.get("slavic_sacred_groves_turns", -1), 0, "A=31 → reset (próg ostry ≤30)")
+
+func test_update_counters_only_increments_slavic_sacred_groves_for_slavic_paganism() -> void:
+	var gs := _make_state("islam")
+	for pid: String in VictoryManager.SLAVIC_SACRED_GROVES_IDS:
+		gs.province_graph.get_province(pid).owner = "islam"
+	var rel: Religion = gs.get_religion("islam")
+	rel.axes["A"] = 20.0
+	rel.axes["B"] = 20.0
+	var vm := VictoryManager.new()
+	vm.update_counters(gs)
+	var prog: Dictionary = gs.victory_progress.get("islam", {})
+	assert_eq(prog.get("slavic_sacred_groves_turns", -1), 0,
+		"Islam nie inkrementuje slavic_sacred_groves_turns (religion-scoped)")
