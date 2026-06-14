@@ -101,7 +101,7 @@ Każda prowincja zgodna z `Province.from_dict` — pola: `id`, `display_name`, `
  "pressure": {"slavic_paganism": 80.0}, "population": 200,
  "resources": {"food": 1, "gold": 2}, "terrain": "coast",
  "neighbors": ["gnieszno"], "is_holy_site": true,
- "position": {"x": 40, "y": 20}}
+ "position": {"x": 40, "y": 0}}
 ```
 
 **Uzasadnienie:**
@@ -117,7 +117,7 @@ Każda prowincja zgodna z `Province.from_dict` — pola: `id`, `display_name`, `
  "pressure": {"slavic_paganism": 70.0, "germanic_paganism": 15.0}, "population": 280,
  "resources": {"food": 3, "gold": 1}, "terrain": "plains",
  "neighbors": ["arkona", "morawy", "gardariki"], "is_holy_site": false,
- "position": {"x": 140, "y": 30}}
+ "position": {"x": 140, "y": 10}}
 ```
 
 **Uzasadnienie:**
@@ -133,7 +133,7 @@ Każda prowincja zgodna z `Province.from_dict` — pola: `id`, `display_name`, `
  "pressure": {"slavic_paganism": 65.0, "western_christianity": 15.0}, "population": 230,
  "resources": {"food": 2, "gold": 1}, "terrain": "mountains",
  "neighbors": ["gnieszno", "panonia"], "is_holy_site": false,
- "position": {"x": 180, "y": 80}}
+ "position": {"x": 140, "y": 70}}
 ```
 
 **Uzasadnienie:**
@@ -149,7 +149,7 @@ Każda prowincja zgodna z `Province.from_dict` — pola: `id`, `display_name`, `
  "pressure": {"slavic_paganism": 55.0, "eastern_christianity": 20.0}, "population": 320,
  "resources": {"food": 3, "gold": 2}, "terrain": "plains",
  "neighbors": ["morawy", "gardariki", "tracja"], "is_holy_site": false,
- "position": {"x": 260, "y": 80}}
+ "position": {"x": 260, "y": 10}}
 ```
 
 **Uzasadnienie:**
@@ -165,7 +165,7 @@ Każda prowincja zgodna z `Province.from_dict` — pola: `id`, `display_name`, `
  "pressure": {"slavic_paganism": 70.0}, "population": 250,
  "resources": {"food": 2, "gold": 1}, "terrain": "plains",
  "neighbors": ["gnieszno", "panonia", "nowogrod", "kijow"], "is_holy_site": false,
- "position": {"x": 340, "y": 30}}
+ "position": {"x": 360, "y": 10}}
 ```
 
 **Uzasadnienie:**
@@ -181,7 +181,7 @@ Każda prowincja zgodna z `Province.from_dict` — pola: `id`, `display_name`, `
  "pressure": {"slavic_paganism": 75.0}, "population": 220,
  "resources": {"food": 1, "gold": 3}, "terrain": "coast",
  "neighbors": ["gardariki", "kijow"], "is_holy_site": false,
- "position": {"x": 420, "y": 0}}
+ "position": {"x": 460, "y": -40}}
 ```
 
 **Uzasadnienie:**
@@ -197,7 +197,7 @@ Każda prowincja zgodna z `Province.from_dict` — pola: `id`, `display_name`, `
  "pressure": {"slavic_paganism": 65.0}, "population": 300,
  "resources": {"food": 3, "gold": 2}, "terrain": "plains",
  "neighbors": ["gardariki", "nowogrod"], "is_holy_site": false,
- "position": {"x": 480, "y": 60}}
+ "position": {"x": 520, "y": 30}}
 ```
 
 **Uzasadnienie:**
@@ -244,7 +244,31 @@ Krawędzie nowo wprowadzone przez Plan 17:
 
 11 nowych krawędzi (10 internal + 1 cross-region).
 
-### 4.11 Pressure values jako "design hooks"
+### 4.11 Layout pozycji — non-collision constraint
+
+ProvinceNode w MapView jest 60×40 px, position to **top-left corner** (nie center). Każda nowa prowincja musi mieć rectangle `[x, x+60] × [y, y+40]` rozłączny z rectangle'ami istniejących 19 prowincji oraz innych nowych (edge-touch dopuszczalny — 0 area intersection).
+
+**Krytyczne sąsiedztwa istniejących nodes** (Plan 15):
+- tracja(200, 60) → rect [200-260] × [60-100]
+- konstantynopol(280, 100) → rect [280-340] × [100-140]
+- italia_polnocna(100, 120) → rect [100-160] × [120-160]
+- armenia(460, 180) → rect [460-520] × [180-220]
+
+**Pozycje Plan 17** (top band y ≤ 70, eastern far y = -40):
+
+| Province | x | y | rect | collision check |
+|---|---|---|---|---|
+| arkona | 40 | 0 | [40-100]×[0-40] | clear |
+| gnieszno | 140 | 10 | [140-200]×[10-50] | edge touch tracja x=200 (0 area) |
+| morawy | 140 | 70 | [140-200]×[70-110] | edge touch tracja x=200 (0 area) |
+| panonia | 260 | 10 | [260-320]×[10-50] | edge touch tracja x=260 (0 area), no overlap konstantynopol (y disjoint) |
+| gardariki | 360 | 10 | [360-420]×[10-50] | no overlap (konstantynopol x=280-340 disjoint) |
+| nowogrod | 460 | -40 | [460-520]×[-40-0] | no overlap armenia (y disjoint) |
+| kijow | 520 | 30 | [520-580]×[30-70] | edge touch nowogrod x=520 (0 area) |
+
+Wszystkie pary mają 0 area intersection. Negatywne y dla nowogrod (-40) jest dopuszczalne — Godot Control coords nie mają hard bound; MapView scroll/zoom poprawnie obsługuje.
+
+### 4.12 Pressure values jako "design hooks"
 
 Plan 17 wprowadza 3 minor pressures sygnalizujące przyszłe specs **bez** implementacji mechaniki:
 
@@ -332,7 +356,7 @@ if religion.id == "slavic_paganism":
 		state.victory_progress[religion.id]["slavic_sacred_groves_turns"] = 0
 ```
 
-**Note:** używamy `for ... break` zamiast `if/elif` chain (jak Coptic/Arabian) bo lista 7 prowincji. Drugie i trzecie warunki (axes) gałęzią `if groves_active and ...` zamiast `elif` żeby uniknąć ranny exit przed sprawdzeniem provinces.
+**Note:** Coptic/Arabian używają `elif` chain (VictoryManager.gd:196-210 / 220-234). Plan 17 deviates z `for ... break` bo lista 7 prowincji wymaga iteracji. Warunki axes (after province loop) używają `if groves_active and ...` zamiast `elif` (bo `for` block przerwał potencjalny chain).
 
 Dla religii innych niż slavic_paganism: brak inkrementu → counter zostaje 0 (analog Arabian / Coptic).
 
@@ -451,6 +475,8 @@ Format spójny z Plan 13/14/16 (`"<Polish concept> (<religion display>)"`).
 1. **Reason ID `slavic_sacred_groves`** — przekład "Ziemia Świętych Gajów". Pattern `<religion>_<concept>` spójny.
 
 2. **7 prowincji jako lista (`SLAVIC_SACRED_GROVES_IDS: Array[String]`)** — zamiast 7 osobnych stałych ID (jak `COPTIC_ALEKSANDRIA_ID`, `COPTIC_EGIPT_ID`, `COPTIC_ABISYNIA_ID`). Trade-off: lista mniej idiomatic dla 1-3 prowincji, bardziej idiomatic dla 7+. Test `test_plan17_constants_exist` waliduje exact contents listy.
+
+   **Precedent note:** `const ... Array[String]` to nowy idiom w tym repo (brak prior usage w `VictoryManager.gd`). Verified parse OK w GDScript 2.0 / Godot 4.6. Dla przyszłych readerów: ten pattern jest preferowany gdy stała = ≥4 elementy tego samego typu.
 
 3. **`for ... break` zamiast `if/elif` chain** dla provinces check — wymuszone listą.
 
