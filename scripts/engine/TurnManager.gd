@@ -30,6 +30,7 @@ func process_turn(state: Node) -> void:
 	_process_scholar_missions(state)
 	_apply_believer_exodus(state)
 	_process_active_wars(state)
+	_npc_attack_wars(state)
 	_process_missionaries(state)
 	_process_diplomacy(state)
 	_process_resources(state)
@@ -95,6 +96,24 @@ func _npc_dispatch_scholars(state: Node) -> void:
 		var target_id: String = ai.choose_scholar_target(state, religion)
 		if target_id != "":
 			dm.dispatch_scholar(state, religion.id, target_id)
+
+func _npc_attack_wars(state: Node) -> void:
+	# Plan 19 §6.1: NPC attacker performs 1 attack per war per turn (gdy BATTLING).
+	var ai := _get_ai()
+	var wm := WarManager.new()
+	for war: War in state.active_wars.duplicate():
+		if war.state != "BATTLING":
+			continue
+		if war.attacker_id == state.player_religion_id:
+			continue
+		var attacker: Religion = state.get_religion(war.attacker_id)
+		if attacker == null:
+			continue
+		if not ai.should_attack_in_war(attacker, war):
+			continue
+		var target_id: String = ai.choose_attack_target(state, attacker, war.defender_id)
+		if target_id != "":
+			wm.attack_province(war, target_id, state)
 
 func _process_scholar_missions(state: Node) -> void:
 	var dm := DoctrineManager.new()

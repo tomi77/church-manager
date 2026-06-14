@@ -357,3 +357,61 @@ func test_npc_scholar_mission_auto_resolves_via_ai() -> void:
 			matching_missions += 1
 	assert_eq(matching_missions, 0, "Mission slavic→western resolved")
 	assert_eq(gs.pending_ideas.size(), initial_pending, "NPC idea NIE w pending_ideas (auto-resolved)")
+
+# === Plan 19: _npc_attack_wars integration ===
+
+const WarScript := preload("res://scripts/engine/War.gd")
+
+func _make_npc_attacker_war(state: Node, attacker_id: String, defender_id: String) -> War:
+	var war := WarScript.new()
+	war.attacker_id = attacker_id
+	war.defender_id = defender_id
+	war.casus_belli = "wojna_sprawiedliwa"
+	war.state = "BATTLING"
+	war.turns_in_state = 0
+	state.active_wars.append(war)
+	return war
+
+func test_npc_attacker_attacks_during_battling_state() -> void:
+	var tm := TurnManager.new()
+	var gs := _make_state()  # player = islam
+	# Slavic atakuje Eastern Christianity. panonia↔tracja border (Plan 17).
+	var war := _make_npc_attacker_war(gs, "slavic_paganism", "eastern_christianity")
+	# Pin OTHER NPC prestige=0 by disable scholar noise from Plan 18 dispatch.
+	# Slavic prestige zostaje (jest attacker, prestige=120 default).
+	for r: Religion in gs.all_religions():
+		if r.id != gs.player_religion_id and r.id != "slavic_paganism":
+			r.prestige = 0
+	var initial_battles: int = war.battles_won + war.battles_lost
+	tm.process_turn(gs)
+	var after_battles: int = war.battles_won + war.battles_lost
+	assert_gt(after_battles, initial_battles, "NPC attacker wykonał >=1 attack")
+
+func test_npc_does_not_attack_when_player_is_attacker() -> void:
+	var tm := TurnManager.new()
+	var gs := _make_state()  # player = islam
+	# Player (islam) atakuje Eastern. NPC powinno skipnąć tę wojnę.
+	var war := _make_npc_attacker_war(gs, "islam", "eastern_christianity")
+	# Pin NPC prestige=0 by isolation.
+	for r: Religion in gs.all_religions():
+		if r.id != gs.player_religion_id:
+			r.prestige = 0
+	var initial_battles: int = war.battles_won + war.battles_lost
+	tm.process_turn(gs)
+	var after_battles: int = war.battles_won + war.battles_lost
+	assert_eq(after_battles, initial_battles, "Player attacker -> AI skip -> no battles")
+
+func test_npc_does_not_attack_during_mobilizing_state() -> void:
+	var tm := TurnManager.new()
+	var gs := _make_state()
+	var war := _make_npc_attacker_war(gs, "slavic_paganism", "eastern_christianity")
+	war.state = "MOBILIZING"
+	# Pin OTHER NPC prestige=0.
+	for r: Religion in gs.all_religions():
+		if r.id != gs.player_religion_id and r.id != "slavic_paganism":
+			r.prestige = 0
+	var initial_battles: int = war.battles_won + war.battles_lost
+	tm.process_turn(gs)
+	# Po 1 turn: state może wciąż być MOBILIZING (turns_in_state staje 1, < 2).
+	var after_battles: int = war.battles_won + war.battles_lost
+	assert_eq(after_battles, initial_battles, "MOBILIZING -> AI skip -> no battles")
