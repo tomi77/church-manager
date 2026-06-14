@@ -484,13 +484,17 @@ git commit -m "test(graph): Plan 15 — allowlist=[] + 3 negative assertions po 
 
 ---
 
-## Task 6: UI patches — `16` → `19` + dangling neighbor assertion
+## Task 6: Fixture-dependent test patches (UI count + dangling + war manager population)
 
-**Cel:** Zaktualizować 3 istniejące testy UI: 2 assertujące liczbę prowincji (16 → 19) + 1 assertujący że `mekka↔jemen` jest dangling neighbor (po Plan 15 to valid edge).
+**Cel:** Zaktualizować 4 istniejące testy zależne od stanu fixture'a po Plan 15:
+- 2 UI assertujące liczbę prowincji (16 → 19).
+- 1 UI assertujący `mekka↔jemen` dangling neighbor (po Plan 15 to valid edge).
+- 1 engine assertujący sumę populacji Eastern Christianity (Plan 14: 2150 → Plan 15: 2450 z tracja).
 
 **Files:**
 - Modify: `tests/ui/test_map_view.gd` — rename testu + asercja count + flip dangling assertion
 - Modify: `tests/ui/test_main_shell.gd` — asercja count
+- Modify: `tests/engine/test_war_manager.gd` — komentarz + expected value w `test_compute_strength_terrain_modifier_only_for_defender`
 
 - [ ] **Step 1: Sprawdź lokalizacje**
 
@@ -544,19 +548,53 @@ assert_true(mv.has_edge("mekka", "jemen"), "Po Plan 15 mekka↔jemen to valid ed
 W `tests/ui/test_main_shell.gd:73`:
 - Zmień asercję `16` → `19`.
 
-- [ ] **Step 6: Run — expect PASS**
+- [ ] **Step 6: Patch `test_war_manager.gd` — population sum**
 
-```bash
-godot --headless --path . -s res://addons/gut/gut_cmdln.gd -gdir=res://tests/ui -gexit
+W `tests/engine/test_war_manager.gd:288-294` (`test_compute_strength_terrain_modifier_only_for_defender`):
+
+Zmień komentarz wyliczający sumę populacji Eastern Christianity:
+```gdscript
+# Suma populacji eastern_christianity (Plan 14): lewant(300) + jerozolima(150) + anatolia(400)
+# + konstantynopol(600) + armenia(200) + libia(200) + karthago(300) = 2150
+# Baza: 2150 * 0.1 + 100 * 2.0 = 215 + 200 = 415
+# Modyfikator terenu (mountains): +0.15 dla broniącego
+# 415 * 1.15 = 477.25
 ```
 
-Expected: 3 zmodyfikowane testy pass; reszta UI suite bez regresji.
+Na:
+```gdscript
+# Suma populacji eastern_christianity (Plan 15): lewant(300) + jerozolima(150) + anatolia(400)
+# + konstantynopol(600) + armenia(200) + libia(200) + karthago(300) + tracja(300) = 2450
+# Baza: 2450 * 0.1 + 100 * 2.0 = 245 + 200 = 445
+# Modyfikator terenu (mountains): +0.15 dla broniącego
+# 445 * 1.15 = 511.75
+```
 
-- [ ] **Step 7: Commit**
+I zmień asercję:
+```gdscript
+assert_almost_eq(strength, 477.25, 0.5)
+```
+
+Na:
+```gdscript
+assert_almost_eq(strength, 511.75, 0.5)
+```
+
+**Rationale:** Test hardcoduje sumę populacji Eastern Christianity bo bezpośrednio waliduje formułę `compute_army_strength`. Plan 15 dodaje tracja (eastern_christianity, population=300), zmieniając sumę z 2150 do 2450. Asercja musi się dostosować. Inne testy `compute_army_strength` używają porównań względnych (z modyfikatorem vs bez), więc są population-agnostic.
+
+- [ ] **Step 7: Run — expect PASS**
 
 ```bash
-git add tests/ui/test_map_view.gd tests/ui/test_main_shell.gd
-git commit -m "test(ui): Plan 15 — count 16→19 + dangling neighbor assertion flip"
+godot --headless --path . -s res://addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit
+```
+
+Expected: 4 zmodyfikowane testy pass; cała suite bez regresji.
+
+- [ ] **Step 8: Commit**
+
+```bash
+git add tests/ui/test_map_view.gd tests/ui/test_main_shell.gd tests/engine/test_war_manager.gd
+git commit -m "test: Plan 15 — count 16→19 + dangling flip + war_manager population sum"
 ```
 
 ---
