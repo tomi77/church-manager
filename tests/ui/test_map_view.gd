@@ -17,11 +17,11 @@ func _instance_view(state: Node) -> MapView:
 	mv.bind_state(state)
 	return mv
 
-func test_view_renders_16_province_nodes():
+func test_view_renders_19_province_nodes():
 	var state := _make_state()
 	add_child_autofree(state)
 	var mv := await _instance_view(state)
-	assert_eq(mv.get_node_count(), 16)
+	assert_eq(mv.get_node_count(), 19)
 
 func test_view_renders_edges_between_valid_neighbors():
 	var state := _make_state()
@@ -29,7 +29,7 @@ func test_view_renders_edges_between_valid_neighbors():
 	var mv := await _instance_view(state)
 	assert_true(mv.has_edge("mekka", "lewant"))
 	assert_true(mv.has_edge("mekka", "arabia_polnocna"))
-	assert_false(mv.has_edge("mekka", "jemen"), "Dangling neighbor must be skipped")
+	assert_true(mv.has_edge("mekka", "jemen"), "Po Plan 15 mekka↔jemen to valid edge")
 
 func test_view_emits_province_selected_on_node_click():
 	var state := _make_state()
