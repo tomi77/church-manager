@@ -124,6 +124,11 @@
      "pressure": {"slavic_paganism": 75.0}, "population": 220,
      "resources": {"food": 1, "gold": 3}, "terrain": "coast",
      "neighbors": ["gardariki", "kijow"], "is_holy_site": false,
-     "position": {"x": 460, "y": -40}}
+     "position": {"x": 460, "y": -40}},
+    {"id": "kijow", "display_name": "Kijów", "owner": "slavic_paganism",
+     "pressure": {"slavic_paganism": 65.0}, "population": 300,
+     "resources": {"food": 3, "gold": 2}, "terrain": "plains",
+     "neighbors": ["gardariki", "nowogrod"], "is_holy_site": false,
+     "position": {"x": 520, "y": 30}}
   ]
 }

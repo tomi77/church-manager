@@ -123,9 +123,9 @@ func test_jemen_abisynia_mutual_edge() -> void:
 
 # Regression guard: chroni przed przypadkowym usunięciem prowincji w przyszłych edycjach.
 # Nie jest red-test — po Task 1-4 fixture ma już 19 prowincji.
-func test_provinces_total_count_19() -> void:
+func test_provinces_total_count_26() -> void:
 	var graph := ProvinceLoader.load_graph_from_file("res://data/provinces_historical.json")
-	assert_eq(graph.province_count(), 19, "Plan 15: mapa ma 19 prowincji (16 z Plan 14 + 3 nowe z Plan 15)")
+	assert_eq(graph.province_count(), 26, "Plan 17: mapa ma 26 prowincji (19 z Plan 15 + 7 nowych z Plan 17)")
 
 # === Plan 17: Slavic heartland ===
 
@@ -235,3 +235,18 @@ func test_loader_loads_nowogrod_slavic_owner_coast() -> void:
 	assert_eq(nowogrod.resources.get("gold", 0), 3)
 	assert_true("gardariki" in nowogrod.neighbors)
 	assert_true("kijow" in nowogrod.neighbors)
+
+func test_loader_loads_kijow_slavic_owner() -> void:
+	var graph := ProvinceLoader.load_graph_from_file("res://data/provinces_historical.json")
+	var kijow := graph.get_province("kijow")
+	assert_not_null(kijow)
+	assert_eq(kijow.display_name, "Kijów")
+	assert_eq(kijow.owner, "slavic_paganism")
+	assert_eq(kijow.population, 300)
+	assert_eq(kijow.terrain, "plains")
+	assert_false(kijow.is_holy_site)
+	assert_eq(kijow.pressure.get("slavic_paganism", 0.0), 65.0)
+	assert_eq(kijow.resources.get("food", 0), 3)
+	assert_eq(kijow.resources.get("gold", 0), 2)
+	assert_true("gardariki" in kijow.neighbors)
+	assert_true("nowogrod" in kijow.neighbors)
