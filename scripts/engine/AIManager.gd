@@ -30,3 +30,11 @@ func decide_accept_idea(religion: Religion, idea: Idea) -> bool:
 				net_support += faction.influence * pref_dir * shift_direction
 				break
 	return net_support > 0.0
+
+func should_dispatch_scholar(religion: Religion) -> bool:
+	# Plan 18 §5.1: defeated/prestige/RNG gates.
+	if religion.defeated_at_turn != -1:
+		return false
+	if religion.prestige < AI_SCHOLAR_MIN_PRESTIGE:
+		return false
+	return rng.randf() < AI_SCHOLAR_DISPATCH_CHANCE

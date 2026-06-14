@@ -88,3 +88,34 @@ func test_decide_rejects_religion_with_no_factions() -> void:
 	var idea := _make_idea("islam", "A", 5.0)
 	var ai := AIManagerScript.new()
 	assert_false(ai.decide_accept_idea(rel, idea), "Brak frakcji → reject")
+
+# === Plan 18: should_dispatch_scholar ===
+
+func _seeded_rng(seed_val: int) -> RandomNumberGenerator:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_val
+	return rng
+
+func test_should_not_dispatch_when_defeated() -> void:
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("slavic_paganism")
+	rel.defeated_at_turn = 50
+	rel.prestige = 200
+	var ai := AIManagerScript.new(_seeded_rng(0))
+	assert_false(ai.should_dispatch_scholar(rel))
+
+func test_should_not_dispatch_when_prestige_below_min() -> void:
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("slavic_paganism")
+	rel.prestige = 49  # próg ostry: AI_SCHOLAR_MIN_PRESTIGE=50.
+	var ai := AIManagerScript.new(_seeded_rng(0))
+	assert_false(ai.should_dispatch_scholar(rel))
+
+func test_should_dispatch_deterministic_with_seeded_rng() -> void:
+	var gs := _make_state()
+	var rel: Religion = gs.get_religion("slavic_paganism")
+	rel.prestige = 100
+	var ai_a := AIManagerScript.new(_seeded_rng(1))
+	var ai_b := AIManagerScript.new(_seeded_rng(1))
+	assert_eq(ai_a.should_dispatch_scholar(rel), ai_b.should_dispatch_scholar(rel),
+		"Identyczne seedy → identyczne decyzje (deterministic)")
