@@ -119,6 +119,11 @@
      "pressure": {"slavic_paganism": 70.0}, "population": 250,
      "resources": {"food": 2, "gold": 1}, "terrain": "plains",
      "neighbors": ["gnieszno", "panonia", "nowogrod", "kijow"], "is_holy_site": false,
-     "position": {"x": 360, "y": 10}}
+     "position": {"x": 360, "y": 10}},
+    {"id": "nowogrod", "display_name": "Nowogród", "owner": "slavic_paganism",
+     "pressure": {"slavic_paganism": 75.0}, "population": 220,
+     "resources": {"food": 1, "gold": 3}, "terrain": "coast",
+     "neighbors": ["gardariki", "kijow"], "is_holy_site": false,
+     "position": {"x": 460, "y": -40}}
   ]
 }

@@ -220,3 +220,18 @@ func test_loader_loads_gardariki_slavic_owner_no_minor_pressure() -> void:
 	assert_true("panonia" in gardariki.neighbors)
 	assert_true("nowogrod" in gardariki.neighbors)
 	assert_true("kijow" in gardariki.neighbors)
+
+func test_loader_loads_nowogrod_slavic_owner_coast() -> void:
+	var graph := ProvinceLoader.load_graph_from_file("res://data/provinces_historical.json")
+	var nowogrod := graph.get_province("nowogrod")
+	assert_not_null(nowogrod)
+	assert_eq(nowogrod.display_name, "Nowogród")
+	assert_eq(nowogrod.owner, "slavic_paganism")
+	assert_eq(nowogrod.population, 220)
+	assert_eq(nowogrod.terrain, "coast")
+	assert_false(nowogrod.is_holy_site)
+	assert_eq(nowogrod.pressure.get("slavic_paganism", 0.0), 75.0)
+	assert_eq(nowogrod.resources.get("food", 0), 1)
+	assert_eq(nowogrod.resources.get("gold", 0), 3)
+	assert_true("gardariki" in nowogrod.neighbors)
+	assert_true("kijow" in nowogrod.neighbors)
