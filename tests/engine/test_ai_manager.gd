@@ -365,3 +365,67 @@ func test_should_declare_war_false_when_no_cb_available() -> void:
 	dm.get_or_create_relation(gs, "slavic_paganism", "eastern_christianity").military_tension = 80.0
 	var ai := AIManagerScript.new()
 	assert_false(ai.should_declare_war(attacker, defender, gs))
+
+# === Plan 20: should_offer_peace ===
+
+func test_should_offer_peace_attacker_contested_provinces() -> void:
+	# Attacker with contested > 0 → true (claim winnings).
+	var gs := _make_state()
+	var attacker: Religion = gs.get_religion("islam")
+	attacker.war_weariness = 10.0  # low weariness — claim anyway
+	var war := _make_war("islam", "eastern_christianity", "BATTLING")
+	war.contested_provinces = ["lewant"]
+	var ai := AIManagerScript.new()
+	assert_true(ai.should_offer_peace(war, "islam", gs), "Attacker contested > 0 → peace (claim)")
+
+func test_should_offer_peace_attacker_give_up_high_weariness() -> void:
+	# Attacker without contested, weariness > 70 → true (give up).
+	var gs := _make_state()
+	var attacker: Religion = gs.get_religion("islam")
+	attacker.war_weariness = 75.0  # > 70
+	var war := _make_war("islam", "eastern_christianity", "BATTLING")
+	war.contested_provinces = []
+	var ai := AIManagerScript.new()
+	assert_true(ai.should_offer_peace(war, "islam", gs), "Attacker weariness > 70 → give up peace")
+
+func test_should_offer_peace_defender_high_weariness() -> void:
+	# Defender, weariness > 60 → true.
+	var gs := _make_state()
+	var defender: Religion = gs.get_religion("eastern_christianity")
+	defender.war_weariness = 65.0
+	var war := _make_war("islam", "eastern_christianity", "BATTLING")
+	var ai := AIManagerScript.new()
+	assert_true(ai.should_offer_peace(war, "eastern_christianity", gs), "Defender weariness > 60 → peace")
+
+func test_should_offer_peace_false_when_low_weariness_no_contested() -> void:
+	# Attacker, no contested, weariness 30 → false.
+	var gs := _make_state()
+	var attacker: Religion = gs.get_religion("islam")
+	attacker.war_weariness = 30.0
+	var war := _make_war("islam", "eastern_christianity", "BATTLING")
+	war.contested_provinces = []
+	var ai := AIManagerScript.new()
+	assert_false(ai.should_offer_peace(war, "islam", gs), "Attacker no contested + low weariness → no peace")
+
+# === Plan 20: compose_peace_terms ===
+
+func test_compose_peace_terms_attacker_annexation_when_contested() -> void:
+	var gs := _make_state()
+	var war := _make_war("islam", "eastern_christianity", "BATTLING")
+	war.contested_provinces = ["lewant", "jerozolima"]
+	var ai := AIManagerScript.new()
+	var terms := ai.compose_peace_terms(war, "islam", gs)
+	assert_true(terms.has("annexation"))
+	var ann: Dictionary = terms["annexation"]
+	assert_true("lewant" in ann.get("provinces", []))
+	assert_true("jerozolima" in ann.get("provinces", []))
+	assert_eq(ann.get("policy", ""), "nawracaj")
+
+func test_compose_peace_terms_empty_when_no_contested() -> void:
+	# Attacker without contested (give-up) OR defender → empty terms.
+	var gs := _make_state()
+	var war := _make_war("islam", "eastern_christianity", "BATTLING")
+	war.contested_provinces = []
+	var ai := AIManagerScript.new()
+	assert_eq(ai.compose_peace_terms(war, "islam", gs), {}, "Attacker no contested → empty")
+	assert_eq(ai.compose_peace_terms(war, "eastern_christianity", gs), {}, "Defender → empty")

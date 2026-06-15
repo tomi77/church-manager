@@ -143,3 +143,26 @@ func choose_war_target(state: Node, attacker: Religion) -> Dictionary:
 	if cbs.is_empty():
 		return {}
 	return {"defender_id": best_target_id, "cb": cbs[0]}
+
+func should_offer_peace(war: War, npc_id: String, state: Node) -> bool:
+	# Plan 20 §4.4: per-role peace decision.
+	if war.state == "ENDED":
+		return false
+	var npc: Religion = state.get_religion(npc_id)
+	if npc == null:
+		return false
+	if war.attacker_id == npc_id:
+		if war.contested_provinces.size() > 0:
+			return true
+		if npc.war_weariness > AI_PEACE_ATTACKER_WEARINESS_GIVE_UP:
+			return true
+		return false
+	elif war.defender_id == npc_id:
+		return npc.war_weariness > AI_PEACE_DEFENDER_WEARINESS
+	return false
+
+func compose_peace_terms(war: War, npc_id: String, state: Node) -> Dictionary:
+	# Plan 20 §4.5: terms depend on role + contested status.
+	if war.attacker_id == npc_id and war.contested_provinces.size() > 0:
+		return {"annexation": {"provinces": war.contested_provinces.duplicate(), "policy": "nawracaj"}}
+	return {}
