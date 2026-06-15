@@ -8,6 +8,12 @@ extends RefCounted
 const AI_SCHOLAR_MIN_PRESTIGE := 50
 const AI_SCHOLAR_DISPATCH_CHANCE := 0.15
 
+# === Plan 20: war declarations + peace ===
+const AI_WAR_TENSION_THRESHOLD := 70.0
+const AI_WAR_DECLARE_CHANCE := 0.2
+const AI_PEACE_ATTACKER_WEARINESS_GIVE_UP := 70.0
+const AI_PEACE_DEFENDER_WEARINESS := 60.0
+
 var rng: RandomNumberGenerator
 
 func _init(injected_rng: RandomNumberGenerator = null) -> void:
@@ -76,3 +82,41 @@ func choose_attack_target(state: Node, attacker: Religion, defender_id: String) 
 	if not border_candidates.is_empty():
 		return border_candidates[rng.randi() % border_candidates.size()]
 	return defender_provs[rng.randi() % defender_provs.size()].id
+
+func should_declare_war(attacker: Religion, defender: Religion, state: Node) -> bool:
+	# Plan 20 §4.2: pełne guards przed declaration.
+	if attacker == null or defender == null:
+		return false
+	if attacker.id == defender.id:
+		return false
+	if attacker.defeated_at_turn != -1 or defender.defeated_at_turn != -1:
+		return false
+	if attacker.prestige < WarManager.DECLARE_WAR_PRESTIGE:
+		return false
+	# Already at war?
+	for war: War in state.active_wars:
+		if war.state == "ENDED":
+			continue
+		if (war.attacker_id == attacker.id and war.defender_id == defender.id) \
+				or (war.attacker_id == defender.id and war.defender_id == attacker.id):
+			return false
+	# Alliance check.
+	var dm := DiplomacyManager.new()
+	var rel := dm.get_or_create_relation(state, attacker.id, defender.id)
+	if rel.alliance_active:
+		return false
+	# Suzerain/vassal chain.
+	if attacker.suzerain_id == defender.id or defender.suzerain_id == attacker.id:
+		return false
+	# Same coalition.
+	for coalition: Coalition in state.active_coalitions:
+		if attacker.id in coalition.members and defender.id in coalition.members:
+			return false
+	# Tension threshold (próg ostry >=).
+	if rel.military_tension < AI_WAR_TENSION_THRESHOLD:
+		return false
+	# CB available.
+	var wm := WarManager.new()
+	if wm.available_casus_belli(attacker, defender, state).is_empty():
+		return false
+	return true

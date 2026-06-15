@@ -221,3 +221,115 @@ func test_choose_attack_target_skips_non_defender_provinces() -> void:
 	var target_prov: Province = gs.province_graph.get_province(target)
 	assert_not_null(target_prov)
 	assert_eq(target_prov.owner, "eastern_christianity", "Target = defender province")
+
+# === Plan 20: stałe + should_declare_war ===
+
+func test_plan20_constants_exist() -> void:
+	assert_almost_eq(AIManager.AI_WAR_TENSION_THRESHOLD, 70.0, 0.001)
+	assert_almost_eq(AIManager.AI_WAR_DECLARE_CHANCE, 0.2, 0.001)
+	assert_almost_eq(AIManager.AI_PEACE_ATTACKER_WEARINESS_GIVE_UP, 70.0, 0.001)
+	assert_almost_eq(AIManager.AI_PEACE_DEFENDER_WEARINESS, 60.0, 0.001)
+
+func test_should_declare_war_true_when_all_conditions_met() -> void:
+	# Islam axes (A=70, B=65, C=30, D=75) — TYLKO nawrocenie_mieczem available (C<=40 ✓, A>=65 ✓).
+	# Krucjata fails (C>25), dzihad fails (C>25), wojna_sprawiedliwa fails (D>50).
+	# 1 CB wystarcza dla declare → happy path.
+	var gs := _make_state()
+	var attacker: Religion = gs.get_religion("islam")
+	attacker.prestige = 50
+	var defender: Religion = gs.get_religion("eastern_christianity")
+	var dm := DiplomacyManager.new()
+	var rel := dm.get_or_create_relation(gs, "islam", "eastern_christianity")
+	rel.military_tension = 80.0
+	var ai := AIManagerScript.new()
+	assert_true(ai.should_declare_war(attacker, defender, gs), "Islam→Eastern: tension 80 + prestige 50 + nawrocenie_mieczem → true")
+
+func test_should_declare_war_false_when_self() -> void:
+	var gs := _make_state()
+	var attacker: Religion = gs.get_religion("islam")
+	var ai := AIManagerScript.new()
+	assert_false(ai.should_declare_war(attacker, attacker, gs))
+
+func test_should_declare_war_false_when_prestige_below_required() -> void:
+	var gs := _make_state()
+	var attacker: Religion = gs.get_religion("islam")
+	attacker.prestige = 5  # < DECLARE_WAR_PRESTIGE=10
+	var defender: Religion = gs.get_religion("eastern_christianity")
+	var dm := DiplomacyManager.new()
+	dm.get_or_create_relation(gs, "islam", "eastern_christianity").military_tension = 80.0
+	var ai := AIManagerScript.new()
+	assert_false(ai.should_declare_war(attacker, defender, gs))
+
+func test_should_declare_war_false_when_already_at_war() -> void:
+	var gs := _make_state()
+	var attacker: Religion = gs.get_religion("islam")
+	attacker.prestige = 50
+	var defender: Religion = gs.get_religion("eastern_christianity")
+	# Setup existing war.
+	var existing := WarScript.new()
+	existing.attacker_id = "islam"
+	existing.defender_id = "eastern_christianity"
+	existing.state = "BATTLING"
+	gs.active_wars.append(existing)
+	var dm := DiplomacyManager.new()
+	dm.get_or_create_relation(gs, "islam", "eastern_christianity").military_tension = 80.0
+	var ai := AIManagerScript.new()
+	assert_false(ai.should_declare_war(attacker, defender, gs))
+
+func test_should_declare_war_false_when_allied() -> void:
+	var gs := _make_state()
+	var attacker: Religion = gs.get_religion("islam")
+	attacker.prestige = 50
+	var defender: Religion = gs.get_religion("eastern_christianity")
+	var dm := DiplomacyManager.new()
+	var rel := dm.get_or_create_relation(gs, "islam", "eastern_christianity")
+	rel.military_tension = 80.0
+	rel.alliance_active = true
+	var ai := AIManagerScript.new()
+	assert_false(ai.should_declare_war(attacker, defender, gs))
+
+func test_should_declare_war_false_when_vassal_relation() -> void:
+	var gs := _make_state()
+	var attacker: Religion = gs.get_religion("islam")
+	attacker.prestige = 50
+	var defender: Religion = gs.get_religion("eastern_christianity")
+	defender.suzerain_id = "islam"  # defender is vassal of attacker
+	var dm := DiplomacyManager.new()
+	dm.get_or_create_relation(gs, "islam", "eastern_christianity").military_tension = 80.0
+	var ai := AIManagerScript.new()
+	assert_false(ai.should_declare_war(attacker, defender, gs))
+
+func test_should_declare_war_false_when_same_coalition() -> void:
+	# AC #8: coalition guard. Setup: Islam + Eastern w tej samej coalition.
+	var gs := _make_state()
+	var attacker: Religion = gs.get_religion("islam")
+	attacker.prestige = 50
+	var defender: Religion = gs.get_religion("eastern_christianity")
+	var dm := DiplomacyManager.new()
+	dm.get_or_create_relation(gs, "islam", "eastern_christianity").military_tension = 80.0
+	var coalition := Coalition.new()
+	coalition.members = ["islam", "eastern_christianity"]
+	gs.active_coalitions.append(coalition)
+	var ai := AIManagerScript.new()
+	assert_false(ai.should_declare_war(attacker, defender, gs))
+
+func test_should_declare_war_false_when_tension_below_threshold() -> void:
+	var gs := _make_state()
+	var attacker: Religion = gs.get_religion("islam")
+	attacker.prestige = 50
+	var defender: Religion = gs.get_religion("eastern_christianity")
+	var dm := DiplomacyManager.new()
+	dm.get_or_create_relation(gs, "islam", "eastern_christianity").military_tension = 69.0  # próg ostry 70
+	var ai := AIManagerScript.new()
+	assert_false(ai.should_declare_war(attacker, defender, gs))
+
+func test_should_declare_war_false_when_no_cb_available() -> void:
+	# Slavic ma profile A=20, B=25 — żaden z 4 standardowych CBs nie pasuje. Defender bez heresy + bez rewanz → no CB.
+	var gs := _make_state()
+	var attacker: Religion = gs.get_religion("slavic_paganism")
+	attacker.prestige = 50
+	var defender: Religion = gs.get_religion("eastern_christianity")
+	var dm := DiplomacyManager.new()
+	dm.get_or_create_relation(gs, "slavic_paganism", "eastern_christianity").military_tension = 80.0
+	var ai := AIManagerScript.new()
+	assert_false(ai.should_declare_war(attacker, defender, gs))
