@@ -465,3 +465,33 @@ func test_npc_offers_peace_when_defender_weariness_high() -> void:
 			r.prestige = 0
 	tm.process_turn(gs)
 	assert_eq(war.state, "ENDED", "NPC defender peace when weariness > 60")
+
+# === Plan 20: _npc_declare_wars integration ===
+
+func test_npc_declares_war_when_tension_high() -> void:
+	var tm := TurnManager.new()
+	var gs := _make_state()  # player = islam
+	# Setup eligible target for Western (axes 65/80/35/55).
+	# Western CBs: nawrocenie_mieczem (A>=65 ✓, C<=40 ✓) → available.
+	# Prestige pin: >=10 (DECLARE_WAR_PRESTIGE) ale <50 (AI_SCHOLAR_MIN_PRESTIGE)
+	# żeby _npc_dispatch_scholars NIE konsumował RNG przed declare gate.
+	var attacker: Religion = gs.get_religion("western_christianity")
+	attacker.prestige = 30
+	var dm := DiplomacyManager.new()
+	dm.get_or_create_relation(gs, "western_christianity", "eastern_christianity").military_tension = 90.0
+	# Seed low_rng for deterministic randf() < 0.2 (chance pass).
+	var low_rng := RandomNumberGenerator.new()
+	low_rng.seed = 13  # randf()=0.062, gate passes
+	tm.set_ai_override(AIManager.new(low_rng))
+	# Disable other NPC noise (prestige=0 for all except western and player).
+	for r: Religion in gs.all_religions():
+		if r.id != gs.player_religion_id and r.id != "western_christianity":
+			r.prestige = 0
+	var initial_wars: int = gs.active_wars.size()
+	tm.process_turn(gs)
+	# Western should declare war.
+	assert_true(gs.active_wars.size() > initial_wars,
+		"Plan 20: NPC z tension=90 + prestige=30 + CB available + low_rng seed=13 → declare")
+	var new_war: War = gs.active_wars[initial_wars]
+	assert_eq(new_war.attacker_id, "western_christianity")
+	assert_eq(new_war.defender_id, "eastern_christianity")

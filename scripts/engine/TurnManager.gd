@@ -32,6 +32,7 @@ func process_turn(state: Node) -> void:
 	_process_active_wars(state)
 	_npc_attack_wars(state)
 	_npc_offer_peace(state)
+	_npc_declare_wars(state)
 	_process_missionaries(state)
 	_process_diplomacy(state)
 	_process_resources(state)
@@ -139,6 +140,20 @@ func _npc_offer_peace(state: Node) -> void:
 			if ai.should_offer_peace(war, war.defender_id, state):
 				var terms := ai.compose_peace_terms(war, war.defender_id, state)
 				wm.offer_peace(war, terms, state)
+
+func _npc_declare_wars(state: Node) -> void:
+	# Plan 20 §5.2: NPC declarations per turn.
+	var ai := _get_ai()
+	var wm := WarManager.new()
+	for religion: Religion in state.all_religions():
+		if religion.id == state.player_religion_id:
+			continue
+		if religion.defeated_at_turn != -1:
+			continue
+		var target := ai.choose_war_target(state, religion)
+		if target.is_empty():
+			continue
+		wm.declare_war(religion.id, target["defender_id"], target["cb"], state)
 
 func _process_scholar_missions(state: Node) -> void:
 	var dm := DoctrineManager.new()
