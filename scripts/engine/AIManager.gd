@@ -120,3 +120,26 @@ func should_declare_war(attacker: Religion, defender: Religion, state: Node) -> 
 	if wm.available_casus_belli(attacker, defender, state).is_empty():
 		return false
 	return true
+
+func choose_war_target(state: Node, attacker: Religion) -> Dictionary:
+	# Plan 20 §4.3: RNG gate first (anti-spam), then highest-tension eligible target.
+	if rng.randf() >= AI_WAR_DECLARE_CHANCE:
+		return {}
+	var best_target_id: String = ""
+	var best_tension: float = -1.0
+	var dm := DiplomacyManager.new()
+	for defender: Religion in state.all_religions():
+		if not should_declare_war(attacker, defender, state):
+			continue
+		var rel := dm.get_or_create_relation(state, attacker.id, defender.id)
+		if rel.military_tension > best_tension:
+			best_tension = rel.military_tension
+			best_target_id = defender.id
+	if best_target_id == "":
+		return {}
+	var defender_rel: Religion = state.get_religion(best_target_id)
+	var wm := WarManager.new()
+	var cbs := wm.available_casus_belli(attacker, defender_rel, state)
+	if cbs.is_empty():
+		return {}
+	return {"defender_id": best_target_id, "cb": cbs[0]}

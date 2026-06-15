@@ -323,6 +323,38 @@ func test_should_declare_war_false_when_tension_below_threshold() -> void:
 	var ai := AIManagerScript.new()
 	assert_false(ai.should_declare_war(attacker, defender, gs))
 
+func test_choose_war_target_returns_empty_when_rng_above_threshold() -> void:
+	# Seeded RNG seed=0 → first randf()=0.2023 (>= AI_WAR_DECLARE_CHANCE=0.2) → {} regardless of eligible targets.
+	var gs := _make_state()
+	var attacker: Religion = gs.get_religion("islam")
+	attacker.prestige = 50
+	# Setup eligible target (tension 80) — to prove RNG gate blocks even with available target.
+	var dm := DiplomacyManager.new()
+	dm.get_or_create_relation(gs, "islam", "eastern_christianity").military_tension = 80.0
+	var high_rng := RandomNumberGenerator.new()
+	high_rng.seed = 0
+	var ai := AIManagerScript.new(high_rng)
+	var target := ai.choose_war_target(gs, attacker)
+	assert_eq(target.size(), 0, "RNG >= 0.2 → choose_war_target returns {}")
+
+func test_choose_war_target_picks_highest_tension() -> void:
+	# Setup: Islam with 2 eligible targets — Eastern (tension 80) and Western (tension 90).
+	# Seeded RNG seed=13 → first randf()=0.0621 (< 0.2) — gate passes.
+	var gs := _make_state()
+	var attacker: Religion = gs.get_religion("islam")
+	attacker.prestige = 50
+	var dm := DiplomacyManager.new()
+	dm.get_or_create_relation(gs, "islam", "eastern_christianity").military_tension = 80.0
+	dm.get_or_create_relation(gs, "islam", "western_christianity").military_tension = 90.0
+	var low_rng := RandomNumberGenerator.new()
+	low_rng.seed = 13
+	var ai := AIManagerScript.new(low_rng)
+	var target := ai.choose_war_target(gs, attacker)
+	assert_false(target.is_empty(), "RNG seed=13 (randf=0.062) → gate passes, target chosen")
+	assert_eq(target["defender_id"], "western_christianity", "Higher tension wins (90 vs 80)")
+	# CB for Islam is nawrocenie_mieczem (A=70>=65, C=30<=40). Other 3 CBs fail.
+	assert_eq(target["cb"], "nawrocenie_mieczem", "Only available CB for Islam axes is nawrocenie_mieczem")
+
 func test_should_declare_war_false_when_no_cb_available() -> void:
 	# Slavic ma profile A=20, B=25 — żaden z 4 standardowych CBs nie pasuje. Defender bez heresy + bez rewanz → no CB.
 	var gs := _make_state()
