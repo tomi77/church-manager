@@ -407,6 +407,25 @@ func test_should_offer_peace_false_when_low_weariness_no_contested() -> void:
 	var ai := AIManagerScript.new()
 	assert_false(ai.should_offer_peace(war, "islam", gs), "Attacker no contested + low weariness → no peace")
 
+func test_should_offer_peace_defender_boundary_60_exact() -> void:
+	# Spec §4.4: próg ostry > 60.0. Defender weariness == 60.0 → false (strict >, nie >=).
+	var gs := _make_state()
+	var defender: Religion = gs.get_religion("eastern_christianity")
+	defender.war_weariness = 60.0  # exact boundary
+	var war := _make_war("islam", "eastern_christianity", "BATTLING")
+	var ai := AIManagerScript.new()
+	assert_false(ai.should_offer_peace(war, "eastern_christianity", gs), "Defender weariness == 60.0 (exact) → no peace (strict >)")
+
+func test_should_offer_peace_attacker_give_up_boundary_70_exact() -> void:
+	# Spec §4.4: próg ostry > 70.0. Attacker no contested + weariness == 70.0 → false (give-up not triggered).
+	var gs := _make_state()
+	var attacker: Religion = gs.get_religion("islam")
+	attacker.war_weariness = 70.0  # exact boundary
+	var war := _make_war("islam", "eastern_christianity", "BATTLING")
+	war.contested_provinces = []
+	var ai := AIManagerScript.new()
+	assert_false(ai.should_offer_peace(war, "islam", gs), "Attacker no contested + weariness == 70.0 (exact) → no peace (strict >)")
+
 # === Plan 20: compose_peace_terms ===
 
 func test_compose_peace_terms_attacker_annexation_when_contested() -> void:
