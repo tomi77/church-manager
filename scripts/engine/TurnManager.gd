@@ -31,6 +31,7 @@ func process_turn(state: Node) -> void:
 	_apply_believer_exodus(state)
 	_process_active_wars(state)
 	_npc_attack_wars(state)
+	_npc_offer_peace(state)
 	_process_missionaries(state)
 	_process_diplomacy(state)
 	_process_resources(state)
@@ -114,6 +115,30 @@ func _npc_attack_wars(state: Node) -> void:
 		var target_id: String = ai.choose_attack_target(state, attacker, war.defender_id)
 		if target_id != "":
 			wm.attack_province(war, target_id, state)
+
+func _npc_offer_peace(state: Node) -> void:
+	# Plan 20 §5.1: NPC contextually ends wars.
+	# Iteration: attacker first, then defender (deterministic).
+	# active_wars.duplicate() — offer_peace może mutować state.active_wars (erase),
+	# więc iterowanie raw array byłoby niebezpieczne.
+	var ai := _get_ai()
+	var wm := WarManager.new()
+	for war: War in state.active_wars.duplicate():
+		if war.state == "ENDED":
+			continue
+		# Attacker NPC
+		if war.attacker_id != state.player_religion_id:
+			if ai.should_offer_peace(war, war.attacker_id, state):
+				var terms := ai.compose_peace_terms(war, war.attacker_id, state)
+				wm.offer_peace(war, terms, state)
+				continue
+		if war.state == "ENDED":
+			continue
+		# Defender NPC
+		if war.defender_id != state.player_religion_id:
+			if ai.should_offer_peace(war, war.defender_id, state):
+				var terms := ai.compose_peace_terms(war, war.defender_id, state)
+				wm.offer_peace(war, terms, state)
 
 func _process_scholar_missions(state: Node) -> void:
 	var dm := DoctrineManager.new()

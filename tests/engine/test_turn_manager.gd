@@ -415,3 +415,53 @@ func test_npc_does_not_attack_during_mobilizing_state() -> void:
 	# Po 1 turn: state może wciąż być MOBILIZING (turns_in_state staje 1, < 2).
 	var after_battles: int = war.battles_won + war.battles_lost
 	assert_eq(after_battles, initial_battles, "MOBILIZING -> AI skip -> no battles")
+
+# === Plan 20: _npc_offer_peace integration ===
+
+func test_npc_offers_peace_when_attacker_has_contested() -> void:
+	var tm := TurnManager.new()
+	# Disable AI declarations (Plan 20) via high_rng — randf() >= 0.2 skip declare gate.
+	var high_rng := RandomNumberGenerator.new()
+	high_rng.seed = 0  # randf() = 0.2023, skip declare
+	tm.set_ai_override(AIManager.new(high_rng))
+	var gs := _make_state()  # player = islam
+	# NPC slavic attacks Eastern. Setup contested + low weariness — claim immediately.
+	var war := WarScript.new()
+	war.attacker_id = "slavic_paganism"
+	war.defender_id = "eastern_christianity"
+	war.casus_belli = "wojna_sprawiedliwa"
+	war.state = "BATTLING"
+	war.contested_provinces = ["tracja"]
+	gs.active_wars.append(war)
+	# Disable scholar noise (Plan 18).
+	for r: Religion in gs.all_religions():
+		if r.id != gs.player_religion_id and r.id != "slavic_paganism":
+			r.prestige = 0
+	tm.process_turn(gs)
+	assert_eq(war.state, "ENDED", "NPC attacker peace → war ended")
+	# Tracja should be annexed by Slavic.
+	var tracja: Province = gs.province_graph.get_province("tracja")
+	assert_eq(tracja.owner, "slavic_paganism", "Tracja annexed by Slavic")
+
+func test_npc_offers_peace_when_defender_weariness_high() -> void:
+	var tm := TurnManager.new()
+	# Disable AI declarations via high_rng (skip declare gate).
+	var high_rng := RandomNumberGenerator.new()
+	high_rng.seed = 0
+	tm.set_ai_override(AIManager.new(high_rng))
+	var gs := _make_state()  # player = islam (attacker)
+	# Player attacker → Plan 20 attacker peace skipped. Defender NPC slavic, weariness > 60 → peace.
+	var war := WarScript.new()
+	war.attacker_id = "islam"
+	war.defender_id = "slavic_paganism"
+	war.casus_belli = "wojna_sprawiedliwa"
+	war.state = "BATTLING"
+	gs.active_wars.append(war)
+	var slavic: Religion = gs.get_religion("slavic_paganism")
+	slavic.war_weariness = 65.0
+	# Disable other NPC noise (scholar dispatch).
+	for r: Religion in gs.all_religions():
+		if r.id != gs.player_religion_id and r.id != "slavic_paganism":
+			r.prestige = 0
+	tm.process_turn(gs)
+	assert_eq(war.state, "ENDED", "NPC defender peace when weariness > 60")
