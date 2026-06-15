@@ -213,6 +213,8 @@ func should_offer_peace(war: War, npc_id: String, state: Node) -> bool:
 - Defender bardziej skłonny do peace (60) — chce zakończyć obronę.
 - Attacker bardziej upiera się (70) — zainwestował w deklarację.
 
+**Boundary semantyka (próg ostry `>`):** Operatory `>` w obu warunkach są strict. Weariness = 60.0 (exact) → defender NIE oferuje peace. Weariness = 70.0 (exact) → attacker give-up NIE jest triggerowane. Testy boundary cases używają wartości +1 (61, 71) lub -1 (59, 69) dla deterministyczności.
+
 ### 4.5 `compose_peace_terms`
 
 ```gdscript
@@ -297,6 +299,8 @@ func process_turn(state: Node) -> void:
 ### 5.3 Why `active_wars.duplicate()`?
 
 `offer_peace` MOŻE mutować `state.active_wars` (linia `state.active_wars.erase(war)`). Iteracja po raw array byłaby unsafe (modify during iteration). Duplicate jest **wymagane** (nie defensive jak w Plan 19), nie tylko ostrożnościowe.
+
+**Defeated mid-turn:** Plan 19's `_npc_attack_wars` (run wcześniej w tej samej turze) może triggerować `force_loss` przez weariness lub eliminację. To usuwa wojnę z `active_wars` (WarManager.gd:233) PRZED `_npc_offer_peace` start iteracji. Defensive guard `if war.state == "ENDED": continue` chroni przed edge case gdy wojna ENDED ale jeszcze nie erased.
 
 ### 5.4 Same-turn declare → attack flow
 
